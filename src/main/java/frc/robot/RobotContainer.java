@@ -4,19 +4,126 @@
 
 package frc.robot;
 
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.DriveCommands;
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.GyroPigeon2;
+import frc.robot.subsystems.drive.GyroSim;
+import frc.robot.subsystems.drive.ModuleSim;
+import frc.robot.subsystems.drive.ModuleSpark;
+import frc.robot.controller.*;
 
 public class RobotContainer {
+	// Subsystems
+	private final Drive drive;
+
+	// Controller
+	private final CommandControllerIO controller = new XboxControllerIO(0);
+
+	// Dashboard inputs
+	private final LoggedDashboardChooser<Command> auto_chooser;
+
 	public RobotContainer() {
+		switch (Config.ROBOT_MODE) {
+			case REAL:
+				// Real robot, instantiate hardware IO implementations
+				drive = new Drive(
+						new GyroPigeon2(),
+						new ModuleSpark(0),
+						new ModuleSpark(1),
+						new ModuleSpark(2),
+						new ModuleSpark(3));
+				break;
+			case SIM:
+				// Sim robot, instantiate physics sim IO implementations
+				drive = new Drive(
+						new GyroSim() {
+						},
+						new ModuleSim(0),
+						new ModuleSim(1),
+						new ModuleSim(2),
+						new ModuleSim(3));
+				break;
+			default:
+				// Replayed robot, disable IO implementations
+				drive = new Drive(
+						new GyroSim() {
+						},
+						new ModuleSim(0) {
+						},
+						new ModuleSim(1) {
+						},
+						new ModuleSim(2) {
+						},
+						new ModuleSim(3) {
+						});
+				break;
+		}
+
+		// Set up auto routines
+		auto_chooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+
+		// Set up SysId routines
+		auto_chooser.addOption(
+				"Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
+		auto_chooser.addOption(
+				"Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
+		auto_chooser.addOption(
+				"Drive SysId (Quasistatic Forward)",
+				drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+		auto_chooser.addOption(
+				"Drive SysId (Quasistatic Reverse)",
+				drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+		auto_chooser.addOption(
+				"Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+		auto_chooser.addOption(
+				"Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+
 		configureBindings();
 	}
 
 	private void configureBindings() {
-		
+		// Default command, normal field-relative drive
+		drive.setDefaultCommand(
+				DriveCommands.joystickDrive(
+						drive,
+						() -> -controller.getDriveYAxis(),
+						() -> -controller.getDriveXAxis(),
+						() -> -controller.getTurnAxis()));
+
+		// Lock to 0° when A button is held
+		controller
+				.lockGyroBtn()
+				.whileTrue(
+						DriveCommands.joystickDriveAtAngle(
+								drive,
+								() -> -controller.getDriveYAxis(),
+								() -> -controller.getDriveXAxis(),
+								() -> new Rotation2d()));
+
+		// Switch to X pattern when X button is pressed
+		controller.stopXBtn().onTrue(Commands.runOnce(drive::stopWithX, drive));
+
+		// Reset gyro to 0° when B button is pressed
+		controller
+				.resetGyroBtn()
+				.onTrue(
+						Commands.runOnce(
+								() -> drive.setPose(
+										new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+								drive)
+								.ignoringDisable(true));
 	}
 
 	public Command getAutonomousCommand() {
-		return Commands.print("No autonomous command configured");
+		return auto_chooser.get();
 	}
 }
