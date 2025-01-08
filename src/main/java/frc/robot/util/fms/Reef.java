@@ -4,13 +4,21 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 public class Reef {
     public static enum CoralLow {
-        NONE, HORIZONTAL_LEFT, HORIZONTAL_RIGHT, VERTICAL_TOP, VERTICAL_BOTTOM
+        NONE,
+        HORIZONTAL_LEFT,
+        HORIZONTAL_RIGHT,
+        VERTICAL_TOP,
+        VERTICAL_BOTTOM
     }
+
     public static enum CoralHigh {
-        NONE, PRESENT
+        NONE,
+        PRESENT
     }
+
     public static enum Algae {
-        NONE, PRESENT
+        NONE,
+        PRESENT
     }
 
     class ReefSide {
@@ -23,15 +31,16 @@ public class Reef {
         public final CoralHigh[] L4 = {CoralHigh.NONE, CoralHigh.NONE};
         public final Algae[] algae_low_high;
 
-        public static Algae[] getAlgaeStartPose(final int side){
-            return side >= 17 ? // BLUE
-                side % 2 == 0 ? new Algae[]{Algae.PRESENT, Algae.NONE}
-                    : new Algae[]{Algae.NONE, Algae.PRESENT}
-                : side % 2 == 0 ? new Algae[]{Algae.NONE, Algae.PRESENT} // RED
-                    : new Algae[]{Algae.PRESENT, Algae.NONE};
+        public static Algae[] getAlgaeStartPose(final int side) {
+            return side >= 17
+                    ? // BLUE
+                    side % 2 == 0 ? new Algae[] {Algae.PRESENT, Algae.NONE} : new Algae[] {Algae.NONE, Algae.PRESENT}
+                    : side % 2 == 0
+                            ? new Algae[] {Algae.NONE, Algae.PRESENT} // RED
+                            : new Algae[] {Algae.PRESENT, Algae.NONE};
         }
 
-        public ReefSide(final int side){
+        public ReefSide(final int side) {
             this.algae_low_high = getAlgaeStartPose(side);
         }
     }
@@ -41,8 +50,9 @@ public class Reef {
     public static final int RED_REEF_STARTING_ID = 6;
     public final ReefSide[] reef_sides = new ReefSide[TOTAL_REEF_SIDES];
 
-    public Reef(Alliance alliance){
-        for(int i = 0; i < TOTAL_REEF_SIDES; i++)
-            reef_sides[i] = new ReefSide(i + ((alliance == Alliance.Blue) ? BLUE_REEF_STARTING_ID : RED_REEF_STARTING_ID));
+    public Reef(Alliance alliance) {
+        for (int i = 0; i < TOTAL_REEF_SIDES; i++)
+            reef_sides[i] =
+                    new ReefSide(i + ((alliance == Alliance.Blue) ? BLUE_REEF_STARTING_ID : RED_REEF_STARTING_ID));
     }
 }

@@ -1,10 +1,9 @@
 package frc.robot.subsystems.drive;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import org.littletonrobotics.junction.AutoLog;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-
-public abstract class GyroIO {
+public interface GyroIO {
     @AutoLog
     public static class GyroIOInputs {
         public boolean connected = false;
@@ -14,5 +13,5 @@ public abstract class GyroIO {
         public Rotation2d[] odometryYawPositions = new Rotation2d[] {};
     }
 
-    public abstract void updateInputs(GyroIOInputs inputs);
+    public default void updateInputs(GyroIOInputs inputs) {}
 }

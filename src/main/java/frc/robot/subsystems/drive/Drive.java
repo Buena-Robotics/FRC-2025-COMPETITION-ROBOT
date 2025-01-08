@@ -36,15 +36,22 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Config;
 import frc.robot.Config.RobotMode;
 import frc.robot.util.LocalADStarAK;
+import frc.robot.util.sim.COTS;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
     public static final int DRIVE_MOTOR_CURRENT_LIMIT = 50;
-    public static final double DRIVE_MOTOR_REDUCTION = (45.0 * 22.0) / (14.0 * 15.0); // MAXSwerve with 14 pinion teeth and and 22 spur teeth
+    public static final double DRIVE_MOTOR_REDUCTION =
+            (45.0 * 22.0) / (14.0 * 15.0); // MAXSwerve with 14 pinion teeth 22 spur teeth
+
+    public static final double TURN_MOTOR_REDUCTION = 9424.0 / 203.0;
+
     public static final DCMotor DRIVE_GEARBOX = DCMotor.getNeoVortex(1);
+    public static final DCMotor TURN_GEARBOX = DCMotor.getNeo550(1);
 
     public static final double WHEEL_RADIUS_METERS = Units.inchesToMeters(1.5);
     public static final double MAX_SPEED_METERS_PER_SECOND = 4.8;
@@ -52,10 +59,10 @@ public class Drive extends SubsystemBase {
     public static final double WHEEL_BASE = Units.inchesToMeters(26.5);
     public static final double DRIVE_BASE_RADIUS = Math.hypot(TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0);
     public static final Translation2d[] MODULE_TRANSLATIONS = new Translation2d[] {
-            new Translation2d(TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0),
-            new Translation2d(TRACK_WIDTH / 2.0, -WHEEL_BASE / 2.0),
-            new Translation2d(-TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0),
-            new Translation2d(-TRACK_WIDTH / 2.0, -WHEEL_BASE / 2.0)
+        new Translation2d(TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0),
+        new Translation2d(TRACK_WIDTH / 2.0, -WHEEL_BASE / 2.0),
+        new Translation2d(-TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0),
+        new Translation2d(-TRACK_WIDTH / 2.0, -WHEEL_BASE / 2.0)
     };
 
     public static final double ROBOT_MASS_KG = 74.088;
@@ -73,39 +80,40 @@ public class Drive extends SubsystemBase {
                     1),
             MODULE_TRANSLATIONS);
 
+    public static final DriveTrainSimulationConfig MAPLE_SIM_CONFIG = DriveTrainSimulationConfig.Default()
+            .withCustomModuleTranslations(MODULE_TRANSLATIONS)
+            .withRobotMass(Kilogram.of(ROBOT_MASS_KG))
+            .withGyro(COTS.ofPigeon2())
+            .withSwerveModule(COTS.ofMark4(TURN_GEARBOX, DRIVE_GEARBOX, WHEEL_COF, 2));
+
     public static final double ODOMETRY_FREQUENCY_HERTZ = 100.0; // Hz
     public static final Lock odometry_lock = new ReentrantLock();
 
     private final GyroIO gryo_io;
     private final GyroIOInputsAutoLogged gyro_inputs = new GyroIOInputsAutoLogged();
-    private final ModuleIO[] modules = new ModuleIO[4]; // FL, FR, BL, BR
+    private final Module[] modules = new Module[4]; // FL, FR, BL, BR
     private final SysIdRoutine sys_id;
-    private final Alert gyro_disconnect_alert = new Alert("Disconnected gyro, using kinematics as fallback.",
-            AlertType.kError);
+    private final Alert gyro_disconnect_alert =
+            new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
 
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(MODULE_TRANSLATIONS);
     private Rotation2d raw_gyro_rotation = new Rotation2d();
     private SwerveModulePosition[] last_module_positions = // For delta tracking
             new SwerveModulePosition[] {
-                    new SwerveModulePosition(),
-                    new SwerveModulePosition(),
-                    new SwerveModulePosition(),
-                    new SwerveModulePosition()
+                new SwerveModulePosition(),
+                new SwerveModulePosition(),
+                new SwerveModulePosition(),
+                new SwerveModulePosition()
             };
-    private SwerveDrivePoseEstimator pose_estimator = new SwerveDrivePoseEstimator(kinematics, raw_gyro_rotation,
-            last_module_positions, new Pose2d());
+    private SwerveDrivePoseEstimator pose_estimator =
+            new SwerveDrivePoseEstimator(kinematics, raw_gyro_rotation, last_module_positions, new Pose2d());
 
-    public Drive(
-            GyroIO gyro_io,
-            ModuleIO fl_module,
-            ModuleIO fr_module,
-            ModuleIO bl_module,
-            ModuleIO br_module) {
+    public Drive(GyroIO gyro_io, ModuleIO fl_module, ModuleIO fr_module, ModuleIO bl_module, ModuleIO br_module) {
         this.gryo_io = gyro_io;
-        this.modules[0] = fl_module;
-        this.modules[1] = fr_module;
-        this.modules[2] = bl_module;
-        this.modules[3] = br_module;
+        this.modules[0] = new Module(0);
+        this.modules[1] = new Module(1);
+        this.modules[2] = new Module(2);
+        this.modules[3] = new Module(3);
 
         // Usage reporting for swerve template
         HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
@@ -119,31 +127,23 @@ public class Drive extends SubsystemBase {
                 this::setPose,
                 this::getChassisSpeeds,
                 this::runVelocity,
-                new PPHolonomicDriveController(
-                        new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+                new PPHolonomicDriveController(new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
                 PP_CONFIG,
                 () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
                 this);
         Pathfinding.setPathfinder(new LocalADStarAK());
-        PathPlannerLogging.setLogActivePathCallback(
-                (activePath) -> {
-                    Logger.recordOutput(
-                            "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
-                });
-        PathPlannerLogging.setLogTargetPoseCallback(
-                (targetPose) -> {
-                    Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
-                });
+        PathPlannerLogging.setLogActivePathCallback((activePath) -> {
+            Logger.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
+        });
+        PathPlannerLogging.setLogTargetPoseCallback((targetPose) -> {
+            Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
+        });
 
         // Configure SysId
         sys_id = new SysIdRoutine(
                 new SysIdRoutine.Config(
-                        null,
-                        null,
-                        null,
-                        (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
-                new SysIdRoutine.Mechanism(
-                        (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+                        null, null, null, (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
+                new SysIdRoutine.Mechanism((voltage) -> runCharacterization(voltage.in(Volts)), null, this));
     }
 
     @Override
@@ -206,8 +206,7 @@ public class Drive extends SubsystemBase {
     /**
      * Runs the drive at the desired velocity.
      *
-     * @param speeds
-     *            Speeds in meters/sec
+     * @param speeds Speeds in meters/sec
      */
     public void runVelocity(ChassisSpeeds speeds) {
         // Calculate module setpoints
@@ -241,10 +240,8 @@ public class Drive extends SubsystemBase {
     }
 
     /**
-     * Stops the drive and turns the modules to an X arrangement to resist movement.
-     * The modules will
-     * return to their normal orientations the next time a nonzero velocity is
-     * requested.
+     * Stops the drive and turns the modules to an X arrangement to resist movement. The modules will return to their
+     * normal orientations the next time a nonzero velocity is requested.
      */
     public void stopWithX() {
         Rotation2d[] headings = new Rotation2d[4];
@@ -257,9 +254,7 @@ public class Drive extends SubsystemBase {
 
     /** Returns a command to run a quasistatic test in the specified direction. */
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-        return run(() -> runCharacterization(0.0))
-                .withTimeout(1.0)
-                .andThen(sys_id.quasistatic(direction));
+        return run(() -> runCharacterization(0.0)).withTimeout(1.0).andThen(sys_id.quasistatic(direction));
     }
 
     /** Returns a command to run a dynamic test in the specified direction. */
@@ -267,10 +262,7 @@ public class Drive extends SubsystemBase {
         return run(() -> runCharacterization(0.0)).withTimeout(1.0).andThen(sys_id.dynamic(direction));
     }
 
-    /**
-     * Returns the module states (turn angles and drive velocities) for all of the
-     * modules.
-     */
+    /** Returns the module states (turn angles and drive velocities) for all of the modules. */
     @AutoLogOutput(key = "SwerveStates/Measured")
     private SwerveModuleState[] getModuleStates() {
         SwerveModuleState[] states = new SwerveModuleState[4];
@@ -280,10 +272,7 @@ public class Drive extends SubsystemBase {
         return states;
     }
 
-    /**
-     * Returns the module positions (turn angles and drive positions) for all of the
-     * modules.
-     */
+    /** Returns the module positions (turn angles and drive positions) for all of the modules. */
     private SwerveModulePosition[] getModulePositions() {
         SwerveModulePosition[] states = new SwerveModulePosition[4];
         for (int i = 0; i < 4; i++) {
@@ -334,11 +323,8 @@ public class Drive extends SubsystemBase {
 
     /** Adds a new timestamped vision measurement. */
     public void addVisionMeasurement(
-            Pose2d vision_robot_pose_meters,
-            double timestamp_seconds,
-            Matrix<N3, N1> vision_measurement_std_devs) {
-        pose_estimator.addVisionMeasurement(
-                vision_robot_pose_meters, timestamp_seconds, vision_measurement_std_devs);
+            Pose2d vision_robot_pose_meters, double timestamp_seconds, Matrix<N3, N1> vision_measurement_std_devs) {
+        pose_estimator.addVisionMeasurement(vision_robot_pose_meters, timestamp_seconds, vision_measurement_std_devs);
     }
 
     /** Returns the maximum linear speed in meters per sec. */

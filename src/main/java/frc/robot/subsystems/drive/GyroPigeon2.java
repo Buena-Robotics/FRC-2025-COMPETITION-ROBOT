@@ -11,7 +11,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import java.util.Queue;
 
-public class GyroPigeon2 extends GyroIO {
+public class GyroPigeon2 implements GyroIO {
     private final int PIGEON_CAN_ID = 9;
 
     private final Pigeon2 pigeon = new Pigeon2(PIGEON_CAN_ID);
@@ -36,10 +36,11 @@ public class GyroPigeon2 extends GyroIO {
         inputs.yawPosition = Rotation2d.fromDegrees(yaw.getValueAsDouble());
         inputs.yawVelocityRadPerSec = Units.degreesToRadians(yaw_velocity.getValueAsDouble());
 
-        inputs.odometryYawTimestamps = yaw_timestamp_queue.stream().mapToDouble((Double value) -> value).toArray();
-        inputs.odometryYawPositions = yaw_position_queue.stream()
-                .map((Double value) -> Rotation2d.fromDegrees(value))
-                .toArray(Rotation2d[]::new);
+        inputs.odometryYawTimestamps = yaw_timestamp_queue.stream()
+                .mapToDouble((Double value) -> value)
+                .toArray();
+        inputs.odometryYawPositions =
+                yaw_position_queue.stream().map(Rotation2d::fromDegrees).toArray(Rotation2d[]::new);
         yaw_timestamp_queue.clear();
         yaw_position_queue.clear();
     }

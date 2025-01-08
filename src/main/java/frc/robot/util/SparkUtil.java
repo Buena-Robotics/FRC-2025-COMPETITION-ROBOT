@@ -13,12 +13,16 @@
 
 package frc.robot.util;
 
+import static edu.wpi.first.units.Units.Seconds;
+
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkBase;
+import edu.wpi.first.wpilibj.Timer;
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import org.ironmaple.simulation.SimulatedArena;
 
 public class SparkUtil {
     /** Stores whether any error was has been detected by other utility methods. */
@@ -35,8 +39,7 @@ public class SparkUtil {
     }
 
     /** Processes a value from a Spark only if the value is valid. */
-    public static void ifOk(
-            SparkBase spark, DoubleSupplier[] suppliers, Consumer<double[]> consumer) {
+    public static void ifOk(SparkBase spark, DoubleSupplier[] suppliers, Consumer<double[]> consumer) {
         double[] values = new double[suppliers.length];
         for (int i = 0; i < suppliers.length; i++) {
             values[i] = suppliers[i].getAsDouble();
@@ -58,5 +61,15 @@ public class SparkUtil {
                 spark_sticky_fault = true;
             }
         }
+    }
+
+    public static double[] getSimulationOdometryTimeStamps() {
+        final double[] odometry_timestamps = new double[SimulatedArena.getSimulationSubTicksIn1Period()];
+        for (int i = 0; i < odometry_timestamps.length; i++) {
+            odometry_timestamps[i] = Timer.getFPGATimestamp()
+                    - 0.02
+                    + i * SimulatedArena.getSimulationDt().in(Seconds);
+        }
+        return odometry_timestamps;
     }
 }

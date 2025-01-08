@@ -19,8 +19,7 @@ public class LocalADStarAK implements Pathfinder {
     private final ADStarIO io = new ADStarIO();
 
     /**
-     * Get if a new path has been calculated since the last time a path was
-     * retrieved
+     * Get if a new path has been calculated since the last time a path was retrieved
      *
      * @return True if a new path is available
      */
@@ -38,12 +37,9 @@ public class LocalADStarAK implements Pathfinder {
     /**
      * Get the most recently calculated path
      *
-     * @param constraints
-     *            The path constraints to use when creating the path
-     * @param goal_end_state
-     *            The goal end state to use when creating the path
-     * @return The PathPlannerPath created from the points calculated by the
-     *         pathfinder
+     * @param constraints The path constraints to use when creating the path
+     * @param goal_end_state The goal end state to use when creating the path
+     * @return The PathPlannerPath created from the points calculated by the pathfinder
      */
     @Override
     public PathPlannerPath getCurrentPath(PathConstraints constraints, GoalEndState goal_end_state) {
@@ -63,10 +59,8 @@ public class LocalADStarAK implements Pathfinder {
     /**
      * Set the start position to pathfind from
      *
-     * @param start_position
-     *            Start position on the field. If this is within an obstacle it will
-     *            be
-     *            moved to the nearest non-obstacle node.
+     * @param start_position Start position on the field. If this is within an obstacle it will be moved to the nearest
+     *     non-obstacle node.
      */
     @Override
     public void setStartPosition(Translation2d start_position) {
@@ -78,10 +72,8 @@ public class LocalADStarAK implements Pathfinder {
     /**
      * Set the goal position to pathfind to
      *
-     * @param goal_position
-     *            Goal position on the field. f this is within an obstacle it will
-     *            be moved
-     *            to the nearest non-obstacle node.
+     * @param goal_position Goal position on the field. f this is within an obstacle it will be moved to the nearest
+     *     non-obstacle node.
      */
     @Override
     public void setGoalPosition(Translation2d goal_position) {
@@ -93,14 +85,10 @@ public class LocalADStarAK implements Pathfinder {
     /**
      * Set the dynamic obstacles that should be avoided while pathfinding.
      *
-     * @param obs
-     *            A List of Translation2d pairs representing obstacles. Each
-     *            Translation2d represents
-     *            opposite corners of a bounding box.
-     * @param current_robot_position
-     *            The current position of the robot. This is needed to change the
-     *            start
-     *            position of the path to properly avoid obstacles
+     * @param obs A List of Translation2d pairs representing obstacles. Each Translation2d represents opposite corners
+     *     of a bounding box.
+     * @param current_robot_position The current position of the robot. This is needed to change the start position of
+     *     the path to properly avoid obstacles
      */
     @Override
     public void setDynamicObstacles(
@@ -138,8 +126,7 @@ public class LocalADStarAK implements Pathfinder {
 
             List<PathPoint> path_points = new ArrayList<>();
             for (int i = 0; i < points_logged.length; i += 2) {
-                path_points.add(
-                        new PathPoint(new Translation2d(points_logged[i], points_logged[i + 1]), null));
+                path_points.add(new PathPoint(new Translation2d(points_logged[i], points_logged[i + 1]), null));
             }
 
             current_path_points = path_points;
