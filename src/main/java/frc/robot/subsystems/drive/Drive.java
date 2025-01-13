@@ -51,12 +51,12 @@ public class Drive extends SubsystemBase {
     public static final double TURN_MOTOR_REDUCTION = 9424.0 / 203.0;
 
     public static final DCMotor DRIVE_GEARBOX = DCMotor.getNeoVortex(1);
-    public static final DCMotor TURN_GEARBOX = DCMotor.getNeo550(1);
+    public static final DCMotor TURN_GEARBOX = DCMotor.getNeoVortex(1);
 
     public static final double WHEEL_RADIUS_METERS = Units.inchesToMeters(1.5);
     public static final double MAX_SPEED_METERS_PER_SECOND = 4.8;
-    public static final double TRACK_WIDTH = Units.inchesToMeters(26.5);
-    public static final double WHEEL_BASE = Units.inchesToMeters(26.5);
+    public static final double TRACK_WIDTH = Units.inchesToMeters(29);
+    public static final double WHEEL_BASE = Units.inchesToMeters(29);
     public static final double DRIVE_BASE_RADIUS = Math.hypot(TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0);
     public static final Translation2d[] MODULE_TRANSLATIONS = new Translation2d[] {
         new Translation2d(TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0),
@@ -65,7 +65,7 @@ public class Drive extends SubsystemBase {
         new Translation2d(-TRACK_WIDTH / 2.0, -WHEEL_BASE / 2.0)
     };
 
-    public static final double ROBOT_MASS_KG = 74.088;
+    public static final double ROBOT_MASS_KG = 45.3592;
     public static final double ROBOT_MOI = 6.883;
     public static final double WHEEL_COF = 1.2;
     public static final RobotConfig PP_CONFIG = new RobotConfig(
@@ -83,7 +83,7 @@ public class Drive extends SubsystemBase {
     public static final DriveTrainSimulationConfig MAPLE_SIM_CONFIG = DriveTrainSimulationConfig.Default()
             .withCustomModuleTranslations(MODULE_TRANSLATIONS)
             .withRobotMass(Kilogram.of(ROBOT_MASS_KG))
-            .withGyro(COTS.ofPigeon2())
+            .withGyro(COTS.ofNav2X())
             .withSwerveModule(COTS.ofMark4(TURN_GEARBOX, DRIVE_GEARBOX, WHEEL_COF, 2));
 
     public static final double ODOMETRY_FREQUENCY_HERTZ = 100.0; // Hz

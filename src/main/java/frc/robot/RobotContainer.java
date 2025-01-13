@@ -16,7 +16,7 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.controller.*;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
-import frc.robot.subsystems.drive.GyroPigeon2;
+import frc.robot.subsystems.drive.GyroNavX;
 import frc.robot.subsystems.drive.GyroSim;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleSim;
@@ -42,11 +42,7 @@ public class RobotContainer {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
                 this.drive = new Drive(
-                        new GyroPigeon2(),
-                        new ModuleSpark(0),
-                        new ModuleSpark(1),
-                        new ModuleSpark(2),
-                        new ModuleSpark(3));
+                        new GyroNavX(), new ModuleSpark(0), new ModuleSpark(1), new ModuleSpark(2), new ModuleSpark(3));
                 break;
             case SIM:
                 // create a maple-sim swerve drive simulation instance
