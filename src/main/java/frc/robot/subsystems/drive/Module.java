@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import org.littletonrobotics.junction.Logger;
 
-public class Module implements ModuleIO {
+public class Module {
     public static final double DRIVE_ENCODER_POSITION_FACTOR =
             2 * Math.PI / Drive.DRIVE_MOTOR_REDUCTION; // Rotor Rotations -> Wheel Radians
     public static final double DRIVE_ENCODER_VELOCITY_FACTOR =
@@ -19,6 +19,7 @@ public class Module implements ModuleIO {
     public static final double TURN_ENCODER_POSITION_FACTOR = 2 * Math.PI; // Rotations -> Radians
     public static final double TURN_ENCODER_VELOCITY_FACTOR = (2 * Math.PI) / 60.0; // RPM -> Rad/Sec
 
+    private final ModuleIO io;
     private final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
     private final int index;
 
@@ -26,7 +27,8 @@ public class Module implements ModuleIO {
     private final Alert turn_disconnected_alert;
     private SwerveModulePosition[] odometry_positions = new SwerveModulePosition[] {};
 
-    public Module(final int index) {
+    public Module(final ModuleIO io, final int index) {
+        this.io = io;
         this.index = index;
         drive_disconnect_alert =
                 new Alert("Disconnected drive motor on module " + Integer.toString(index) + ".", AlertType.kError);
@@ -35,7 +37,7 @@ public class Module implements ModuleIO {
     }
 
     public void periodic() {
-        updateInputs(inputs);
+        io.updateInputs(inputs);
         Logger.processInputs("Drive/Module" + Integer.toString(index), inputs);
 
         // Calculate positions for odometry
@@ -59,20 +61,20 @@ public class Module implements ModuleIO {
         state.cosineScale(inputs.turn_position);
 
         // Apply setpoints
-        setDriveVelocity(state.speedMetersPerSecond / Drive.WHEEL_RADIUS_METERS);
-        setTurnPosition(state.angle);
+        io.setDriveVelocity(state.speedMetersPerSecond / Drive.WHEEL_RADIUS_METERS);
+        io.setTurnPosition(state.angle);
     }
 
     /** Runs the module with the specified output while controlling to zero degrees. */
     public void runCharacterization(double output) {
-        setDriveOpenLoop(output);
-        setTurnPosition(new Rotation2d());
+        io.setDriveOpenLoop(output);
+        io.setTurnPosition(new Rotation2d());
     }
 
     /** Disables all outputs to motors. */
     public void stop() {
-        setDriveOpenLoop(0.0);
-        setTurnOpenLoop(0.0);
+        io.setDriveOpenLoop(0.0);
+        io.setTurnOpenLoop(0.0);
     }
 
     /** Returns the current turn angle of the module. */

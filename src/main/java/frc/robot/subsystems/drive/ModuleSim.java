@@ -4,7 +4,8 @@ import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.Timer;
+import frc.robot.util.SparkUtil;
+import java.util.Arrays;
 import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 import org.ironmaple.simulation.motorsims.SimulatedMotorController;
 
@@ -84,9 +85,11 @@ public class ModuleSim implements ModuleIO {
 
         // Update odometry inputs (50Hz because high-frequency odometry in sim doesn't
         // matter)
-        inputs.odometry_timestamps = new double[] {Timer.getFPGATimestamp()};
-        inputs.odometry_drive_position_radians = new double[] {inputs.drive_position_radians};
-        inputs.odometry_turn_positions = new Rotation2d[] {inputs.turn_position};
+        inputs.odometry_timestamps = SparkUtil.getSimulationOdometryTimeStamps();
+        inputs.odometry_drive_position_radians = Arrays.stream(module_simulation.getCachedDriveWheelFinalPositions())
+                .mapToDouble(angle -> angle.in(Radians))
+                .toArray();
+        inputs.odometry_turn_positions = module_simulation.getCachedSteerAbsolutePositions();
     }
 
     @Override

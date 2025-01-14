@@ -54,7 +54,7 @@ public class Drive extends SubsystemBase {
     public static final DCMotor TURN_GEARBOX = DCMotor.getNeoVortex(1);
 
     public static final double WHEEL_RADIUS_METERS = Units.inchesToMeters(1.5);
-    public static final double MAX_SPEED_METERS_PER_SECOND = 4.8;
+    public static final double MAX_SPEED_METERS_PER_SECOND = 4.1;
     public static final double TRACK_WIDTH = Units.inchesToMeters(29);
     public static final double WHEEL_BASE = Units.inchesToMeters(29);
     public static final double DRIVE_BASE_RADIUS = Math.hypot(TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0);
@@ -105,15 +105,15 @@ public class Drive extends SubsystemBase {
                 new SwerveModulePosition(),
                 new SwerveModulePosition()
             };
-    private SwerveDrivePoseEstimator pose_estimator =
-            new SwerveDrivePoseEstimator(kinematics, raw_gyro_rotation, last_module_positions, new Pose2d());
+    private SwerveDrivePoseEstimator pose_estimator = new SwerveDrivePoseEstimator(
+            kinematics, raw_gyro_rotation, last_module_positions, new Pose2d(3, 3, new Rotation2d()));
 
     public Drive(GyroIO gyro_io, ModuleIO fl_module, ModuleIO fr_module, ModuleIO bl_module, ModuleIO br_module) {
         this.gryo_io = gyro_io;
-        this.modules[0] = new Module(0);
-        this.modules[1] = new Module(1);
-        this.modules[2] = new Module(2);
-        this.modules[3] = new Module(3);
+        this.modules[0] = new Module(fl_module, 0);
+        this.modules[1] = new Module(fr_module, 1);
+        this.modules[2] = new Module(bl_module, 2);
+        this.modules[3] = new Module(br_module, 3);
 
         // Usage reporting for swerve template
         HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);

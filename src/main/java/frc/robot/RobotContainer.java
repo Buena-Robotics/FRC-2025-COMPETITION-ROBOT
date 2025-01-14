@@ -86,8 +86,8 @@ public class RobotContainer {
         // Default command, normal field-relative drive
         drive.setDefaultCommand(DriveCommands.joystickDrive(
                 drive,
-                () -> -controller.getDriveYAxis(),
-                () -> -controller.getDriveXAxis(),
+                () -> controller.getDriveYAxis(),
+                () -> controller.getDriveXAxis(),
                 () -> -controller.getTurnAxis()));
 
         // Lock to 0° when A button is held
@@ -95,8 +95,8 @@ public class RobotContainer {
                 .lockGyroBtn()
                 .whileTrue(DriveCommands.joystickDriveAtAngle(
                         drive,
-                        () -> -controller.getDriveYAxis(),
-                        () -> -controller.getDriveXAxis(),
+                        () -> controller.getDriveYAxis(),
+                        () -> controller.getDriveXAxis(),
                         () -> new Rotation2d()));
 
         // Switch to X pattern when X button is pressed
@@ -125,7 +125,10 @@ public class RobotContainer {
         if (Config.ROBOT_MODE != RobotMode.SIM) return;
         Logger.recordOutput("FieldSimulation/RobotPosition", drive_simulation.getSimulatedDriveTrainPose());
         Logger.recordOutput(
-                "FieldSimulation/Notes",
-                SimulatedArena.getInstance().getGamePiecesByType("Note").toArray(new Pose3d[0]));
+                "FieldSimulation/Coral",
+                SimulatedArena.getInstance().getGamePiecesByType("Coral").toArray(new Pose3d[0]));
+        Logger.recordOutput(
+                "FieldSimulation/Algae",
+                SimulatedArena.getInstance().getGamePiecesByType("Algae").toArray(new Pose3d[0]));
     }
 }
