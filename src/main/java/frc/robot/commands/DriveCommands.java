@@ -34,7 +34,8 @@ public class DriveCommands {
     private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
     private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
 
-    private DriveCommands() {}
+    private DriveCommands() {
+    }
 
     private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
         // Apply deadband
@@ -50,15 +51,15 @@ public class DriveCommands {
                 .getTranslation();
     }
 
-    /** Field relative drive command using two joysticks (controlling linear and angular velocities). */
-    public static Command joystickDrive(
-            Drive drive, DoubleSupplier x_supplier, DoubleSupplier y_supplier, DoubleSupplier omega_supplier) {
+    /**
+     * Field relative drive command using two joysticks (controlling linear and
+     * angular velocities).
+     */
+    public static Command joystickDrive(Drive drive, DoubleSupplier x_supplier, DoubleSupplier y_supplier, DoubleSupplier omega_supplier) {
         return Commands.run(
                 () -> {
-
                     // Get linear velocity
-                    Translation2d linear_velocity =
-                            getLinearVelocityFromJoysticks(x_supplier.getAsDouble(), y_supplier.getAsDouble());
+                    Translation2d linear_velocity = getLinearVelocityFromJoysticks(x_supplier.getAsDouble(), y_supplier.getAsDouble());
 
                     // Apply rotation deadband
                     double omega = MathUtil.applyDeadband(omega_supplier.getAsDouble(), DEADBAND);
@@ -81,11 +82,12 @@ public class DriveCommands {
     }
 
     /**
-     * Field relative drive command using joystick for linear control and PID for angular control. Possible use cases
-     * include snapping to an angle, aiming at a vision target, or controlling absolute rotation with a joystick.
+     * Field relative drive command using joystick for linear control and PID for
+     * angular control. Possible use cases
+     * include snapping to an angle, aiming at a vision target, or controlling
+     * absolute rotation with a joystick.
      */
-    public static Command joystickDriveAtAngle(
-            Drive drive, DoubleSupplier x_supplier, DoubleSupplier y_supplier, Supplier<Rotation2d> rotation_supplier) {
+    public static Command joystickDriveAtAngle(Drive drive, DoubleSupplier x_supplier, DoubleSupplier y_supplier, Supplier<Rotation2d> rotation_supplier) {
 
         // Create PID controller
         ProfiledPIDController angle_controller = new ProfiledPIDController(
@@ -94,30 +96,29 @@ public class DriveCommands {
 
         // Construct command
         return Commands.run(
-                        () -> {
-                            // Get linear velocity
-                            Translation2d linear_velocity =
-                                    getLinearVelocityFromJoysticks(x_supplier.getAsDouble(), y_supplier.getAsDouble());
+                () -> {
+                    // Get linear velocity
+                    Translation2d linear_velocity = getLinearVelocityFromJoysticks(x_supplier.getAsDouble(), y_supplier.getAsDouble());
 
-                            // Calculate angular speed
-                            double omega = angle_controller.calculate(
-                                    drive.getRotation().getRadians(),
-                                    rotation_supplier.get().getRadians());
+                    // Calculate angular speed
+                    double omega = angle_controller.calculate(
+                            drive.getRotation().getRadians(),
+                            rotation_supplier.get().getRadians());
 
-                            // Convert to field relative speeds & send command
-                            ChassisSpeeds speeds = new ChassisSpeeds(
-                                    linear_velocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                                    linear_velocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                                    omega);
-                            boolean is_flipped = DriverStation.getAlliance().isPresent()
-                                    && DriverStation.getAlliance().get() == Alliance.Red;
-                            drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
-                                    speeds,
-                                    is_flipped
-                                            ? drive.getRotation().plus(new Rotation2d(Math.PI))
-                                            : drive.getRotation()));
-                        },
-                        drive)
+                    // Convert to field relative speeds & send command
+                    ChassisSpeeds speeds = new ChassisSpeeds(
+                            linear_velocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                            linear_velocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                            omega);
+                    boolean is_flipped = DriverStation.getAlliance().isPresent()
+                            && DriverStation.getAlliance().get() == Alliance.Red;
+                    drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
+                            speeds,
+                            is_flipped
+                                    ? drive.getRotation().plus(new Rotation2d(Math.PI))
+                                    : drive.getRotation()));
+                },
+                drive)
 
                 // Reset PID controller when command starts
                 .beforeStarting(() -> angle_controller.reset(drive.getRotation().getRadians()));
@@ -126,7 +127,8 @@ public class DriveCommands {
     /**
      * Measures the velocity feedforward constants for the drive motors.
      *
-     * <p>This command should only be used in voltage control mode.
+     * <p>
+     * This command should only be used in voltage control mode.
      */
     public static Command feedforwardCharacterization(Drive drive) {
         List<Double> velocity_samples = new LinkedList<>();
@@ -142,10 +144,10 @@ public class DriveCommands {
 
                 // Allow modules to orient
                 Commands.run(
-                                () -> {
-                                    drive.runCharacterization(0.0);
-                                },
-                                drive)
+                        () -> {
+                            drive.runCharacterization(0.0);
+                        },
+                        drive)
                         .withTimeout(FF_START_DELAY),
 
                 // Start timer
@@ -153,13 +155,13 @@ public class DriveCommands {
 
                 // Accelerate and gather data
                 Commands.run(
-                                () -> {
-                                    double voltage = timer.get() * FF_RAMP_RATE;
-                                    drive.runCharacterization(voltage);
-                                    velocity_samples.add(drive.getFFCharacterizationVelocity());
-                                    voltage_samples.add(voltage);
-                                },
-                                drive)
+                        () -> {
+                            double voltage = timer.get() * FF_RAMP_RATE;
+                            drive.runCharacterization(voltage);
+                            velocity_samples.add(drive.getFFCharacterizationVelocity());
+                            voltage_samples.add(voltage);
+                        },
+                        drive)
 
                         // When cancelled, calculate and print results
                         .finallyDo(() -> {
@@ -219,11 +221,11 @@ public class DriveCommands {
 
                         // Update gyro delta
                         Commands.run(() -> {
-                                    var rotation = drive.getRotation();
-                                    state.gyro_delta += Math.abs(
-                                            rotation.minus(state.last_angle).getRadians());
-                                    state.last_angle = rotation;
-                                })
+                            var rotation = drive.getRotation();
+                            state.gyro_delta += Math.abs(
+                                    rotation.minus(state.last_angle).getRadians());
+                            state.last_angle = rotation;
+                        })
 
                                 // When cancelled, calculate and print results
                                 .finallyDo(() -> {

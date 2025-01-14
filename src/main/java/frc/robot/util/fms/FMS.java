@@ -4,5 +4,5 @@ import frc.robot.Config;
 
 // Field Management Systeme
 public final class FMS {
-    public static final Reef team_reef = new Reef(Config.ROBOT_ALLIANCE);
+    public static final Reef team_reef = new Reef(Config.getRobotAlliance());
 }

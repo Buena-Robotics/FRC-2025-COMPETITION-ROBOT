@@ -5,6 +5,6 @@ import frc.robot.Config;
 
 public final class Utils {
     public static Alliance opposing_alliance() {
-        return Config.ROBOT_ALLIANCE == Alliance.Blue ? Alliance.Red : Alliance.Blue;
+        return Config.getRobotAlliance() == Alliance.Blue ? Alliance.Red : Alliance.Blue;
     }
 }

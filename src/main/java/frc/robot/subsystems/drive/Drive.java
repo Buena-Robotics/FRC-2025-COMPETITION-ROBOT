@@ -47,15 +47,8 @@ import org.littletonrobotics.junction.Logger;
 // Swerve Mk4 L2 Ratio
 // https://www.swervedrivespecialties.com/products/mk4-swerve-module
 public class Drive extends SubsystemBase {
-    public static final double DRIVE_ENCODER_POSITION_FACTOR = 2 * Math.PI / Drive.DRIVE_MOTOR_REDUCTION; // Rotor
-                                                                                                          // Rotations
-                                                                                                          // -> Wheel
-                                                                                                          // Radians
-    public static final double DRIVE_ENCODER_VELOCITY_FACTOR = (2 * Math.PI) / 60.0 / Drive.DRIVE_MOTOR_REDUCTION; // Rotor
-                                                                                                                   // RPM
-                                                                                                                   // ->
-                                                                                                                   // Wheel
-                                                                                                                   // Rad/Sec
+    public static final double DRIVE_ENCODER_POSITION_FACTOR = 2 * Math.PI / Drive.DRIVE_MOTOR_REDUCTION; // Rotor Rotations -> Wheel Radians
+    public static final double DRIVE_ENCODER_VELOCITY_FACTOR = (2 * Math.PI) / 60.0 / Drive.DRIVE_MOTOR_REDUCTION; // Rotor RPM -> Wheel Rad/Sec
 
     public static final boolean TURN_INVERTED = false;
     public static final int TURN_MOTOR_CURRENT_LIMIT = 20;
@@ -77,19 +70,23 @@ public class Drive extends SubsystemBase {
     public static final double WHEEL_BASE = Units.inchesToMeters(29);
     public static final double DRIVE_BASE_RADIUS = Math.hypot(TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0);
     public static final Translation2d[] MODULE_TRANSLATIONS = new Translation2d[] {
-        new Translation2d(TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0),
-        new Translation2d(TRACK_WIDTH / 2.0, -WHEEL_BASE / 2.0),
-        new Translation2d(-TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0),
-        new Translation2d(-TRACK_WIDTH / 2.0, -WHEEL_BASE / 2.0)
+            new Translation2d(TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0),
+            new Translation2d(TRACK_WIDTH / 2.0, -WHEEL_BASE / 2.0),
+            new Translation2d(-TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0),
+            new Translation2d(-TRACK_WIDTH / 2.0, -WHEEL_BASE / 2.0)
     };
 
     public static final double ROBOT_MASS_KG = 45.3592;
 
     // https://choreo.autos/usage/estimating-moi/
-    // You can use SysId to measure by spinning the robot in place and by driving the robot in a straight line.
-    // ROBOT_MOI = ROBOT_MASS_KG * (TRACK_WIDTH/2.0) * (KA_ANGULAR / KA_LINEAR); ACURATE
-    // ROBOT_MOI = (1/12.0) * ROBOT_MASS_KG * ((TRACK_WIDTH * TRACK_WIDTH) + (WHEEL_BASE * WHEEL_BASE)); SIMPLIFIED
-    // ROBOT_MOI = ROBOT_MASS_KG * (TRACK_WIDTH/2.0) * (KA_ANGULAR / KA_LINEAR); SIMPLIFIED + SUBSYSTEM CONCENTRATIONS
+    // You can use SysId to measure by spinning the robot in place and by driving
+    // the robot in a straight line.
+    // ROBOT_MOI = ROBOT_MASS_KG * (TRACK_WIDTH/2.0) * (KA_ANGULAR / KA_LINEAR);
+    // ACURATE
+    // ROBOT_MOI = (1/12.0) * ROBOT_MASS_KG * ((TRACK_WIDTH * TRACK_WIDTH) +
+    // (WHEEL_BASE * WHEEL_BASE)); SIMPLIFIED
+    // ROBOT_MOI = ROBOT_MASS_KG * (TRACK_WIDTH/2.0) * (KA_ANGULAR / KA_LINEAR);
+    // SIMPLIFIED + SUBSYSTEM CONCENTRATIONS
     public static final double ROBOT_MOI = 6.883;
     public static final double WHEEL_COF = 1.2;
 
@@ -120,17 +117,17 @@ public class Drive extends SubsystemBase {
     private final GyroIOInputsAutoLogged gyro_inputs = new GyroIOInputsAutoLogged();
     private final Module[] modules = new Module[4]; // FL, FR, BL, BR
     private final SysIdRoutine sys_id;
-    private final Alert gyro_disconnect_alert =
-            new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
+    private final Alert gyro_disconnect_alert = new Alert("Disconnected gyro, using kinematics as fallback.",
+            AlertType.kError);
 
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(MODULE_TRANSLATIONS);
     private Rotation2d raw_gyro_rotation = new Rotation2d();
     private SwerveModulePosition[] last_module_positions = // For delta tracking
             new SwerveModulePosition[] {
-                new SwerveModulePosition(),
-                new SwerveModulePosition(),
-                new SwerveModulePosition(),
-                new SwerveModulePosition()
+                    new SwerveModulePosition(),
+                    new SwerveModulePosition(),
+                    new SwerveModulePosition(),
+                    new SwerveModulePosition()
             };
     private SwerveDrivePoseEstimator pose_estimator = new SwerveDrivePoseEstimator(
             kinematics, raw_gyro_rotation, last_module_positions, new Pose2d(3, 3, new Rotation2d()));
@@ -233,7 +230,8 @@ public class Drive extends SubsystemBase {
     /**
      * Runs the drive at the desired velocity.
      *
-     * @param speeds Speeds in meters/sec
+     * @param speeds
+     *            Speeds in meters/sec
      */
     public void runVelocity(ChassisSpeeds speeds) {
         // Calculate module setpoints
@@ -267,8 +265,9 @@ public class Drive extends SubsystemBase {
     }
 
     /**
-     * Stops the drive and turns the modules to an X arrangement to resist movement. The modules will return to their
-     * normal orientations the next time a nonzero velocity is requested.
+     * Stops the drive and turns the modules to an X arrangement to resist movement.
+     * The modules will return to their normal orientations the next time a nonzero
+     * velocity is requested.
      */
     public void stopWithX() {
         Rotation2d[] headings = new Rotation2d[4];
@@ -289,7 +288,10 @@ public class Drive extends SubsystemBase {
         return run(() -> runCharacterization(0.0)).withTimeout(1.0).andThen(sys_id.dynamic(direction));
     }
 
-    /** Returns the module states (turn angles and drive velocities) for all of the modules. */
+    /**
+     * Returns the module states (turn angles and drive velocities) for all of the
+     * modules.
+     */
     @AutoLogOutput(key = "SwerveStates/Measured")
     private SwerveModuleState[] getModuleStates() {
         SwerveModuleState[] states = new SwerveModuleState[4];
@@ -299,7 +301,10 @@ public class Drive extends SubsystemBase {
         return states;
     }
 
-    /** Returns the module positions (turn angles and drive positions) for all of the modules. */
+    /**
+     * Returns the module positions (turn angles and drive positions) for all of the
+     * modules.
+     */
     private SwerveModulePosition[] getModulePositions() {
         SwerveModulePosition[] states = new SwerveModulePosition[4];
         for (int i = 0; i < 4; i++) {
