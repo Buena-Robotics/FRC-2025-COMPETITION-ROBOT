@@ -37,7 +37,7 @@ public class ModuleSim implements ModuleIO {
                 .withCurrentLimit(Amps.of(Drive.DRIVE_MOTOR_CURRENT_LIMIT));
         this.turn_motor = module_simulation
                 .useGenericControllerForSteer()
-                .withCurrentLimit(Amps.of(Module.TURN_MOTOR_CURRENT_LIMIT));
+                .withCurrentLimit(Amps.of(Drive.TURN_MOTOR_CURRENT_LIMIT));
 
         // Enable wrapping for turn PID
         turn_controller.enableContinuousInput(-Math.PI, Math.PI);

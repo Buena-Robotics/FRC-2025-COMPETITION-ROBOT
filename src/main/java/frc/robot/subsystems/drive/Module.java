@@ -8,17 +8,6 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import org.littletonrobotics.junction.Logger;
 
 public class Module {
-    public static final double DRIVE_ENCODER_POSITION_FACTOR =
-            2 * Math.PI / Drive.DRIVE_MOTOR_REDUCTION; // Rotor Rotations -> Wheel Radians
-    public static final double DRIVE_ENCODER_VELOCITY_FACTOR =
-            (2 * Math.PI) / 60.0 / Drive.DRIVE_MOTOR_REDUCTION; // Rotor RPM -> Wheel Rad/Sec
-
-    public static final boolean TURN_INVERTED = false;
-    public static final int TURN_MOTOR_CURRENT_LIMIT = 20;
-    public static final boolean TURN_ENCODER_INVERTED = true;
-    public static final double TURN_ENCODER_POSITION_FACTOR = 2 * Math.PI; // Rotations -> Radians
-    public static final double TURN_ENCODER_VELOCITY_FACTOR = (2 * Math.PI) / 60.0; // RPM -> Rad/Sec
-
     private final ModuleIO io;
     private final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
     private final int index;

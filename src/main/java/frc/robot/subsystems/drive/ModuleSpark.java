@@ -108,8 +108,8 @@ public class ModuleSpark implements ModuleIO {
                 .voltageCompensation(12.0);
         driveConfig
                 .encoder
-                .positionConversionFactor(Module.DRIVE_ENCODER_POSITION_FACTOR)
-                .velocityConversionFactor(Module.DRIVE_ENCODER_VELOCITY_FACTOR)
+                .positionConversionFactor(Drive.DRIVE_ENCODER_POSITION_FACTOR)
+                .velocityConversionFactor(Drive.DRIVE_ENCODER_VELOCITY_FACTOR)
                 .uvwMeasurementPeriod(10)
                 .uvwAverageDepth(2);
         driveConfig
@@ -137,15 +137,15 @@ public class ModuleSpark implements ModuleIO {
         // Configure turn motor
         var turnConfig = new SparkMaxConfig();
         turnConfig
-                .inverted(Module.TURN_INVERTED)
+                .inverted(Drive.TURN_INVERTED)
                 .idleMode(IdleMode.kBrake)
-                .smartCurrentLimit(Module.TURN_MOTOR_CURRENT_LIMIT)
+                .smartCurrentLimit(Drive.TURN_MOTOR_CURRENT_LIMIT)
                 .voltageCompensation(12.0);
         turnConfig
                 .absoluteEncoder
-                .inverted(Module.TURN_ENCODER_INVERTED)
-                .positionConversionFactor(Module.TURN_ENCODER_POSITION_FACTOR)
-                .velocityConversionFactor(Module.TURN_ENCODER_VELOCITY_FACTOR)
+                .inverted(Drive.TURN_ENCODER_INVERTED)
+                .positionConversionFactor(Drive.TURN_ENCODER_POSITION_FACTOR)
+                .velocityConversionFactor(Drive.TURN_ENCODER_VELOCITY_FACTOR)
                 .averageDepth(2);
         turnConfig
                 .closedLoop

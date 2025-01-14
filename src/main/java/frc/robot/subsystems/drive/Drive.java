@@ -43,18 +43,35 @@ import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
+// Swerve Mk4 L2 Ratio
+// https://www.swervedrivespecialties.com/products/mk4-swerve-module
 public class Drive extends SubsystemBase {
-    public static final int DRIVE_MOTOR_CURRENT_LIMIT = 50;
-    public static final double DRIVE_MOTOR_REDUCTION =
-            (45.0 * 22.0) / (14.0 * 15.0); // MAXSwerve with 14 pinion teeth 22 spur teeth
+    public static final double DRIVE_ENCODER_POSITION_FACTOR = 2 * Math.PI / Drive.DRIVE_MOTOR_REDUCTION; // Rotor
+                                                                                                          // Rotations
+                                                                                                          // -> Wheel
+                                                                                                          // Radians
+    public static final double DRIVE_ENCODER_VELOCITY_FACTOR = (2 * Math.PI) / 60.0 / Drive.DRIVE_MOTOR_REDUCTION; // Rotor
+                                                                                                                   // RPM
+                                                                                                                   // ->
+                                                                                                                   // Wheel
+                                                                                                                   // Rad/Sec
 
-    public static final double TURN_MOTOR_REDUCTION = 9424.0 / 203.0;
+    public static final boolean TURN_INVERTED = false;
+    public static final int TURN_MOTOR_CURRENT_LIMIT = 20;
+    public static final boolean TURN_ENCODER_INVERTED = true;
+    public static final double TURN_ENCODER_POSITION_FACTOR = 2 * Math.PI; // Rotations -> Radians
+    public static final double TURN_ENCODER_VELOCITY_FACTOR = (2 * Math.PI) / 60.0; // RPM -> Rad/Sec
+
+    public static final int DRIVE_MOTOR_CURRENT_LIMIT = 50;
+    public static final double DRIVE_MOTOR_REDUCTION = 1 / 6.75; // MAXSwerve with 14 pinion teeth 22 spur teeth
+
+    public static final double TURN_MOTOR_REDUCTION = 1 / 12.8;
 
     public static final DCMotor DRIVE_GEARBOX = DCMotor.getNeoVortex(1);
     public static final DCMotor TURN_GEARBOX = DCMotor.getNeoVortex(1);
 
     public static final double WHEEL_RADIUS_METERS = Units.inchesToMeters(1.5);
-    public static final double MAX_SPEED_METERS_PER_SECOND = 4.1;
+    public static final double MAX_SPEED_METERS_PER_SECOND = 4.8;
     public static final double TRACK_WIDTH = Units.inchesToMeters(29);
     public static final double WHEEL_BASE = Units.inchesToMeters(29);
     public static final double DRIVE_BASE_RADIUS = Math.hypot(TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0);
@@ -66,6 +83,12 @@ public class Drive extends SubsystemBase {
     };
 
     public static final double ROBOT_MASS_KG = 45.3592;
+
+    // https://choreo.autos/usage/estimating-moi/
+    // You can use SysId to measure by spinning the robot in place and by driving the robot in a straight line.
+    // ROBOT_MOI = ROBOT_MASS_KG * (TRACK_WIDTH/2.0) * (KA_ANGULAR / KA_LINEAR); ACURATE
+    // ROBOT_MOI = (1/12.0) * ROBOT_MASS_KG * ((TRACK_WIDTH * TRACK_WIDTH) + (WHEEL_BASE * WHEEL_BASE)); SIMPLIFIED
+    // ROBOT_MOI = ROBOT_MASS_KG * (TRACK_WIDTH/2.0) * (KA_ANGULAR / KA_LINEAR); SIMPLIFIED + SUBSYSTEM CONCENTRATIONS
     public static final double ROBOT_MOI = 6.883;
     public static final double WHEEL_COF = 1.2;
     public static final RobotConfig PP_CONFIG = new RobotConfig(
