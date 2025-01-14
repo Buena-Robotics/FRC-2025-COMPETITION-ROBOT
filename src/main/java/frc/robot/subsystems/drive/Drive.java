@@ -40,6 +40,7 @@ import frc.robot.util.sim.COTS;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
+import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -91,6 +92,9 @@ public class Drive extends SubsystemBase {
     // ROBOT_MOI = ROBOT_MASS_KG * (TRACK_WIDTH/2.0) * (KA_ANGULAR / KA_LINEAR); SIMPLIFIED + SUBSYSTEM CONCENTRATIONS
     public static final double ROBOT_MOI = 6.883;
     public static final double WHEEL_COF = 1.2;
+
+    public static final SwerveModuleSimulationConfig MARK4 = COTS.ofMark4(TURN_GEARBOX, DRIVE_GEARBOX, WHEEL_COF, 2);
+
     public static final RobotConfig PP_CONFIG = new RobotConfig(
             ROBOT_MASS_KG,
             ROBOT_MOI,
@@ -107,7 +111,7 @@ public class Drive extends SubsystemBase {
             .withCustomModuleTranslations(MODULE_TRANSLATIONS)
             .withRobotMass(Kilogram.of(ROBOT_MASS_KG))
             .withGyro(COTS.ofNav2X())
-            .withSwerveModule(COTS.ofMark4(TURN_GEARBOX, DRIVE_GEARBOX, WHEEL_COF, 2));
+            .withSwerveModule(MARK4);
 
     public static final double ODOMETRY_FREQUENCY_HERTZ = 100.0; // Hz
     public static final Lock odometry_lock = new ReentrantLock();

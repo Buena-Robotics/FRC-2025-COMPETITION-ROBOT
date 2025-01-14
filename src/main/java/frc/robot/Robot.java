@@ -4,7 +4,9 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.Threads;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import org.ironmaple.simulation.SimulatedArena;
@@ -17,8 +19,9 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import org.littletonrobotics.urcl.URCL;
 
 public class Robot extends LoggedRobot {
-    private Command autonomous_command;
+    private final PowerDistribution power_distribution = new PowerDistribution(1, ModuleType.kRev); // Enables power distribution logging
     private final RobotContainer robot_container;
+    private Command autonomous_command;
 
     public Robot() {
         // Record metadata
@@ -72,6 +75,8 @@ public class Robot extends LoggedRobot {
     public void robotPeriodic() {
         // Switch thread to high priority to improve loop timing
         Threads.setCurrentThreadPriority(true, 99);
+
+        power_distribution.getFaults(); // TODO: Log power distribution faults
 
         // Runs the Scheduler. This is responsible for polling buttons, adding
         // newly-scheduled commands, running already-scheduled commands, removing

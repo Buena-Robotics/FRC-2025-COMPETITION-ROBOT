@@ -181,7 +181,8 @@ spotless {
             exclude '**/build/**', '**/build-*/**'
         }
         toggleOffOn()
-        palantirJavaFormat('2.39.0').formatJavadoc(true)
+        // palantirJavaFormat('2.39.0').formatJavadoc(true)
+        indentWithSpaces(4)
         removeUnusedImports()
         trimTrailingWhitespace()
         endWithNewline()
