@@ -51,6 +51,24 @@ public class DriveCommands {
                 .getTranslation();
     }
 
+    /*
+     * Drive only forward wtih joystick to set
+     * module abs encoder rotations
+     */
+    public static Command joystickForwardOnlyDrive(Drive drive, DoubleSupplier y_supplier){
+        return Commands.run(
+            () -> {
+                // Convert to field relative speeds & send command
+                ChassisSpeeds speeds = new ChassisSpeeds(
+                    0.0,
+                    y_supplier.getAsDouble() * drive.getMaxLinearSpeedMetersPerSec(),
+                    0);
+
+                drive.runVelocity(speeds);
+            }, drive
+        );
+    }
+
     /**
      * Field relative drive command using two joysticks (controlling linear and
      * angular velocities).

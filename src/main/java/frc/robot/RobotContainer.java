@@ -42,12 +42,15 @@ public class RobotContainer {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
                 this.drive = new Drive(
-                        new GyroNavX(), new ModuleSpark(0), new ModuleSpark(1), new ModuleSpark(2), new ModuleSpark(3));
+                        new GyroNavX(),
+                        new ModuleSpark(0),
+                        new ModuleSpark(1),
+                        new ModuleSpark(2),
+                        new ModuleSpark(3));
                 break;
             case SIM:
                 // create a maple-sim swerve drive simulation instance
-                this.drive_simulation =
-                        new SwerveDriveSimulation(Drive.MAPLE_SIM_CONFIG, new Pose2d(3, 3, new Rotation2d()));
+                this.drive_simulation = new SwerveDriveSimulation(Drive.MAPLE_SIM_CONFIG, new Pose2d(3, 3, new Rotation2d()));
                 // add the simulated drivetrain to the simulation field
                 SimulatedArena.getInstance().addDriveTrainSimulation(drive_simulation);
 
@@ -62,7 +65,12 @@ public class RobotContainer {
             default:
                 // Replayed robot, disable IO implementations
                 drive = new Drive(
-                        new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
+                        new GyroIO() {
+                        }, new ModuleIO() {
+                        }, new ModuleIO() {
+                        }, new ModuleIO() {
+                        }, new ModuleIO() {
+                        });
                 break;
         }
 
@@ -83,6 +91,10 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
+        // drive.setDefaultCommand(DriveCommands.joystickForwardOnlyDrive(
+                // drive,
+                // () -> controller.getDriveYAxis()));
+
         // Default command, normal field-relative drive
         drive.setDefaultCommand(DriveCommands.joystickDrive(
                 drive,
@@ -116,13 +128,15 @@ public class RobotContainer {
     }
 
     public void resetSimulationField() {
-        if (Config.ROBOT_MODE != RobotMode.SIM) return;
+        if (Config.ROBOT_MODE != RobotMode.SIM)
+            return;
         drive_simulation.setSimulationWorldPose(new Pose2d(3, 3, new Rotation2d()));
         SimulatedArena.getInstance().resetFieldForAuto();
     }
 
     public void displaySimFieldToAdvantageScope() {
-        if (Config.ROBOT_MODE != RobotMode.SIM) return;
+        if (Config.ROBOT_MODE != RobotMode.SIM)
+            return;
         Logger.recordOutput("FieldSimulation/RobotPosition", drive_simulation.getSimulatedDriveTrainPose());
         Logger.recordOutput(
                 "FieldSimulation/Coral",

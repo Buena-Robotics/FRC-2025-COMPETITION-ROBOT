@@ -50,6 +50,7 @@ public class Module {
         state.cosineScale(inputs.turn_position);
 
         // Apply setpoints
+        Logger.recordOutput("DRIVE/SPEED", state.speedMetersPerSecond);
         io.setDriveVelocity(state.speedMetersPerSecond / Drive.WHEEL_RADIUS_METERS);
         io.setTurnPosition(state.angle);
     }

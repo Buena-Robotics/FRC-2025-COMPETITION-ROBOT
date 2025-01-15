@@ -3,13 +3,11 @@ package frc.robot.subsystems.drive;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
-import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
-import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
@@ -23,21 +21,23 @@ import frc.robot.util.SparkUtil;
 import java.util.Queue;
 import java.util.function.DoubleSupplier;
 
+import org.littletonrobotics.junction.Logger;
+
 public class ModuleSpark implements ModuleIO {
-    public static final int FRONT_LEFT_DRIVE_CAN_ID = 1;
-    public static final int BACK_LEFT_DRIVE_CAN_ID = 3;
-    public static final int FRONT_RIGHT_DRIVE_CAN_ID = 5;
-    public static final int BACK_RIGHT_DRIVE_CAN_ID = 7;
+    public static final int FRONT_RIGHT_DRIVE_CAN_ID = 1;
+    public static final int FRONT_LEFT_DRIVE_CAN_ID = 3;
+    public static final int BACK_RIGHT_DRIVE_CAN_ID = 5;
+    public static final int BACK_LEFT_DRIVE_CAN_ID = 7;
 
-    public static final int FRONT_LEFT_TURN_CAN_ID = 2;
-    public static final int BACK_LEFT_TURN_CAN_ID = 4;
-    public static final int FRONT_RIGHT_TURN_CAN_ID = 6;
-    public static final int BACK_RIGHT_TURN_CAN_ID = 8;
+    public static final int FRONT_RIGHT_TURN_CAN_ID = 2;
+    public static final int FRONT_LEFT_TURN_CAN_ID = 4;
+    public static final int BACK_RIGHT_TURN_CAN_ID = 6;
+    public static final int BACK_LEFT_TURN_CAN_ID = 8;
 
-    public static final Rotation2d FRONT_LEFT_ZERO_ROTATION = new Rotation2d(0.0);
-    public static final Rotation2d FRONT_RIGHT_ZERO_ROTATION = new Rotation2d(0.0);
-    public static final Rotation2d BACK_LEFT_ZERO_ROTATION = new Rotation2d(0.0);
-    public static final Rotation2d BACK_RIGHT_ZERO_ROTATION = new Rotation2d(0.0);
+    public static final Rotation2d FRONT_RIGHT_ZERO_ROTATION = new Rotation2d(4.071693);
+    public static final Rotation2d FRONT_LEFT_ZERO_ROTATION = new Rotation2d(2.830042 + Math.PI);
+    public static final Rotation2d BACK_RIGHT_ZERO_ROTATION = new Rotation2d(5.274043);
+    public static final Rotation2d BACK_LEFT_ZERO_ROTATION = new Rotation2d(1.992770 + Math.PI);
 
     public static final double DRIVE_P = 0.0;
     public static final double DRIVE_D = 0.0;
@@ -52,8 +52,8 @@ public class ModuleSpark implements ModuleIO {
     private final Rotation2d zero_rotation;
 
     // Hardware objects
-    private final SparkBase drive_spark;
-    private final SparkBase turn_spark;
+    private final SparkMax drive_spark;
+    private final SparkMax turn_spark;
     private final RelativeEncoder drive_encoder;
     private final AbsoluteEncoder turn_encoder;
 
@@ -77,21 +77,21 @@ public class ModuleSpark implements ModuleIO {
             case 2 -> BACK_LEFT_ZERO_ROTATION;
             case 3 -> BACK_RIGHT_ZERO_ROTATION;
             default -> new Rotation2d();};
-        drive_spark = new SparkFlex(
+        drive_spark = new SparkMax(
                 switch (module) {
-                    case 0 -> FRONT_LEFT_DRIVE_CAN_ID;
-                    case 1 -> FRONT_RIGHT_DRIVE_CAN_ID;
-                    case 2 -> BACK_LEFT_DRIVE_CAN_ID;
-                    case 3 -> BACK_RIGHT_DRIVE_CAN_ID;
+                    case 0 -> FRONT_RIGHT_DRIVE_CAN_ID;
+                    case 1 -> FRONT_LEFT_DRIVE_CAN_ID;
+                    case 2 -> BACK_RIGHT_DRIVE_CAN_ID;
+                    case 3 -> BACK_LEFT_DRIVE_CAN_ID;
                     default -> 0;
                 },
                 MotorType.kBrushless);
         turn_spark = new SparkMax(
                 switch (module) {
-                    case 0 -> FRONT_LEFT_TURN_CAN_ID;
-                    case 1 -> FRONT_RIGHT_TURN_CAN_ID;
-                    case 2 -> BACK_LEFT_TURN_CAN_ID;
-                    case 3 -> BACK_RIGHT_TURN_CAN_ID;
+                    case 0 -> FRONT_RIGHT_TURN_CAN_ID;
+                    case 1 -> FRONT_LEFT_TURN_CAN_ID;
+                    case 2 -> BACK_RIGHT_TURN_CAN_ID;
+                    case 3 -> BACK_LEFT_TURN_CAN_ID;
                     default -> 0;
                 },
                 MotorType.kBrushless);
@@ -230,6 +230,9 @@ public class ModuleSpark implements ModuleIO {
     @Override
     public void setDriveVelocity(double velocityRadPerSec) {
         double ffVolts = DRIVE_S * Math.signum(velocityRadPerSec) + DRIVE_V * velocityRadPerSec;
+        Logger.recordOutput("DRIVE/VELOCITY", velocityRadPerSec);
+        Logger.recordOutput("DRIVE/SIGNUM", Math.signum(velocityRadPerSec));
+        Logger.recordOutput("DRIVE/FFVOLTS", ffVolts);
         drive_controller.setReference(
                 velocityRadPerSec, ControlType.kVelocity, ClosedLoopSlot.kSlot0, ffVolts, ArbFFUnits.kVoltage);
     }
