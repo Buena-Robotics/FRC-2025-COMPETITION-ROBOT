@@ -22,8 +22,7 @@ public class VisionIOPhotonSim extends VisionIOPhoton {
      * @param pose_supplier
      *            Supplier for the robot pose to use in simulation.
      */
-    public VisionIOPhotonSim(
-            String name, Transform3d robot_to_camera, Supplier<Pose2d> pose_supplier) {
+    public VisionIOPhotonSim(String name, Transform3d robot_to_camera, Supplier<Pose2d> pose_supplier) {
         super(name, robot_to_camera);
         this.pose_supplier = pose_supplier;
 
@@ -34,13 +33,12 @@ public class VisionIOPhotonSim extends VisionIOPhoton {
         }
 
         // Add sim camera
-        var camera_properties = new SimCameraProperties();
+        SimCameraProperties camera_properties = new SimCameraProperties();
         camera_sim = new PhotonCameraSim(camera, camera_properties);
         vision_sim.addCamera(camera_sim, robot_to_camera);
     }
 
-    @Override
-    public void updateInputs(VisionIOInputs inputs) {
+    @Override public void updateInputs(VisionIOInputs inputs) {
         vision_sim.update(pose_supplier.get());
         super.updateInputs(inputs);
     }

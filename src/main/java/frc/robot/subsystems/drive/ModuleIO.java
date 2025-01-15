@@ -4,8 +4,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import org.littletonrobotics.junction.AutoLog;
 
 public interface ModuleIO {
-    @AutoLog
-    public static class ModuleIOInputs {
+    @AutoLog public static class ModuleIOInputs {
         public boolean drive_connected = false;
         public double drive_position_radians = 0.0;
         public double drive_velocity_radians_per_second = 0.0;

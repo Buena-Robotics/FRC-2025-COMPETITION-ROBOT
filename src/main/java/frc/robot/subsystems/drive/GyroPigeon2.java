@@ -30,17 +30,15 @@ public class GyroPigeon2 implements GyroIO {
         yaw_position_queue = SparkOdometryThread.getInstance().registerSignal(yaw::getValueAsDouble);
     }
 
-    @Override
-    public void updateInputs(GyroIOInputs inputs) {
+    @Override public void updateInputs(GyroIOInputs inputs) {
         inputs.connected = BaseStatusSignal.refreshAll(yaw, yaw_velocity).equals(StatusCode.OK);
-        inputs.yawPosition = Rotation2d.fromDegrees(yaw.getValueAsDouble());
-        inputs.yawVelocityRadPerSec = Units.degreesToRadians(yaw_velocity.getValueAsDouble());
+        inputs.yaw_position = Rotation2d.fromDegrees(yaw.getValueAsDouble());
+        inputs.yaw_velocity_radians_per_second = Units.degreesToRadians(yaw_velocity.getValueAsDouble());
 
-        inputs.odometryYawTimestamps = yaw_timestamp_queue.stream()
-                .mapToDouble((Double value) -> value)
-                .toArray();
-        inputs.odometryYawPositions =
-                yaw_position_queue.stream().map(Rotation2d::fromDegrees).toArray(Rotation2d[]::new);
+        inputs.odometry_yaw_timestamps = yaw_timestamp_queue.stream()
+            .mapToDouble((Double value) -> value)
+            .toArray();
+        inputs.odometry_yaw_positions = yaw_position_queue.stream().map(Rotation2d::fromDegrees).toArray(Rotation2d[]::new);
         yaw_timestamp_queue.clear();
         yaw_position_queue.clear();
     }

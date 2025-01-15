@@ -16,18 +16,17 @@ public class GyroNavX implements GyroIO {
         yaw_position_queue = SparkOdometryThread.getInstance().registerSignal(navx::getAngle);
     }
 
-    @Override
-    public void updateInputs(GyroIOInputs inputs) {
+    @Override public void updateInputs(GyroIOInputs inputs) {
         inputs.connected = navx.isConnected();
-        inputs.yawPosition = Rotation2d.fromDegrees(-navx.getAngle());
-        inputs.yawVelocityRadPerSec = Units.degreesToRadians(-navx.getRawGyroZ());
+        inputs.yaw_position = Rotation2d.fromDegrees(-navx.getAngle());
+        inputs.yaw_velocity_radians_per_second = Units.degreesToRadians(-navx.getRawGyroZ());
 
-        inputs.odometryYawTimestamps = yaw_timestamp_queue.stream()
-                .mapToDouble((Double value) -> value)
-                .toArray();
-        inputs.odometryYawPositions = yaw_position_queue.stream()
-                .map((Double value) -> Rotation2d.fromDegrees(-value))
-                .toArray(Rotation2d[]::new);
+        inputs.odometry_yaw_timestamps = yaw_timestamp_queue.stream()
+            .mapToDouble((Double value) -> value)
+            .toArray();
+        inputs.odometry_yaw_positions = yaw_position_queue.stream()
+            .map((Double value) -> Rotation2d.fromDegrees(-value))
+            .toArray(Rotation2d[]::new);
         yaw_timestamp_queue.clear();
         yaw_position_queue.clear();
     }

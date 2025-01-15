@@ -46,6 +46,7 @@ import org.littletonrobotics.junction.Logger;
 
 // Swerve Mk4 L2 Ratio
 // https://www.swervedrivespecialties.com/products/mk4-swerve-module
+// TODO: Make Sweve Module on coast when disabled
 public class Drive extends SubsystemBase {
     public static final double DRIVE_ENCODER_POSITION_FACTOR = 2 * Math.PI / Drive.DRIVE_MOTOR_REDUCTION; // Rotor Rotations -> Wheel Radians
     public static final double DRIVE_ENCODER_VELOCITY_FACTOR = (2 * Math.PI) / 60.0 / Drive.DRIVE_MOTOR_REDUCTION; // Rotor RPM -> Wheel Rad/Sec
@@ -93,22 +94,22 @@ public class Drive extends SubsystemBase {
     public static final SwerveModuleSimulationConfig MARK4 = COTS.ofMark4(TURN_GEARBOX, DRIVE_GEARBOX, WHEEL_COF, 2);
 
     public static final RobotConfig PP_CONFIG = new RobotConfig(
-            ROBOT_MASS_KG,
-            ROBOT_MOI,
-            new ModuleConfig(
-                    WHEEL_RADIUS_METERS,
-                    MAX_SPEED_METERS_PER_SECOND,
-                    WHEEL_COF,
-                    DRIVE_GEARBOX.withReduction(DRIVE_MOTOR_REDUCTION),
-                    DRIVE_MOTOR_CURRENT_LIMIT,
-                    1),
-            MODULE_TRANSLATIONS);
+        ROBOT_MASS_KG,
+        ROBOT_MOI,
+        new ModuleConfig(
+            WHEEL_RADIUS_METERS,
+            MAX_SPEED_METERS_PER_SECOND,
+            WHEEL_COF,
+            DRIVE_GEARBOX.withReduction(DRIVE_MOTOR_REDUCTION),
+            DRIVE_MOTOR_CURRENT_LIMIT,
+            1),
+        MODULE_TRANSLATIONS);
 
     public static final DriveTrainSimulationConfig MAPLE_SIM_CONFIG = DriveTrainSimulationConfig.Default()
-            .withCustomModuleTranslations(MODULE_TRANSLATIONS)
-            .withRobotMass(Kilogram.of(ROBOT_MASS_KG))
-            .withGyro(COTS.ofNav2X())
-            .withSwerveModule(MARK4);
+        .withCustomModuleTranslations(MODULE_TRANSLATIONS)
+        .withRobotMass(Kilogram.of(ROBOT_MASS_KG))
+        .withGyro(COTS.ofNav2X())
+        .withSwerveModule(MARK4);
 
     public static final double ODOMETRY_FREQUENCY_HERTZ = 100.0; // Hz
     public static final Lock odometry_lock = new ReentrantLock();
@@ -118,19 +119,19 @@ public class Drive extends SubsystemBase {
     private final Module[] modules = new Module[4]; // FL, FR, BL, BR
     private final SysIdRoutine sys_id;
     private final Alert gyro_disconnect_alert = new Alert("Disconnected gyro, using kinematics as fallback.",
-            AlertType.kError);
+        AlertType.kError);
 
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(MODULE_TRANSLATIONS);
     private Rotation2d raw_gyro_rotation = new Rotation2d();
     private SwerveModulePosition[] last_module_positions = // For delta tracking
-            new SwerveModulePosition[] {
-                    new SwerveModulePosition(),
-                    new SwerveModulePosition(),
-                    new SwerveModulePosition(),
-                    new SwerveModulePosition()
-            };
+        new SwerveModulePosition[] {
+                new SwerveModulePosition(),
+                new SwerveModulePosition(),
+                new SwerveModulePosition(),
+                new SwerveModulePosition()
+        };
     private SwerveDrivePoseEstimator pose_estimator = new SwerveDrivePoseEstimator(
-            kinematics, raw_gyro_rotation, last_module_positions, new Pose2d(3, 3, new Rotation2d()));
+        kinematics, raw_gyro_rotation, last_module_positions, new Pose2d(3, 3, new Rotation2d()));
 
     public Drive(GyroIO gyro_io, ModuleIO fl_module, ModuleIO fr_module, ModuleIO bl_module, ModuleIO br_module) {
         this.gryo_io = gyro_io;
@@ -147,14 +148,14 @@ public class Drive extends SubsystemBase {
 
         // Configure AutoBuilder for PathPlanner
         AutoBuilder.configure(
-                this::getPose,
-                this::setPose,
-                this::getChassisSpeeds,
-                this::runVelocity,
-                new PPHolonomicDriveController(new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
-                PP_CONFIG,
-                () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-                this);
+            this::getPose,
+            this::setPose,
+            this::getChassisSpeeds,
+            this::runVelocity,
+            new PPHolonomicDriveController(new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+            PP_CONFIG,
+            () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
+            this);
         Pathfinding.setPathfinder(new LocalADStarAK());
         PathPlannerLogging.setLogActivePathCallback((activePath) -> {
             Logger.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
@@ -165,24 +166,22 @@ public class Drive extends SubsystemBase {
 
         // Configure SysId
         sys_id = new SysIdRoutine(
-                new SysIdRoutine.Config(
-                        null, null, null, (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
-                new SysIdRoutine.Mechanism((voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+            new SysIdRoutine.Config(null, null, null, (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism((voltage) -> runCharacterization(voltage.in(Volts)), null, this));
     }
 
-    @Override
-    public void periodic() {
+    @Override public void periodic() {
         odometry_lock.lock(); // Prevents odometry updates while reading data
         gryo_io.updateInputs(gyro_inputs);
         Logger.processInputs("Drive/Gyro", gyro_inputs);
-        for (var module : modules) {
+        for (Module module : modules) {
             module.periodic();
         }
         odometry_lock.unlock();
 
         // Stop moving when disabled
         if (DriverStation.isDisabled()) {
-            for (var module : modules) {
+            for (Module module : modules) {
                 module.stop();
             }
         }
@@ -203,16 +202,15 @@ public class Drive extends SubsystemBase {
             for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
                 module_positions[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
                 module_deltas[moduleIndex] = new SwerveModulePosition(
-                        module_positions[moduleIndex].distanceMeters
-                                - last_module_positions[moduleIndex].distanceMeters,
-                        module_positions[moduleIndex].angle);
+                    module_positions[moduleIndex].distanceMeters - last_module_positions[moduleIndex].distanceMeters,
+                    module_positions[moduleIndex].angle);
                 last_module_positions[moduleIndex] = module_positions[moduleIndex];
             }
 
             // Update gyro angle
             if (gyro_inputs.connected) {
                 // Use the real gyro angle
-                raw_gyro_rotation = gyro_inputs.odometryYawPositions[i];
+                raw_gyro_rotation = gyro_inputs.odometry_yaw_positions[i];
             } else {
                 // Use the angle delta from the kinematics and module deltas
                 Twist2d twist = kinematics.toTwist2d(module_deltas);
@@ -292,8 +290,7 @@ public class Drive extends SubsystemBase {
      * Returns the module states (turn angles and drive velocities) for all of the
      * modules.
      */
-    @AutoLogOutput(key = "SwerveStates/Measured")
-    private SwerveModuleState[] getModuleStates() {
+    @AutoLogOutput(key = "SwerveStates/Measured") private SwerveModuleState[] getModuleStates() {
         SwerveModuleState[] states = new SwerveModuleState[4];
         for (int i = 0; i < 4; i++) {
             states[i] = modules[i].getState();
@@ -314,8 +311,7 @@ public class Drive extends SubsystemBase {
     }
 
     /** Returns the measured chassis speeds of the robot. */
-    @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
-    private ChassisSpeeds getChassisSpeeds() {
+    @AutoLogOutput(key = "SwerveChassisSpeeds/Measured") private ChassisSpeeds getChassisSpeeds() {
         return kinematics.toChassisSpeeds(getModuleStates());
     }
 
@@ -338,8 +334,7 @@ public class Drive extends SubsystemBase {
     }
 
     /** Returns the current odometry pose. */
-    @AutoLogOutput(key = "Odometry/Robot")
-    public Pose2d getPose() {
+    @AutoLogOutput(key = "Odometry/Robot") public Pose2d getPose() {
         return pose_estimator.getEstimatedPosition();
     }
 
@@ -355,7 +350,7 @@ public class Drive extends SubsystemBase {
 
     /** Adds a new timestamped vision measurement. */
     public void addVisionMeasurement(
-            Pose2d vision_robot_pose_meters, double timestamp_seconds, Matrix<N3, N1> vision_measurement_std_devs) {
+        Pose2d vision_robot_pose_meters, double timestamp_seconds, Matrix<N3, N1> vision_measurement_std_devs) {
         pose_estimator.addVisionMeasurement(vision_robot_pose_meters, timestamp_seconds, vision_measurement_std_devs);
     }
 

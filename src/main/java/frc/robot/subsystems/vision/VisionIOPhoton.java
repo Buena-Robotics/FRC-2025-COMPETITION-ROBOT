@@ -6,8 +6,12 @@ import edu.wpi.first.math.geometry.Transform3d;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.photonvision.PhotonCamera;
+import org.photonvision.targeting.MultiTargetPNPResult;
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 /** IO implementation for real PhotonVision hardware. */
 public class VisionIOPhoton implements VisionIO {
@@ -27,26 +31,25 @@ public class VisionIOPhoton implements VisionIO {
         this.robot_to_camera = robot_to_camera;
     }
 
-    @Override
-    public void updateInputs(VisionIOInputs inputs) {
+    @Override public void updateInputs(VisionIOInputs inputs) {
         inputs.connected = camera.isConnected();
 
         // Read new camera observations
         Set<Short> tag_ids = new HashSet<>();
         List<PoseObservation> pose_observations = new LinkedList<>();
-        for (var result : camera.getAllUnreadResults()) {
+        for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
             // Update latest target observation
             if (result.hasTargets()) {
                 inputs.latest_target_observation = new TargetObservation(
-                        Rotation2d.fromDegrees(result.getBestTarget().getYaw()),
-                        Rotation2d.fromDegrees(result.getBestTarget().getPitch()));
+                    Rotation2d.fromDegrees(result.getBestTarget().getYaw()),
+                    Rotation2d.fromDegrees(result.getBestTarget().getPitch()));
             } else {
                 inputs.latest_target_observation = new TargetObservation(new Rotation2d(), new Rotation2d());
             }
 
             // Add pose observation
             if (result.multitagResult.isPresent()) { // Multitag result
-                var multitag_result = result.multitagResult.get();
+                MultiTargetPNPResult multitag_result = result.multitagResult.get();
 
                 // Calculate robot pose
                 Transform3d fieldToCamera = multitag_result.estimatedPose.best;
@@ -55,7 +58,7 @@ public class VisionIOPhoton implements VisionIO {
 
                 // Calculate average tag distance
                 double total_tag_distance = 0.0;
-                for (var target : result.targets) {
+                for (PhotonTrackedTarget target : result.targets) {
                     total_tag_distance += target.bestCameraToTarget.getTranslation().getNorm();
                 }
 
@@ -64,19 +67,19 @@ public class VisionIOPhoton implements VisionIO {
 
                 // Add observation
                 pose_observations.add(
-                        new PoseObservation(
-                                result.getTimestampSeconds(), // Timestamp
-                                robotPose, // 3D pose estimate
-                                multitag_result.estimatedPose.ambiguity, // Ambiguity
-                                multitag_result.fiducialIDsUsed.size(), // Tag count
-                                total_tag_distance / result.targets.size(), // Average tag distance
-                                PoseObservationType.PHOTONVISION)); // Observation type
+                    new PoseObservation(
+                        result.getTimestampSeconds(), // Timestamp
+                        robotPose, // 3D pose estimate
+                        multitag_result.estimatedPose.ambiguity, // Ambiguity
+                        multitag_result.fiducialIDsUsed.size(), // Tag count
+                        total_tag_distance / result.targets.size(), // Average tag distance
+                        PoseObservationType.PHOTONVISION)); // Observation type
 
             } else if (!result.targets.isEmpty()) { // Single tag result
-                var target = result.targets.get(0);
+                PhotonTrackedTarget target = result.targets.get(0);
 
                 // Calculate robot pose
-                var tag_pose = Vision.apriltag_layout.getTagPose(target.fiducialId);
+                Optional<Pose3d> tag_pose = Vision.apriltag_layout.getTagPose(target.fiducialId);
                 if (tag_pose.isPresent()) {
                     Transform3d field_to_target = new Transform3d(tag_pose.get().getTranslation(), tag_pose.get().getRotation());
                     Transform3d camera_to_target = target.bestCameraToTarget;
@@ -89,13 +92,13 @@ public class VisionIOPhoton implements VisionIO {
 
                     // Add observation
                     pose_observations.add(
-                            new PoseObservation(
-                                    result.getTimestampSeconds(), // Timestamp
-                                    robot_pose, // 3D pose estimate
-                                    target.poseAmbiguity, // Ambiguity
-                                    1, // Tag count
-                                    camera_to_target.getTranslation().getNorm(), // Average tag distance
-                                    PoseObservationType.PHOTONVISION)); // Observation type
+                        new PoseObservation(
+                            result.getTimestampSeconds(), // Timestamp
+                            robot_pose, // 3D pose estimate
+                            target.poseAmbiguity, // Ambiguity
+                            1, // Tag count
+                            camera_to_target.getTranslation().getNorm(), // Average tag distance
+                            PoseObservationType.PHOTONVISION)); // Observation type
                 }
             }
         }
