@@ -57,6 +57,7 @@ public class Robot extends LoggedRobot {
     private final Alert low_memory_alert = new Alert("Running out of memory, java program may crash soon", AlertType.kWarning);
 
     public Robot() {
+        DriverStation.silenceJoystickConnectionWarning(true);
         // Record metadata
         Logger.recordMetadata("RobotType", Config.ROBOT_TYPE.toString());
         Logger.recordMetadata("RobotMode", Config.ROBOT_MODE.toString());
@@ -135,7 +136,9 @@ public class Robot extends LoggedRobot {
         if (DriverStation.isEnabled())
             disabled_timer.reset();
         low_battery_alert.set(BatteryTracker.isLowVoltage(disabled_timer));
+
         low_memory_alert.set(MemTracker.highMemoryUsage());
+        Logger.recordOutput("MemoryUsage", MemTracker.memoryUsage());
 
         // Log list of NT clients
         List<String> clientNames = new ArrayList<>();

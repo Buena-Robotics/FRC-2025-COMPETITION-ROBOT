@@ -1,7 +1,8 @@
 package frc.robot.subsystems.vision;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform3d;
+import frc.robot.subsystems.vision.Cameras.Camera;
+
 import java.util.function.Supplier;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
@@ -22,8 +23,8 @@ public class VisionIOPhotonSim extends VisionIOPhoton {
      * @param pose_supplier
      *            Supplier for the robot pose to use in simulation.
      */
-    public VisionIOPhotonSim(String name, Transform3d robot_to_camera, Supplier<Pose2d> pose_supplier) {
-        super(name, robot_to_camera);
+    public VisionIOPhotonSim(Camera cam, Supplier<Pose2d> pose_supplier) {
+        super(cam);
         this.pose_supplier = pose_supplier;
 
         // Initialize vision sim

@@ -15,8 +15,8 @@ public final class Config {
     public static final String DEFAULT_LOG_FOLDER = "/media/sda2/";
     public static final Map<RobotType, String> log_folders_map = Map.of(
         RobotType.ROBOT_2025_COMPETION, DEFAULT_LOG_FOLDER,
-        RobotType.ROBOT_2025_PRACTICE, null,
-        RobotType.ROBOT_2025_SCHOOL, null,
+        RobotType.ROBOT_2025_PRACTICE, DEFAULT_LOG_FOLDER,
+        RobotType.ROBOT_2025_SCHOOL, DEFAULT_LOG_FOLDER,
         RobotType.SETUP_SWERVE, DEFAULT_LOG_FOLDER,
         RobotType.SETUP_TUNING, DEFAULT_LOG_FOLDER);
 

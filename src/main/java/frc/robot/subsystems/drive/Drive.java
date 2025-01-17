@@ -53,20 +53,20 @@ public class Drive extends SubsystemBase {
 
     public static final boolean TURN_INVERTED = false;
     public static final int TURN_MOTOR_CURRENT_LIMIT = 20;
-    public static final boolean TURN_ENCODER_INVERTED = true;
+    public static final boolean TURN_ENCODER_INVERTED = false;
     public static final double TURN_ENCODER_POSITION_FACTOR = 2 * Math.PI; // Rotations -> Radians
     public static final double TURN_ENCODER_VELOCITY_FACTOR = (2 * Math.PI) / 60.0; // RPM -> Rad/Sec
 
     public static final int DRIVE_MOTOR_CURRENT_LIMIT = 50;
-    public static final double DRIVE_MOTOR_REDUCTION = 1 / 6.75; // MAXSwerve with 14 pinion teeth 22 spur teeth
+    public static final double DRIVE_MOTOR_REDUCTION = 6.75; // MAXSwerve with 14 pinion teeth 22 spur teeth
 
-    public static final double TURN_MOTOR_REDUCTION = 1 / 12.8;
+    public static final double TURN_MOTOR_REDUCTION = 12.8;
 
     public static final DCMotor DRIVE_GEARBOX = DCMotor.getNeoVortex(1);
     public static final DCMotor TURN_GEARBOX = DCMotor.getNeoVortex(1);
 
     public static final double WHEEL_RADIUS_METERS = Units.inchesToMeters(1.5);
-    public static final double MAX_SPEED_METERS_PER_SECOND = 4.8;
+    public static final double MAX_SPEED_METERS_PER_SECOND = 4.2;
     public static final double TRACK_WIDTH = Units.inchesToMeters(29);
     public static final double WHEEL_BASE = Units.inchesToMeters(29);
     public static final double DRIVE_BASE_RADIUS = Math.hypot(TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0);
@@ -302,7 +302,7 @@ public class Drive extends SubsystemBase {
      * Returns the module positions (turn angles and drive positions) for all of the
      * modules.
      */
-    private SwerveModulePosition[] getModulePositions() {
+    public SwerveModulePosition[] getModulePositions() {
         SwerveModulePosition[] states = new SwerveModulePosition[4];
         for (int i = 0; i < 4; i++) {
             states[i] = modules[i].getPosition();

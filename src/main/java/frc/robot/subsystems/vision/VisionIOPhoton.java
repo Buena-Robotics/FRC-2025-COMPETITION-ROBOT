@@ -3,6 +3,8 @@ package frc.robot.subsystems.vision;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import frc.robot.subsystems.vision.Cameras.Camera;
+
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,9 +28,9 @@ public class VisionIOPhoton implements VisionIO {
      * @param rotationSupplier
      *            The 3D position of the camera relative to the robot.
      */
-    public VisionIOPhoton(String name, Transform3d robot_to_camera) {
-        camera = new PhotonCamera(name);
-        this.robot_to_camera = robot_to_camera;
+    public VisionIOPhoton(Camera cam) {
+        this.camera = new PhotonCamera(cam.name());
+        this.robot_to_camera = cam.robot_to_camera();
     }
 
     @Override public void updateInputs(VisionIOInputs inputs) {
