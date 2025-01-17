@@ -13,7 +13,7 @@ public interface ModuleIO {
 
         public boolean turn_connected = false;
         public Rotation2d turn_position = new Rotation2d();
-        public Rotation2d absolute_turn_position = new Rotation2d();
+        public Rotation2d turn_absolute_position = new Rotation2d();
         public double turn_velocity_radians_per_second = 0.0;
         public double turn_applied_volts = 0.0;
         public double turn_current_amps = 0.0;

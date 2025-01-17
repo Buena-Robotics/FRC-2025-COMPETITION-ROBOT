@@ -9,7 +9,7 @@ import java.util.Arrays;
 import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 import org.ironmaple.simulation.motorsims.SimulatedMotorController;
 
-public class ModuleSim implements ModuleIO {
+public class ModuleIOSim implements ModuleIO {
     public static final double DRIVE_SIM_P = 0.05;
     public static final double DRIVE_SIM_D = 0.0;
     public static final double DRIVE_SIM_S = 0.0;
@@ -30,7 +30,7 @@ public class ModuleSim implements ModuleIO {
     private double drive_applied_volts = 0.0;
     private double turn_applied_volts = 0.0;
 
-    public ModuleSim(SwerveModuleSimulation module_simulation) {
+    public ModuleIOSim(SwerveModuleSimulation module_simulation) {
         this.module_simulation = module_simulation;
         this.drive_motor = module_simulation
             .useGenericMotorControllerForDrive()

@@ -18,11 +18,11 @@ import frc.robot.Config.RobotType;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
-import frc.robot.subsystems.drive.GyroNavX;
+import frc.robot.subsystems.drive.GyroIONavX;
 import frc.robot.subsystems.drive.GyroSim;
 import frc.robot.subsystems.drive.ModuleIO;
-import frc.robot.subsystems.drive.ModuleSim;
-import frc.robot.subsystems.drive.ModuleSpark;
+import frc.robot.subsystems.drive.ModuleIOSim;
+import frc.robot.subsystems.drive.ModuleIOSpark;
 import frc.robot.subsystems.vision.Cameras;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
@@ -53,11 +53,11 @@ public class RobotContainer {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
                 this.drive = new Drive(
-                    new GyroNavX(),
-                    new ModuleSpark(0),
-                    new ModuleSpark(1),
-                    new ModuleSpark(2),
-                    new ModuleSpark(3));
+                    new GyroIONavX(),
+                    new ModuleIOSpark(0),
+                    new ModuleIOSpark(1),
+                    new ModuleIOSpark(2),
+                    new ModuleIOSpark(3));
 
                 this.vision = new Vision(
                     drive::addVisionMeasurement
@@ -72,10 +72,10 @@ public class RobotContainer {
                 // Sim robot, instantiate physics sim IO implementations
                 this.drive = new Drive(
                     new GyroSim(drive_simulation.getGyroSimulation()),
-                    new ModuleSim(drive_simulation.getModules()[0]),
-                    new ModuleSim(drive_simulation.getModules()[1]),
-                    new ModuleSim(drive_simulation.getModules()[2]),
-                    new ModuleSim(drive_simulation.getModules()[3]));
+                    new ModuleIOSim(drive_simulation.getModules()[0]),
+                    new ModuleIOSim(drive_simulation.getModules()[1]),
+                    new ModuleIOSim(drive_simulation.getModules()[2]),
+                    new ModuleIOSim(drive_simulation.getModules()[3]));
                 this.vision = new Vision(
                     drive::addVisionMeasurement,
                     new VisionIOPhotonSim(Cameras.cameras[0],
@@ -118,9 +118,9 @@ public class RobotContainer {
         // Default command, normal field-relative drive
         drive.setDefaultCommand(DriveCommands.joystickDrive(
             drive,
-            () -> -controller.getDriveYAxis(),
-            () -> -controller.getDriveXAxis(),
-            () -> -controller.getTurnAxis(),
+            () -> controller.getDriveYAxis(),
+            () -> controller.getDriveXAxis(),
+            () -> controller.getTurnAxis(),
             () -> false));
 
         // Lock to 0° when A button is held

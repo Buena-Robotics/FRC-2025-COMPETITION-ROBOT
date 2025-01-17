@@ -11,7 +11,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import java.util.Queue;
 
-public class GyroPigeon2 implements GyroIO {
+public class GyroIOPigeon2 implements GyroIO {
     private final int PIGEON_CAN_ID = 9;
 
     private final Pigeon2 pigeon = new Pigeon2(PIGEON_CAN_ID);
@@ -20,7 +20,7 @@ public class GyroPigeon2 implements GyroIO {
     private final Queue<Double> yaw_timestamp_queue;
     private final StatusSignal<AngularVelocity> yaw_velocity = pigeon.getAngularVelocityZWorld();
 
-    public GyroPigeon2() {
+    public GyroIOPigeon2() {
         pigeon.getConfigurator().apply(new Pigeon2Configuration());
         pigeon.getConfigurator().setYaw(0.0);
         yaw.setUpdateFrequency(Drive.ODOMETRY_FREQUENCY_HERTZ);

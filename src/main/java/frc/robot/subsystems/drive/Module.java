@@ -47,7 +47,7 @@ public class Module {
      */
     public void runSetpoint(SwerveModuleState state) {
         // keep modules at current state when no input is given
-        if (Math.abs(state.speedMetersPerSecond) < 0.25) {
+        if (Math.abs(state.speedMetersPerSecond) < 0.01) {
             stop();
             return;
         }

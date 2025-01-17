@@ -71,10 +71,10 @@ public class Drive extends SubsystemBase {
     public static final double WHEEL_BASE = Units.inchesToMeters(29);
     public static final double DRIVE_BASE_RADIUS = Math.hypot(TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0);
     public static final Translation2d[] MODULE_TRANSLATIONS = new Translation2d[] {
-            new Translation2d(TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0),
             new Translation2d(TRACK_WIDTH / 2.0, -WHEEL_BASE / 2.0),
-            new Translation2d(-TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0),
-            new Translation2d(-TRACK_WIDTH / 2.0, -WHEEL_BASE / 2.0)
+            new Translation2d(TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0),
+            new Translation2d(-TRACK_WIDTH / 2.0, -WHEEL_BASE / 2.0),
+            new Translation2d(-TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0)
     };
 
     public static final double ROBOT_MASS_KG = 45.3592;

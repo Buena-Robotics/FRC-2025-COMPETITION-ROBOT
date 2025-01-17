@@ -6,12 +6,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import java.util.Queue;
 
-public class GyroNavX implements GyroIO {
+public class GyroIONavX implements GyroIO {
     private final AHRS navx = new AHRS(NavXComType.kMXP_SPI, (byte) Drive.ODOMETRY_FREQUENCY_HERTZ);
     private final Queue<Double> yaw_position_queue;
     private final Queue<Double> yaw_timestamp_queue;
 
-    public GyroNavX() {
+    public GyroIONavX() {
         yaw_timestamp_queue = SparkOdometryThread.getInstance().makeTimestampQueue();
         yaw_position_queue = SparkOdometryThread.getInstance().registerSignal(navx::getAngle);
     }
