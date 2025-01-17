@@ -19,10 +19,8 @@ public class Module {
     public Module(final ModuleIO io, final int index) {
         this.io = io;
         this.index = index;
-        drive_disconnect_alert =
-                new Alert("Disconnected drive motor on module " + Integer.toString(index) + ".", AlertType.kError);
-        turn_disconnected_alert =
-                new Alert("Disconnected turn motor on module " + Integer.toString(index) + ".", AlertType.kError);
+        drive_disconnect_alert = new Alert("Disconnected drive motor on module " + Integer.toString(index) + ".", AlertType.kError);
+        turn_disconnected_alert = new Alert("Disconnected turn motor on module " + Integer.toString(index) + ".", AlertType.kError);
     }
 
     public void periodic() {
@@ -43,19 +41,29 @@ public class Module {
         turn_disconnected_alert.set(!inputs.turn_connected);
     }
 
-    /** Runs the module with the specified setpoint state. Mutates the state to optimize it. */
+    /**
+     * Runs the module with the specified setpoint state. Mutates the state to
+     * optimize it.
+     */
     public void runSetpoint(SwerveModuleState state) {
+        // keep modules at current state when no input is given
+        if (Math.abs(state.speedMetersPerSecond) < 0.25) {
+            stop();
+            return;
+        }
+
         // Optimize velocity setpoint
         state.optimize(getAngle());
         state.cosineScale(inputs.turn_position);
 
         // Apply setpoints
-        Logger.recordOutput("DRIVE/SPEED", state.speedMetersPerSecond);
         io.setDriveVelocity(state.speedMetersPerSecond / Drive.WHEEL_RADIUS_METERS);
         io.setTurnPosition(state.angle);
     }
 
-    /** Runs the module with the specified output while controlling to zero degrees. */
+    /**
+     * Runs the module with the specified output while controlling to zero degrees.
+     */
     public void runCharacterization(double output) {
         io.setDriveOpenLoop(output);
         io.setTurnPosition(new Rotation2d());

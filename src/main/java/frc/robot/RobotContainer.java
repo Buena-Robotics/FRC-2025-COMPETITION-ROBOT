@@ -23,7 +23,10 @@ import frc.robot.subsystems.drive.GyroSim;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleSim;
 import frc.robot.subsystems.drive.ModuleSpark;
+import frc.robot.subsystems.vision.Cameras;
 import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOPhotonSim;
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -58,8 +61,8 @@ public class RobotContainer {
 
                 this.vision = new Vision(
                     drive::addVisionMeasurement
-                    // new VisionIOPhoton(Cameras.cameras[0])
-                    );
+                // new VisionIOPhoton(Cameras.cameras[0])
+                );
                 break;
             case SIM:
                 // create a maple-sim swerve drive simulation instance
@@ -74,17 +77,16 @@ public class RobotContainer {
                     new ModuleSim(drive_simulation.getModules()[2]),
                     new ModuleSim(drive_simulation.getModules()[3]));
                 this.vision = new Vision(
-                    drive::addVisionMeasurement
-                    // new VisionIOPhotonSim(Cameras.cameras[0], drive_simulation::getSimulatedDriveTrainPose)
-                    );
+                    drive::addVisionMeasurement,
+                    new VisionIOPhotonSim(Cameras.cameras[0],
+                        drive_simulation::getSimulatedDriveTrainPose));
                 break;
             default:
                 // Replayed robot, disable IO implementations
                 this.drive = new Drive(
                     new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
-                this.vision = new Vision(drive::addVisionMeasurement
-                // new VisionIO() {}
-                );
+                this.vision = new Vision(drive::addVisionMeasurement,
+                    new VisionIO() {});
                 break;
         }
 
@@ -105,7 +107,7 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        if(Config.ROBOT_TYPE == RobotType.SETUP_SWERVE){
+        if (Config.ROBOT_TYPE == RobotType.SETUP_SWERVE) {
             SmartDashboard.putData("Commands/LogSwerveModulePositions", DriveCommands.logModuleOffsetsCharacterization(drive));
             drive.setDefaultCommand(DriveCommands.joystickForwardOnlyDrive(
                 drive,
@@ -116,8 +118,8 @@ public class RobotContainer {
         // Default command, normal field-relative drive
         drive.setDefaultCommand(DriveCommands.joystickDrive(
             drive,
-            () -> controller.getDriveYAxis(),
-            () -> controller.getDriveXAxis(),
+            () -> -controller.getDriveYAxis(),
+            () -> -controller.getDriveXAxis(),
             () -> -controller.getTurnAxis(),
             () -> false));
 
