@@ -1,0 +1,17 @@
+{
+    "name": "frc-java-advantagekit-template-2025",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+        "build:assets": "ts-node scripts/src/custom_akit_builder.ts"
+    },
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+        "fs": "^0.0.1-security"
+    },
+    "devDependencies": {
+        "@types/node": "^22.10.3"
+    }
+}

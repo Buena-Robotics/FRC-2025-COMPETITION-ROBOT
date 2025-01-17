@@ -1,0 +1,369 @@
+{
+    "hubs": [
+        {
+            "x": 2552,
+            "y": -8,
+            "width": 1936,
+            "height": 1096,
+            "state": {
+                "sidebar": {
+                    "width": 300,
+                    "expanded": [
+                        "/SmartDashboard/MapleArenaSimulation",
+                        "/AdvantageKit/RealOutputs/FieldSimulation",
+                        "/AdvantageKit/RealOutputs/DriveSillyModule",
+                        "/photonvision/camera_0",
+                        "/AdvantageKit",
+                        "/AdvantageKit/RealOutputs/Vision/Summary",
+                        "/AdvantageKit/RealOutputs",
+                        "/AdvantageKit/RealOutputs/Odometry",
+                        "/AdvantageKit/RealOutputs/Odometry/Robot"
+                    ]
+                },
+                "tabs": {
+                    "selected": 1,
+                    "tabs": [
+                        {
+                            "type": 0,
+                            "title": "",
+                            "controller": null,
+                            "controllerUUID": "3dyqtbbutz76xr70vuzqrbaqctldn33j",
+                            "renderer": "#/",
+                            "controlsHeight": 0
+                        },
+                        {
+                            "type": 3,
+                            "title": "3D Field",
+                            "controller": {
+                                "sources": [
+                                    {
+                                        "type": "robot",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/FieldSimulation/RobotPosition",
+                                        "logType": "Pose2d",
+                                        "visible": true,
+                                        "options": {
+                                            "model": "2025 KitBot"
+                                        }
+                                    },
+                                    {
+                                        "type": "swerveStates",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/SwerveStates/Measured",
+                                        "logType": "SwerveModuleState[]",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#ff0000",
+                                            "arrangement": "0,1,2,3"
+                                        }
+                                    },
+                                    {
+                                        "type": "swerveStates",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/SwerveStates/SetpointsOptimized",
+                                        "logType": "SwerveModuleState[]",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#00ff00",
+                                            "arrangement": "0,1,2,3"
+                                        }
+                                    },
+                                    {
+                                        "type": "vision",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Vision/Summary/TagPoses",
+                                        "logType": "Pose3d[]",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#00ff00",
+                                            "size": "normal"
+                                        }
+                                    },
+                                    {
+                                        "type": "vision",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/FieldSimulation/Coral",
+                                        "logType": "Pose3d[]",
+                                        "visible": false,
+                                        "options": {
+                                            "color": "#ff00ff",
+                                            "size": "normal"
+                                        }
+                                    },
+                                    {
+                                        "type": "vision",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/FieldSimulation/Algae",
+                                        "logType": "Pose3d[]",
+                                        "visible": false,
+                                        "options": {
+                                            "color": "#00ffff",
+                                            "size": "normal"
+                                        }
+                                    },
+                                    {
+                                        "type": "gamePiece",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/FieldSimulation/Coral",
+                                        "logType": "Pose3d[]",
+                                        "visible": true,
+                                        "options": {
+                                            "variant": "Coral"
+                                        }
+                                    },
+                                    {
+                                        "type": "gamePiece",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/FieldSimulation/Algae",
+                                        "logType": "Pose3d[]",
+                                        "visible": true,
+                                        "options": {
+                                            "variant": "Algae"
+                                        }
+                                    },
+                                    {
+                                        "type": "ghost",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/Robot",
+                                        "logType": "Pose2d",
+                                        "visible": true,
+                                        "options": {
+                                            "model": "2025 KitBot",
+                                            "color": "#0000ff"
+                                        }
+                                    },
+                                    {
+                                        "type": "ghost",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Vision/Summary/RobotPosesAccepted",
+                                        "logType": "Pose3d[]",
+                                        "visible": true,
+                                        "options": {
+                                            "model": "2025 KitBot",
+                                            "color": "#00ff00"
+                                        }
+                                    },
+                                    {
+                                        "type": "ghost",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Vision/Summary/RobotPosesRejected",
+                                        "logType": "Pose3d[]",
+                                        "visible": true,
+                                        "options": {
+                                            "model": "2025 KitBot",
+                                            "color": "#ff0000"
+                                        }
+                                    }
+                                ],
+                                "game": "2025 Field",
+                                "origin": "blue"
+                            },
+                            "controllerUUID": "r2410kvrqqrftyjnd2eni735se2ajoo7",
+                            "renderer": {
+                                "cameraIndex": -6,
+                                "orbitFov": 50,
+                                "cameraPosition": [
+                                    10.24986258343236,
+                                    1.5747999999999986,
+                                    -2.1272658811792873
+                                ],
+                                "cameraTarget": [
+                                    0,
+                                    0.5,
+                                    0
+                                ]
+                            },
+                            "controlsHeight": 370
+                        },
+                        {
+                            "type": 2,
+                            "title": "Odometry",
+                            "controller": {
+                                "sources": [
+                                    {
+                                        "type": "robot",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/FieldSimulation/RobotPosition",
+                                        "logType": "Pose2d",
+                                        "visible": true,
+                                        "options": {}
+                                    },
+                                    {
+                                        "type": "vision",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Vision/Summary/TagPoses",
+                                        "logType": "Pose3d[]",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#00ff00",
+                                            "size": "normal"
+                                        }
+                                    },
+                                    {
+                                        "type": "vision",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/FieldSimulation/Algae",
+                                        "logType": "Pose3d[]",
+                                        "visible": false,
+                                        "options": {
+                                            "color": "#00ffff",
+                                            "size": "bold"
+                                        }
+                                    },
+                                    {
+                                        "type": "vision",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/FieldSimulation/Coral",
+                                        "logType": "Pose3d[]",
+                                        "visible": false,
+                                        "options": {
+                                            "color": "#ff00ff",
+                                            "size": "bold"
+                                        }
+                                    }
+                                ],
+                                "game": "2025 Field",
+                                "bumpers": "auto",
+                                "origin": "blue",
+                                "orientation": 0,
+                                "size": 30
+                            },
+                            "controllerUUID": "ae2gaigytp42344okntpjdmtly13af2h",
+                            "renderer": null,
+                            "controlsHeight": 200
+                        },
+                        {
+                            "type": 1,
+                            "title": "Line Graph",
+                            "controller": {
+                                "leftSources": [],
+                                "rightSources": [],
+                                "discreteSources": [],
+                                "leftLockedRange": null,
+                                "rightLockedRange": null,
+                                "leftUnitConversion": {
+                                    "type": null,
+                                    "factor": 1
+                                },
+                                "rightUnitConversion": {
+                                    "type": null,
+                                    "factor": 1
+                                },
+                                "leftFilter": 0,
+                                "rightFilter": 0
+                            },
+                            "controllerUUID": "z466v8kk87jauuhlgb6lt7k6dn638gu0",
+                            "renderer": null,
+                            "controlsHeight": 200
+                        },
+                        {
+                            "type": 9,
+                            "title": "Swerve",
+                            "controller": {
+                                "sources": [
+                                    {
+                                        "type": "states",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/SwerveStates/SetpointsOptimized",
+                                        "logType": "SwerveModuleState[]",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#ff0000",
+                                            "arrangement": "0,1,2,3"
+                                        }
+                                    },
+                                    {
+                                        "type": "states",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/SwerveStates/Measured",
+                                        "logType": "SwerveModuleState[]",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#00ff00",
+                                            "arrangement": "0,1,2,3"
+                                        }
+                                    }
+                                ],
+                                "maxSpeed": 4.8,
+                                "sizeX": 0.7366,
+                                "sizeY": 0.7366,
+                                "orientation": 1
+                            },
+                            "controllerUUID": "x51k0f0kon0x66p5xrcte5q0t3mf4ix8",
+                            "renderer": null,
+                            "controlsHeight": 200
+                        },
+                        {
+                            "type": 1,
+                            "title": "Line Graph",
+                            "controller": {
+                                "leftSources": [
+                                    {
+                                        "type": "stepped",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/FieldSimulation/RobotPosition/translation/x",
+                                        "logType": "Number",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#2b66a2",
+                                            "size": "normal"
+                                        }
+                                    },
+                                    {
+                                        "type": "stepped",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/FieldSimulation/RobotPosition/translation/y",
+                                        "logType": "Number",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#e5b31b",
+                                            "size": "normal"
+                                        }
+                                    },
+                                    {
+                                        "type": "stepped",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/Robot/translation/x",
+                                        "logType": "Number",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#af2437",
+                                            "size": "normal"
+                                        }
+                                    },
+                                    {
+                                        "type": "stepped",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/Robot/translation/y",
+                                        "logType": "Number",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#80588e",
+                                            "size": "normal"
+                                        }
+                                    }
+                                ],
+                                "rightSources": [],
+                                "discreteSources": [
+                                    {
+                                        "type": "alerts",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Alerts",
+                                        "logType": "Alerts",
+                                        "visible": true,
+                                        "options": {}
+                                    }
+                                ],
+                                "leftLockedRange": null,
+                                "rightLockedRange": null,
+                                "leftUnitConversion": {
+                                    "type": null,
+                                    "factor": 1
+                                },
+                                "rightUnitConversion": {
+                                    "type": null,
+                                    "factor": 1
+                                },
+                                "leftFilter": 0,
+                                "rightFilter": 0
+                            },
+                            "controllerUUID": "cr8lt9nezddrw00gn2h18kakmy3m87ck",
+                            "renderer": null,
+                            "controlsHeight": 200
+                        },
+                        {
+                            "type": 5,
+                            "title": "Console",
+                            "controller": "NT:/AdvantageKit/RealOutputs/Console",
+                            "controllerUUID": "2k4yak58kcxgm4wxm0rqi50fs1gnkeno",
+                            "renderer": {
+                                "highlight": false
+                            },
+                            "controlsHeight": 0
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "satellites": [],
+    "version": "4.1.1"
+}
