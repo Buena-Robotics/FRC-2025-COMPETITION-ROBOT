@@ -111,14 +111,8 @@ public class ModuleIOSpark implements ModuleIO {
             .velocityConversionFactor(Drive.TURN_ENCODER_VELOCITY_FACTOR)
             .uvwMeasurementPeriod(10)
             .uvwAverageDepth(2);
-        // turn_config.absoluteEncoder
-        // .inverted(Drive.TURN_ENCODER_INVERTED)
-        // .positionConversionFactor(Drive.TURN_ENCODER_POSITION_FACTOR)
-        // .velocityConversionFactor(Drive.TURN_ENCODER_VELOCITY_FACTOR)
-        // .averageDepth(2);
         turn_config.closedLoop
             .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-            // .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
             .positionWrappingEnabled(true)
             .positionWrappingInputRange(TURN_PID_MIN_INPUT_RADIANS, TURN_PID_MAX_INPUT_RADIANS)
             .pidf(TURN_P, 0.0, TURN_D, 0.0);
@@ -130,16 +124,6 @@ public class ModuleIOSpark implements ModuleIO {
             .appliedOutputPeriodMs(20)
             .busVoltagePeriodMs(20)
             .outputCurrentPeriodMs(20);
-
-        // turn_config.signals
-        // .absoluteEncoderPositionAlwaysOn(true)
-        // .absoluteEncoderPositionPeriodMs((int) (1000.0 /
-        // Drive.ODOMETRY_FREQUENCY_HERTZ))
-        // .absoluteEncoderVelocityAlwaysOn(true)
-        // .absoluteEncoderVelocityPeriodMs(20)
-        // .appliedOutputPeriodMs(20)
-        // .busVoltagePeriodMs(20)
-        // .outputCurrentPeriodMs(20);
         SparkUtil.tryUntilOk(
             turn_motor,
             5,
@@ -154,7 +138,7 @@ public class ModuleIOSpark implements ModuleIO {
         this.turn_position_queue = SparkOdometryThread.getInstance().registerSignal(turn_motor, turn_encoder::getPosition);
     }
 
-    @Override public void updateInputs(ModuleIOInputs inputs) {
+    @Override public void updateInputs(final ModuleIOInputs inputs) {
         // Update drive inputs
         SparkUtil.spark_sticky_fault = false;
         SparkUtil.ifOk(drive_motor, drive_encoder::getPosition, (value) -> inputs.drive_position_radians = value);
@@ -191,28 +175,35 @@ public class ModuleIOSpark implements ModuleIO {
         inputs.odometry_turn_positions = turn_position_queue.stream()
             .map((Double value) -> new Rotation2d(value))
             .toArray(Rotation2d[]::new);
-        timestamp_queue.clear();
-        drive_position_queue.clear();
-        turn_position_queue.clear();
+        this.timestamp_queue.clear();
+        this.drive_position_queue.clear();
+        this.turn_position_queue.clear();
     }
 
-    @Override public void setDriveOpenLoop(double output) {
-        drive_motor.setVoltage(output);
+    @Override public void setDriveOpenLoop(final double output) {
+        this.drive_motor.setVoltage(output);
     }
 
-    @Override public void setTurnOpenLoop(double output) {
-        turn_motor.setVoltage(output);
+    @Override public void setTurnOpenLoop(final double output) {
+        this.turn_motor.setVoltage(output);
     }
 
-    @Override public void setDriveVelocity(double velocityRadPerSec) {
-        double ffVolts = DRIVE_S * Math.signum(velocityRadPerSec) + DRIVE_V * velocityRadPerSec;
-        drive_controller.setReference(
-            velocityRadPerSec, ControlType.kVelocity, ClosedLoopSlot.kSlot0, ffVolts, ArbFFUnits.kVoltage);
+    @Override public void setDriveVelocity(final double velocity_radians_per_second) {
+        double ffVolts = DRIVE_S * Math.signum(velocity_radians_per_second) + DRIVE_V * velocity_radians_per_second;
+        this.drive_controller.setReference(
+            velocity_radians_per_second, ControlType.kVelocity, ClosedLoopSlot.kSlot0, ffVolts, ArbFFUnits.kVoltage);
     }
 
-    @Override public void setTurnPosition(Rotation2d rotation) {
+    @Override public void setTurnPosition(final Rotation2d rotation) {
         double setpoint = MathUtil.inputModulus(
             rotation.getRadians(), TURN_PID_MIN_INPUT_RADIANS, TURN_PID_MAX_INPUT_RADIANS);
-        turn_controller.setReference(setpoint, ControlType.kPosition);
+        this.turn_controller.setReference(setpoint, ControlType.kPosition);
+    }
+
+    @Override public void setDriveBrakeMode(final boolean brake_mode) {
+        // drive_motor.configure(null, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    }
+    @Override public void setTurnBrakeMode(final boolean brake_mode) {
+        // turn_motor.configure(null, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 }

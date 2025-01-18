@@ -8,6 +8,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -41,6 +42,10 @@ public class RobotContainer {
     private final SwerveDriveSimulation drive_simulation = Config.ROBOT_MODE == RobotMode.SIM ?
         new SwerveDriveSimulation(Drive.MAPLE_SIM_CONFIG, new Pose2d(3, 3, new Rotation2d())) :
         null;
+
+    final Servo silly_servo = new Servo(1);
+    final Servo silly_servo2 = new Servo(0);
+
 
     // Controller
     private final CommandControllerIO controller = new XboxControllerIO(0);
@@ -104,6 +109,11 @@ public class RobotContainer {
         auto_chooser.addOption("Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
         configureBindings();
+    }
+
+    public void updateServo(){
+        silly_servo.set(controller.getTestAxis1());
+        silly_servo2.set(controller.getTestAxis2());
     }
 
     private void configureBindings() {

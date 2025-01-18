@@ -9,6 +9,9 @@ public interface CommandControllerIO {
 
     public double getTurnAxis();
 
+    public double getTestAxis1();
+    public double getTestAxis2();
+
     public Trigger lockGyroBtn();
 
     public Trigger resetGyroBtn();

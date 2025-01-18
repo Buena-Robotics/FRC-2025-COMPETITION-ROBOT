@@ -30,7 +30,7 @@ public class ModuleIOSim implements ModuleIO {
     private double drive_applied_volts = 0.0;
     private double turn_applied_volts = 0.0;
 
-    public ModuleIOSim(SwerveModuleSimulation module_simulation) {
+    public ModuleIOSim(final SwerveModuleSimulation module_simulation) {
         this.module_simulation = module_simulation;
         this.drive_motor = module_simulation
             .useGenericMotorControllerForDrive()
@@ -43,7 +43,7 @@ public class ModuleIOSim implements ModuleIO {
         turn_controller.enableContinuousInput(-Math.PI, Math.PI);
     }
 
-    @Override public void updateInputs(ModuleIOInputs inputs) {
+    @Override public void updateInputs(final ModuleIOInputs inputs) {
         // Run closed-loop control
         if (drive_closed_loop) {
             drive_applied_volts = drive_ff_volts + drive_controller.calculate(
@@ -85,23 +85,23 @@ public class ModuleIOSim implements ModuleIO {
         inputs.odometry_turn_positions = module_simulation.getCachedSteerAbsolutePositions();
     }
 
-    @Override public void setDriveOpenLoop(double output) {
+    @Override public void setDriveOpenLoop(final double output) {
         drive_closed_loop = false;
         drive_applied_volts = output;
     }
 
-    @Override public void setTurnOpenLoop(double output) {
+    @Override public void setTurnOpenLoop(final double output) {
         turn_closed_loop = false;
         turn_applied_volts = output;
     }
 
-    @Override public void setDriveVelocity(double velocityRadPerSec) {
+    @Override public void setDriveVelocity(final double velocity_radians_per_second) {
         drive_closed_loop = true;
-        drive_ff_volts = DRIVE_SIM_S * Math.signum(velocityRadPerSec) + DRIVE_SIM_V * velocityRadPerSec;
-        drive_controller.setSetpoint(velocityRadPerSec);
+        drive_ff_volts = DRIVE_SIM_S * Math.signum(velocity_radians_per_second) + DRIVE_SIM_V * velocity_radians_per_second;
+        drive_controller.setSetpoint(velocity_radians_per_second);
     }
 
-    @Override public void setTurnPosition(Rotation2d rotation) {
+    @Override public void setTurnPosition(final Rotation2d rotation) {
         turn_closed_loop = true;
         turn_controller.setSetpoint(rotation.getRadians());
     }

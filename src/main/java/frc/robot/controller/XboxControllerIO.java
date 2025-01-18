@@ -10,33 +10,35 @@ public class XboxControllerIO implements CommandControllerIO {
         controller = new CommandXboxController(port);
     }
 
-    @Override
-    public double getDriveXAxis() {
+    @Override public double getDriveXAxis() {
         return controller.getLeftX();
     }
 
-    @Override
-    public double getDriveYAxis() {
+    @Override public double getDriveYAxis() {
         return controller.getLeftY();
     }
 
-    @Override
-    public double getTurnAxis() {
+    @Override public double getTurnAxis() {
         return controller.getRightX();
     }
 
-    @Override
-    public Trigger lockGyroBtn() {
+    @Override public double getTestAxis1() {
+        return controller.getRightTriggerAxis();
+    }
+
+    @Override public double getTestAxis2() {
+        return controller.getLeftTriggerAxis();
+    }
+
+    @Override public Trigger lockGyroBtn() {
         return controller.a();
     }
 
-    @Override
-    public Trigger resetGyroBtn() {
+    @Override public Trigger resetGyroBtn() {
         return controller.start();
     }
 
-    @Override
-    public Trigger stopXBtn() {
+    @Override public Trigger stopXBtn() {
         return controller.x();
     }
 }

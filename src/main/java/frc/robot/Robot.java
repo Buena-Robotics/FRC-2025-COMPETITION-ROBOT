@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -120,11 +121,14 @@ public class Robot extends LoggedRobot {
         robot_container = new RobotContainer();
     }
 
+    final XboxController silly_controller = new XboxController(1);
     @Override public void robotPeriodic() {
         // Switch thread to high priority to improve loop timing
         Threads.setCurrentThreadPriority(true, 99);
 
         CommandScheduler.getInstance().run();
+
+        robot_container.updateServo();
 
         // Check logging fault
         log_reciever_queue_alert.set(Logger.getReceiverQueueFault());

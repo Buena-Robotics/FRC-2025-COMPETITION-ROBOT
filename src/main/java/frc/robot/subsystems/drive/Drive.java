@@ -179,15 +179,21 @@ public class Drive extends SubsystemBase {
         }
         odometry_lock.unlock();
 
+        final boolean driver_station_disabled = DriverStation.isDisabled();
+
         // Stop moving when disabled
-        if (DriverStation.isDisabled()) {
+        if (driver_station_disabled) {
             for (Module module : modules) {
                 module.stop();
             }
         }
 
+        if(driver_station_disabled)
+            for (Module module : modules) module.setCoastMode();
+        else for (Module module : modules) module.setBrakeMode();
+
         // Log empty setpoint states when disabled
-        if (DriverStation.isDisabled()) {
+        if (driver_station_disabled) {
             Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
             Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
         }
