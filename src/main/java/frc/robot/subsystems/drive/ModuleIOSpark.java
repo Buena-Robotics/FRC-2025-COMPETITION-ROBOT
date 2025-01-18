@@ -8,6 +8,7 @@ import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
@@ -35,6 +36,9 @@ public class ModuleIOSpark implements ModuleIO {
     public static final double TURN_PID_MIN_INPUT_RADIANS = 0;
     public static final double TURN_PID_MAX_INPUT_RADIANS = 2 * Math.PI;
 
+    private static final SparkMaxConfig DEFAULT_DRIVE_SPARK_CONFIG = defaultDriveSparkConfig();
+    private static final SparkMaxConfig DEFAULT_TURN_SPARK_CONFIG = defaultTurnSparkConfig();
+
     // Hardware objects
     private final SparkMax drive_motor;
     private final SparkMax turn_motor;
@@ -55,6 +59,9 @@ public class ModuleIOSpark implements ModuleIO {
     private final Debouncer drive_connected_debounce = new Debouncer(0.5);
     private final Debouncer turn_connected_debounce = new Debouncer(0.5);
 
+    private boolean drive_brake_mode = true;
+    private boolean turn_brake_mode = true;
+
     public ModuleIOSpark(final int module) {
         this.turn_absolute_encoder = new AnalogEncoder(module, 2.0 * Math.PI, ZERO_ROTATIONS[module]);
         this.drive_motor = new SparkMax((module * 2) + 1, MotorType.kBrushless);
@@ -65,27 +72,11 @@ public class ModuleIOSpark implements ModuleIO {
         this.turn_controller = turn_motor.getClosedLoopController();
 
         // Configure drive motor
-        final SparkMaxConfig drive_config = new SparkMaxConfig();
-        SparkUtil.setSparkBaseConfig(drive_config, Drive.DRIVE_MOTOR_CURRENT_LIMIT);
-        SparkUtil.setSparkEncoderConfig(drive_config.encoder, Drive.DRIVE_ENCODER_POSITION_FACTOR, Drive.DRIVE_ENCODER_VELOCITY_FACTOR);
-        SparkUtil.setSparkSignalsConfig(drive_config.signals, (int) (1000.0 / Drive.ODOMETRY_FREQUENCY_HERTZ));
-        drive_config.closedLoop
-            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-            .pidf(DRIVE_P, 0.0, DRIVE_D, 0.0);
-        SparkUtil.configureSparkMax(this.drive_motor, drive_config);
+        SparkUtil.configureSparkMax(this.drive_motor, DEFAULT_DRIVE_SPARK_CONFIG);
         SparkUtil.setPosition(this.drive_motor, this.drive_encoder, 0.0);
 
         // Configure turn motor
-        final SparkMaxConfig turn_config = new SparkMaxConfig();
-        SparkUtil.setSparkBaseConfig(turn_config, Drive.TURN_MOTOR_CURRENT_LIMIT);
-        SparkUtil.setSparkEncoderConfig(turn_config.encoder, (1.0 / Drive.TURN_MOTOR_REDUCTION) * Drive.TURN_ENCODER_POSITION_FACTOR, Drive.TURN_ENCODER_VELOCITY_FACTOR);
-        SparkUtil.setSparkSignalsConfig(turn_config.signals, (int) (1000.0 / Drive.ODOMETRY_FREQUENCY_HERTZ));
-        turn_config.closedLoop
-            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-            .positionWrappingEnabled(true)
-            .positionWrappingInputRange(TURN_PID_MIN_INPUT_RADIANS, TURN_PID_MAX_INPUT_RADIANS)
-            .pidf(TURN_P, 0.0, TURN_D, 0.0);
-        SparkUtil.configureSparkMax(this.turn_motor, turn_config);
+        SparkUtil.configureSparkMax(this.turn_motor, DEFAULT_TURN_SPARK_CONFIG);
         SparkUtil.setPosition(this.turn_motor, this.turn_encoder, this.turn_absolute_encoder.get());
 
         // Create odometry queues
@@ -142,12 +133,42 @@ public class ModuleIOSpark implements ModuleIO {
     }
 
     @Override public void setDriveBrakeMode(final boolean brake_mode) {
-        // drive_motor.configure(null, ResetMode.kResetSafeParameters,
-        // PersistMode.kPersistParameters);
+        if (drive_brake_mode == brake_mode)
+            return;
+        drive_brake_mode = brake_mode;
+        DEFAULT_DRIVE_SPARK_CONFIG.idleMode(brake_mode ? IdleMode.kBrake : IdleMode.kCoast);
+        SparkUtil.configureSparkMax(drive_motor, DEFAULT_DRIVE_SPARK_CONFIG);
     }
 
     @Override public void setTurnBrakeMode(final boolean brake_mode) {
-        // turn_motor.configure(null, ResetMode.kResetSafeParameters,
-        // PersistMode.kPersistParameters);
+        if (turn_brake_mode == brake_mode)
+            return;
+        turn_brake_mode = brake_mode;
+        DEFAULT_TURN_SPARK_CONFIG.idleMode(brake_mode ? IdleMode.kBrake : IdleMode.kCoast);
+        SparkUtil.configureSparkMax(turn_motor, DEFAULT_TURN_SPARK_CONFIG);
+    }
+
+    private static SparkMaxConfig defaultDriveSparkConfig() {
+        final SparkMaxConfig drive_config = new SparkMaxConfig();
+        SparkUtil.setSparkBaseConfig(drive_config, Drive.DRIVE_MOTOR_CURRENT_LIMIT);
+        SparkUtil.setSparkEncoderConfig(drive_config.encoder, Drive.DRIVE_ENCODER_POSITION_FACTOR, Drive.DRIVE_ENCODER_VELOCITY_FACTOR);
+        SparkUtil.setSparkSignalsConfig(drive_config.signals, (int) (1000.0 / Drive.ODOMETRY_FREQUENCY_HERTZ));
+        drive_config.closedLoop
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+            .pidf(DRIVE_P, 0.0, DRIVE_D, 0.0);
+        return drive_config;
+    }
+
+    private static SparkMaxConfig defaultTurnSparkConfig() {
+        final SparkMaxConfig turn_config = new SparkMaxConfig();
+        SparkUtil.setSparkBaseConfig(turn_config, Drive.TURN_MOTOR_CURRENT_LIMIT);
+        SparkUtil.setSparkEncoderConfig(turn_config.encoder, (1.0 / Drive.TURN_MOTOR_REDUCTION) * Drive.TURN_ENCODER_POSITION_FACTOR, Drive.TURN_ENCODER_VELOCITY_FACTOR);
+        SparkUtil.setSparkSignalsConfig(turn_config.signals, (int) (1000.0 / Drive.ODOMETRY_FREQUENCY_HERTZ));
+        turn_config.closedLoop
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+            .positionWrappingEnabled(true)
+            .positionWrappingInputRange(TURN_PID_MIN_INPUT_RADIANS, TURN_PID_MAX_INPUT_RADIANS)
+            .pidf(TURN_P, 0.0, TURN_D, 0.0);
+        return turn_config;
     }
 }
