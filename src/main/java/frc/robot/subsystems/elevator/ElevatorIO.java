@@ -12,5 +12,6 @@ public interface ElevatorIO {
     }
 
     public default void updateInputs(final ElevatorIOInputs inputs) {}
-    public default void setLiftPosition(final double lift_setpoint_position_inches){}
+
+    public default void setLiftPosition(final double lift_setpoint_position_inches) {}
 }

@@ -17,7 +17,6 @@ public final class Config {
         RobotType.ROBOT_2025_COMPETION, DEFAULT_LOG_FOLDER,
         RobotType.ROBOT_2025_PRACTICE, DEFAULT_LOG_FOLDER,
         RobotType.ROBOT_2025_SCHOOL, DEFAULT_LOG_FOLDER,
-        RobotType.SETUP_SWERVE, DEFAULT_LOG_FOLDER,
         RobotType.SETUP_TUNING, DEFAULT_LOG_FOLDER);
 
     public static final Alliance getRobotAlliance() {
@@ -29,6 +28,6 @@ public final class Config {
     }
 
     public static enum RobotType {
-        ROBOT_2025_COMPETION, ROBOT_2025_PRACTICE, ROBOT_2025_SCHOOL, SETUP_SWERVE, SETUP_TUNING
+        ROBOT_2025_COMPETION, ROBOT_2025_PRACTICE, ROBOT_2025_SCHOOL, SETUP_TUNING
     }
 }

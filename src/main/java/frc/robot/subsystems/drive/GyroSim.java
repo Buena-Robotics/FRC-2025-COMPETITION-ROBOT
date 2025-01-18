@@ -13,7 +13,7 @@ public class GyroSim implements GyroIO {
         this.gyroSimulation = gyroSimulation;
     }
 
-    @Override public void updateInputs(GyroIOInputs inputs) {
+    @Override public void updateInputs(final GyroIOInputs inputs) {
         inputs.connected = true;
         inputs.yaw_position = gyroSimulation.getGyroReading();
         inputs.yaw_velocity_radians_per_second = Units.degreesToRadians(

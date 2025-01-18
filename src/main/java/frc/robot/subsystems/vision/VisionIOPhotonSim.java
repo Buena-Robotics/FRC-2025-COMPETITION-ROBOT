@@ -23,8 +23,8 @@ public class VisionIOPhotonSim extends VisionIOPhoton {
      * @param pose_supplier
      *            Supplier for the robot pose to use in simulation.
      */
-    public VisionIOPhotonSim(Camera cam, Supplier<Pose2d> pose_supplier) {
-        super(cam);
+    public VisionIOPhotonSim(final Camera camera_info, final Supplier<Pose2d> pose_supplier) {
+        super(camera_info);
         this.pose_supplier = pose_supplier;
 
         // Initialize vision sim
@@ -34,8 +34,11 @@ public class VisionIOPhotonSim extends VisionIOPhoton {
         }
 
         // Add sim camera
-        SimCameraProperties camera_properties = new SimCameraProperties();
+        final SimCameraProperties camera_properties = SimCameraProperties.LL2_960_720();
+        camera_properties.setFPS(30);
+        camera_properties.setExposureTimeMs(16);
         camera_sim = new PhotonCameraSim(camera, camera_properties);
+        // camera_sim.canSeeTargetPose(null, null)
         vision_sim.addCamera(camera_sim, robot_to_camera);
     }
 

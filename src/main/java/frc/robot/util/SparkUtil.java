@@ -16,8 +16,17 @@ package frc.robot.util;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.revrobotics.REVLibError;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.config.EncoderConfig;
+import com.revrobotics.spark.config.SignalsConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
+
 import edu.wpi.first.wpilibj.Timer;
+
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
@@ -29,7 +38,7 @@ public class SparkUtil {
     public static boolean spark_sticky_fault = false;
 
     /** Processes a value from a Spark only if the value is valid. */
-    public static void ifOk(SparkBase spark, DoubleSupplier supplier, DoubleConsumer consumer) {
+    public static void ifOk(final SparkBase spark, final DoubleSupplier supplier, final DoubleConsumer consumer) {
         double value = supplier.getAsDouble();
         if (spark.getLastError() == REVLibError.kOk) {
             consumer.accept(value);
@@ -39,7 +48,7 @@ public class SparkUtil {
     }
 
     /** Processes a value from a Spark only if the value is valid. */
-    public static void ifOk(SparkBase spark, DoubleSupplier[] suppliers, Consumer<double[]> consumer) {
+    public static void ifOk(final SparkBase spark, final DoubleSupplier[] suppliers, final Consumer<double[]> consumer) {
         double[] values = new double[suppliers.length];
         for (int i = 0; i < suppliers.length; i++) {
             values[i] = suppliers[i].getAsDouble();
@@ -52,7 +61,12 @@ public class SparkUtil {
     }
 
     /** Attempts to run the command until no error is produced. */
-    public static void tryUntilOk(SparkBase spark, int max_attempts, Supplier<REVLibError> command) {
+    public static void tryUntilOk(final SparkBase spark, final Supplier<REVLibError> command) {
+        tryUntilOk(spark, 5, command);
+    }
+
+    /** Attempts to run the command until no error is produced. */
+    public static void tryUntilOk(final SparkBase spark, final int max_attempts, final Supplier<REVLibError> command) {
         for (int i = 0; i < max_attempts; i++) {
             REVLibError error = command.get();
             if (error == REVLibError.kOk) {
@@ -63,13 +77,47 @@ public class SparkUtil {
         }
     }
 
+    public static void configureSparkMax(final SparkBase spark, final SparkMaxConfig config) {
+        SparkUtil.tryUntilOk(spark, () -> spark.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+    }
+
+    public static void setPosition(final SparkBase spark, final RelativeEncoder encoder, final double position) {
+        SparkUtil.tryUntilOk(spark, () -> encoder.setPosition(position));
+    }
+
     public static double[] getSimulationOdometryTimeStamps() {
         final double[] odometry_timestamps = new double[SimulatedArena.getSimulationSubTicksIn1Period()];
         for (int i = 0; i < odometry_timestamps.length; i++) {
-            odometry_timestamps[i] = Timer.getFPGATimestamp()
-                    - 0.02
-                    + i * SimulatedArena.getSimulationDt().in(Seconds);
+            odometry_timestamps[i] = Timer.getFPGATimestamp() - 0.02 + i * SimulatedArena.getSimulationDt().in(Seconds);
         }
         return odometry_timestamps;
+    }
+
+    public static SparkMaxConfig setSparkBaseConfig(final SparkMaxConfig config, final int current_limit) {
+        config.idleMode(IdleMode.kBrake)
+            .smartCurrentLimit(current_limit)
+            .voltageCompensation(12.0);
+        return config;
+    }
+
+    public static EncoderConfig setSparkEncoderConfig(final EncoderConfig encoder, final double position_factor, final double velocity_factor) {
+        encoder.positionConversionFactor(position_factor)
+            .velocityConversionFactor(velocity_factor)
+            .uvwMeasurementPeriod(10)
+            .uvwAverageDepth(2);
+        return encoder;
+    }
+
+    public static SignalsConfig setSparkSignalsConfig(final SignalsConfig signals, final int period_ms) {
+        signals.primaryEncoderPositionAlwaysOn(true)
+            // .primaryEncoderPositionPeriodMs((int) (1000.0 /
+            // Drive.ODOMETRY_FREQUENCY_HERTZ))
+            .primaryEncoderPositionPeriodMs(period_ms)
+            .primaryEncoderVelocityAlwaysOn(true)
+            .primaryEncoderVelocityPeriodMs(20)
+            .appliedOutputPeriodMs(20)
+            .busVoltagePeriodMs(20)
+            .outputCurrentPeriodMs(20);
+        return signals;
     }
 }

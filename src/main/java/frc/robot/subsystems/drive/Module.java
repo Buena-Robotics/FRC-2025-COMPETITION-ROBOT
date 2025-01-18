@@ -16,11 +16,11 @@ public class Module {
     private final Alert turn_disconnected_alert;
     private SwerveModulePosition[] odometry_positions = new SwerveModulePosition[] {};
 
-    public Module(final ModuleIO io, final int index) {
+    public Module(final ModuleIO io, final int module) {
         this.io = io;
-        this.index = index;
-        drive_disconnect_alert = new Alert("Disconnected drive motor on module " + Integer.toString(index) + ".", AlertType.kError);
-        turn_disconnected_alert = new Alert("Disconnected turn motor on module " + Integer.toString(index) + ".", AlertType.kError);
+        this.index = module;
+        drive_disconnect_alert = new Alert("Disconnected drive motor on module " + Integer.toString(module) + ".", AlertType.kError);
+        turn_disconnected_alert = new Alert("Disconnected turn motor on module " + Integer.toString(module) + ".", AlertType.kError);
     }
 
     public void periodic() {
@@ -28,11 +28,11 @@ public class Module {
         Logger.processInputs("Drive/Module" + Integer.toString(index), inputs);
 
         // Calculate positions for odometry
-        int sample_count = inputs.odometry_timestamps.length; // All signals are sampled together
+        final int sample_count = inputs.odometry_timestamps.length; // All signals are sampled together
         odometry_positions = new SwerveModulePosition[sample_count];
         for (int i = 0; i < sample_count; i++) {
-            double position_meters = inputs.odometry_drive_position_radians[i] * Drive.WHEEL_RADIUS_METERS;
-            Rotation2d angle = inputs.odometry_turn_positions[i];
+            final double position_meters = inputs.odometry_drive_position_radians[i] * Drive.WHEEL_RADIUS_METERS;
+            final Rotation2d angle = inputs.odometry_turn_positions[i];
             odometry_positions[i] = new SwerveModulePosition(position_meters, angle);
         }
 
@@ -45,7 +45,7 @@ public class Module {
      * Runs the module with the specified setpoint state. Mutates the state to
      * optimize it.
      */
-    public void runSetpoint(SwerveModuleState state) {
+    public void runSetpoint(final SwerveModuleState state) {
         // keep modules at current state when no input is given
         if (Math.abs(state.speedMetersPerSecond) < 0.01) {
             stop();
@@ -64,16 +64,17 @@ public class Module {
     /**
      * Runs the module with the specified output while controlling to zero degrees.
      */
-    public void runCharacterization(double output) {
+    public void runCharacterization(final double output) {
         io.setDriveOpenLoop(output);
         io.setTurnPosition(new Rotation2d());
     }
 
-    public void setCoastMode(){
+    public void setCoastMode() {
         io.setDriveBrakeMode(false);
         io.setTurnBrakeMode(false);
     }
-    public void setBrakeMode(){
+
+    public void setBrakeMode() {
         io.setDriveBrakeMode(true);
         io.setTurnBrakeMode(true);
     }

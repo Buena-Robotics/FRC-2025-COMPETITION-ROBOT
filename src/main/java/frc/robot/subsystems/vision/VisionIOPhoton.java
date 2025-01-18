@@ -28,18 +28,18 @@ public class VisionIOPhoton implements VisionIO {
      * @param rotationSupplier
      *            The 3D position of the camera relative to the robot.
      */
-    public VisionIOPhoton(Camera cam) {
-        this.camera = new PhotonCamera(cam.name());
-        this.robot_to_camera = cam.robot_to_camera();
+    public VisionIOPhoton(final Camera camera_info) {
+        this.camera = new PhotonCamera(camera_info.name());
+        this.robot_to_camera = camera_info.robot_to_camera();
     }
 
-    @Override public void updateInputs(VisionIOInputs inputs) {
+    @Override public void updateInputs(final VisionIOInputs inputs) {
         inputs.connected = camera.isConnected();
 
         // Read new camera observations
-        Set<Short> tag_ids = new HashSet<>();
-        List<PoseObservation> pose_observations = new LinkedList<>();
-        for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
+        final Set<Short> tag_ids = new HashSet<>();
+        final List<PoseObservation> pose_observations = new LinkedList<>();
+        for (final PhotonPipelineResult result : camera.getAllUnreadResults()) {
             // Update latest target observation
             if (result.hasTargets()) {
                 inputs.latest_target_observation = new TargetObservation(
@@ -51,12 +51,12 @@ public class VisionIOPhoton implements VisionIO {
 
             // Add pose observation
             if (result.multitagResult.isPresent()) { // Multitag result
-                MultiTargetPNPResult multitag_result = result.multitagResult.get();
+                final MultiTargetPNPResult multitag_result = result.multitagResult.get();
 
                 // Calculate robot pose
-                Transform3d fieldToCamera = multitag_result.estimatedPose.best;
-                Transform3d fieldToRobot = fieldToCamera.plus(robot_to_camera.inverse());
-                Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
+                final Transform3d fieldToCamera = multitag_result.estimatedPose.best;
+                final Transform3d fieldToRobot = fieldToCamera.plus(robot_to_camera.inverse());
+                final Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
 
                 // Calculate average tag distance
                 double total_tag_distance = 0.0;
@@ -78,16 +78,16 @@ public class VisionIOPhoton implements VisionIO {
                         PoseObservationType.PHOTONVISION)); // Observation type
 
             } else if (!result.targets.isEmpty()) { // Single tag result
-                PhotonTrackedTarget target = result.targets.get(0);
+                final PhotonTrackedTarget target = result.targets.get(0);
 
                 // Calculate robot pose
-                Optional<Pose3d> tag_pose = Vision.apriltag_layout.getTagPose(target.fiducialId);
+                final Optional<Pose3d> tag_pose = Vision.apriltag_layout.getTagPose(target.fiducialId);
                 if (tag_pose.isPresent()) {
-                    Transform3d field_to_target = new Transform3d(tag_pose.get().getTranslation(), tag_pose.get().getRotation());
-                    Transform3d camera_to_target = target.bestCameraToTarget;
-                    Transform3d field_to_camera = field_to_target.plus(camera_to_target.inverse());
-                    Transform3d field_to_robot = field_to_camera.plus(robot_to_camera.inverse());
-                    Pose3d robot_pose = new Pose3d(field_to_robot.getTranslation(), field_to_robot.getRotation());
+                    final Transform3d field_to_target = new Transform3d(tag_pose.get().getTranslation(), tag_pose.get().getRotation());
+                    final Transform3d camera_to_target = target.bestCameraToTarget;
+                    final Transform3d field_to_camera = field_to_target.plus(camera_to_target.inverse());
+                    final Transform3d field_to_robot = field_to_camera.plus(robot_to_camera.inverse());
+                    final Pose3d robot_pose = new Pose3d(field_to_robot.getTranslation(), field_to_robot.getRotation());
 
                     // Add tag ID
                     tag_ids.add((short) target.fiducialId);

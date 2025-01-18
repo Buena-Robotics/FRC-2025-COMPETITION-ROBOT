@@ -11,9 +11,12 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.function.DoubleSupplier;
 
 /**
- * Provides an interface for asynchronously reading high-frequency measurements to a set of queues.
+ * Provides an interface for asynchronously reading high-frequency measurements
+ * to a set of queues.
  *
- * <p>This version includes an overload for Spark signals, which checks for errors to ensure that all measurements in
+ * <p>
+ * This version includes an overload for Spark signals, which checks for errors
+ * to ensure that all measurements in
  * the sample are valid.
  */
 public class SparkOdometryThread {
@@ -45,8 +48,8 @@ public class SparkOdometryThread {
     }
 
     /** Registers a Spark signal to be read from the thread. */
-    public Queue<Double> registerSignal(SparkBase spark, DoubleSupplier signal) {
-        Queue<Double> queue = new ArrayBlockingQueue<>(20);
+    public Queue<Double> registerSignal(final SparkBase spark, final DoubleSupplier signal) {
+        final Queue<Double> queue = new ArrayBlockingQueue<>(20);
         Drive.odometry_lock.lock();
         try {
             sparks.add(spark);
@@ -59,8 +62,8 @@ public class SparkOdometryThread {
     }
 
     /** Registers a generic signal to be read from the thread. */
-    public Queue<Double> registerSignal(DoubleSupplier signal) {
-        Queue<Double> queue = new ArrayBlockingQueue<>(20);
+    public Queue<Double> registerSignal(final DoubleSupplier signal) {
+        final Queue<Double> queue = new ArrayBlockingQueue<>(20);
         Drive.odometry_lock.lock();
         try {
             generic_signals.add(signal);
@@ -73,7 +76,7 @@ public class SparkOdometryThread {
 
     /** Returns a new queue that returns timestamp values for each sample. */
     public Queue<Double> makeTimestampQueue() {
-        Queue<Double> queue = new ArrayBlockingQueue<>(20);
+        final Queue<Double> queue = new ArrayBlockingQueue<>(20);
         Drive.odometry_lock.lock();
         try {
             timestamp_queues.add(queue);
@@ -88,10 +91,10 @@ public class SparkOdometryThread {
         Drive.odometry_lock.lock();
         try {
             // Get sample timestamp
-            double timestamp = RobotController.getFPGATime() / 1e6;
+            final double timestamp = RobotController.getFPGATime() / 1e6;
 
             // Read Spark values, mark invalid in case of error
-            double[] spark_values = new double[spark_signals.size()];
+            final double[] spark_values = new double[spark_signals.size()];
             boolean is_valid = true;
             for (int i = 0; i < spark_signals.size(); i++) {
                 spark_values[i] = spark_signals.get(i).getAsDouble();

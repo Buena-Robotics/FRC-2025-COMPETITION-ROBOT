@@ -9,14 +9,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Servo;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.controller.*;
 import frc.robot.Config.RobotMode;
-import frc.robot.Config.RobotType;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.ElevatorCommands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIONavX;
@@ -24,6 +23,10 @@ import frc.robot.subsystems.drive.GyroSim;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
+import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.ElevatorIO;
+import frc.robot.subsystems.elevator.ElevatorIOReal;
+import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.vision.Cameras;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
@@ -42,10 +45,10 @@ public class RobotContainer {
     private final SwerveDriveSimulation drive_simulation = Config.ROBOT_MODE == RobotMode.SIM ?
         new SwerveDriveSimulation(Drive.MAPLE_SIM_CONFIG, new Pose2d(3, 3, new Rotation2d())) :
         null;
+    private final Elevator elevator;
 
     final Servo silly_servo = new Servo(1);
     final Servo silly_servo2 = new Servo(0);
-
 
     // Controller
     private final CommandControllerIO controller = new XboxControllerIO(0);
@@ -68,6 +71,8 @@ public class RobotContainer {
                     drive::addVisionMeasurement
                 // new VisionIOPhoton(Cameras.cameras[0])
                 );
+
+                this.elevator = new Elevator(new ElevatorIOReal());
                 break;
             case SIM:
                 // create a maple-sim swerve drive simulation instance
@@ -83,15 +88,18 @@ public class RobotContainer {
                     new ModuleIOSim(drive_simulation.getModules()[3]));
                 this.vision = new Vision(
                     drive::addVisionMeasurement,
-                    new VisionIOPhotonSim(Cameras.cameras[0],
-                        drive_simulation::getSimulatedDriveTrainPose));
+                    new VisionIOPhotonSim(Cameras.cameras[0], drive_simulation::getSimulatedDriveTrainPose),
+                    new VisionIOPhotonSim(Cameras.cameras[1], drive_simulation::getSimulatedDriveTrainPose));
+
+                this.elevator = new Elevator(new ElevatorIOSim());
                 break;
             default:
                 // Replayed robot, disable IO implementations
                 this.drive = new Drive(
                     new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
                 this.vision = new Vision(drive::addVisionMeasurement,
-                    new VisionIO() {});
+                    new VisionIO() {}, new VisionIO() {});
+                this.elevator = new Elevator(new ElevatorIO() {});
                 break;
         }
 
@@ -111,26 +119,18 @@ public class RobotContainer {
         configureBindings();
     }
 
-    public void updateServo(){
+    public void updateServo() {
         silly_servo.set(controller.getTestAxis1());
         silly_servo2.set(controller.getTestAxis2());
     }
 
     private void configureBindings() {
-        if (Config.ROBOT_TYPE == RobotType.SETUP_SWERVE) {
-            SmartDashboard.putData("Commands/LogSwerveModulePositions", DriveCommands.logModuleOffsetsCharacterization(drive));
-            drive.setDefaultCommand(DriveCommands.joystickForwardOnlyDrive(
-                drive,
-                () -> controller.getDriveYAxis()));
-            return;
-        }
-
         // Default command, normal field-relative drive
         drive.setDefaultCommand(DriveCommands.joystickDrive(
             drive,
-            () -> controller.getDriveYAxis(),
-            () -> controller.getDriveXAxis(),
-            () -> controller.getTurnAxis(),
+            Config.ROBOT_MODE == RobotMode.REAL ? () -> controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
+            Config.ROBOT_MODE == RobotMode.REAL ? () -> controller.getDriveXAxis() : () -> -controller.getDriveXAxis(),
+            Config.ROBOT_MODE == RobotMode.REAL ? () -> controller.getTurnAxis() : () -> -controller.getTurnAxis(),
             () -> false));
 
         // Lock to 0° when A button is held
@@ -151,6 +151,8 @@ public class RobotContainer {
                 .getSimulatedDriveTrainPose()) // reset odometry to actual robot pose during simulation
             : () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
         controller.resetGyroBtn().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
+
+        elevator.setDefaultCommand(ElevatorCommands.triggerElevatorHeight(elevator, () -> controller.getElevatorAxis()));
     }
 
     public Command getAutonomousCommand() {

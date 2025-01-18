@@ -8,7 +8,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -17,7 +16,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.util.Printf;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -54,10 +52,8 @@ public class DriveCommands {
             .getTranslation();
     }
 
-    /*
-     * Drive only forward wtih joystick to set
-     * module abs encoder rotations
-     */
+    /* Drive only forward wtih joystick to set
+     * module abs encoder rotations */
     public static Command joystickForwardOnlyDrive(final Drive drive, final DoubleSupplier x_supplier) {
         return Commands.run(
             () -> {
@@ -70,15 +66,6 @@ public class DriveCommands {
                     0);
                 drive.runVelocity(speeds);
             }, drive);
-    }
-
-    public static Command logModuleOffsetsCharacterization(final Drive drive){
-        return Commands.runOnce(() -> {
-            final SwerveModulePosition[] module_positions = drive.getModulePositions();
-            for(int i = 0; i < module_positions.length; i++){
-                Printf.info("MODULE OFFSET (%d): %f", i, module_positions[i].angle.getRadians());
-            }
-        }, drive);
     }
 
     /**
@@ -103,13 +90,12 @@ public class DriveCommands {
                     linear_velocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
                     omega * drive.getMaxAngularSpeedRadPerSec());
 
-                if(field_oriented_supplier.getAsBoolean()){
+                if (field_oriented_supplier.getAsBoolean()) {
                     final boolean is_flipped = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
                     drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
                         speeds,
                         is_flipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
-                }
-                else {
+                } else {
                     drive.runVelocity(speeds);
                 }
             },
@@ -220,8 +206,8 @@ public class DriveCommands {
 
     /** Measures the robot's wheel radius by spinning in a circle. */
     public static Command wheelRadiusCharacterization(Drive drive) {
-        SlewRateLimiter limiter = new SlewRateLimiter(WHEEL_RADIUS_RAMP_RATE);
-        WheelRadiusCharacterizationState state = new WheelRadiusCharacterizationState();
+        final SlewRateLimiter limiter = new SlewRateLimiter(WHEEL_RADIUS_RAMP_RATE);
+        final WheelRadiusCharacterizationState state = new WheelRadiusCharacterizationState();
 
         return Commands.parallel(
             // Drive control sequence
@@ -233,7 +219,7 @@ public class DriveCommands {
 
                 // Turn in place, accelerating up to full speed
                 Commands.run(() -> {
-                    double speed = limiter.calculate(WHEEL_RADIUS_MAX_VELOCITY);
+                    final double speed = limiter.calculate(WHEEL_RADIUS_MAX_VELOCITY);
                     drive.runVelocity(new ChassisSpeeds(0.0, 0.0, speed));
                 }, drive)),
 
@@ -251,21 +237,21 @@ public class DriveCommands {
 
                 // Update gyro delta
                 Commands.run(() -> {
-                    Rotation2d rotation = drive.getRotation();
+                    final Rotation2d rotation = drive.getRotation();
                     state.gyro_delta += Math.abs(
                         rotation.minus(state.last_angle).getRadians());
                     state.last_angle = rotation;
                 })
                     // When cancelled, calculate and print results
                     .finallyDo(() -> {
-                        double[] positions = drive.getWheelRadiusCharacterizationPositions();
+                        final double[] positions = drive.getWheelRadiusCharacterizationPositions();
                         double wheel_delta = 0.0;
                         for (int i = 0; i < 4; i++) {
                             wheel_delta += Math.abs(positions[i] - state.positions[i]) / 4.0;
                         }
-                        double wheel_radius = (state.gyro_delta * Drive.DRIVE_BASE_RADIUS) / wheel_delta;
+                        final double wheel_radius = (state.gyro_delta * Drive.DRIVE_BASE_RADIUS) / wheel_delta;
 
-                        NumberFormat formatter = new DecimalFormat("#0.000");
+                        final NumberFormat formatter = new DecimalFormat("#0.000");
                         System.out.println("********** Wheel Radius Characterization Results **********");
                         System.out.println("\tWheel Delta: " + formatter.format(wheel_delta) + " radians");
                         System.out.println(

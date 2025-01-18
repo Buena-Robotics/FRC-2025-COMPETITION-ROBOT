@@ -22,6 +22,10 @@ public class XboxControllerIO implements CommandControllerIO {
         return controller.getRightX();
     }
 
+    @Override public double getElevatorAxis() {
+        return controller.getRightTriggerAxis();
+    }
+
     @Override public double getTestAxis1() {
         return controller.getRightTriggerAxis();
     }

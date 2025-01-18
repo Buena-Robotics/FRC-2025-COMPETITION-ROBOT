@@ -30,7 +30,7 @@ public class GyroIOPigeon2 implements GyroIO {
         yaw_position_queue = SparkOdometryThread.getInstance().registerSignal(yaw::getValueAsDouble);
     }
 
-    @Override public void updateInputs(GyroIOInputs inputs) {
+    @Override public void updateInputs(final GyroIOInputs inputs) {
         inputs.connected = BaseStatusSignal.refreshAll(yaw, yaw_velocity).equals(StatusCode.OK);
         inputs.yaw_position = Rotation2d.fromDegrees(yaw.getValueAsDouble());
         inputs.yaw_velocity_radians_per_second = Units.degreesToRadians(yaw_velocity.getValueAsDouble());
