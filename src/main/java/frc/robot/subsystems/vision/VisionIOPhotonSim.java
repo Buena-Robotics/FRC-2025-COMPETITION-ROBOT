@@ -10,9 +10,8 @@ import org.photonvision.simulation.VisionSystemSim;
 
 /** IO implementation for physics sim using PhotonVision simulator. */
 public class VisionIOPhotonSim extends VisionIOPhoton {
-    private static VisionSystemSim vision_sim;
+    public static VisionSystemSim vision_sim;
 
-    private final Supplier<Pose2d> pose_supplier;
     private final PhotonCameraSim camera_sim;
 
     /**
@@ -23,9 +22,8 @@ public class VisionIOPhotonSim extends VisionIOPhoton {
      * @param pose_supplier
      *            Supplier for the robot pose to use in simulation.
      */
-    public VisionIOPhotonSim(final Camera camera_info, final Supplier<Pose2d> pose_supplier) {
-        super(camera_info);
-        this.pose_supplier = pose_supplier;
+    public VisionIOPhotonSim(final Camera camera_info, final Supplier<Pose2d> robot_pose_supplier) {
+        super(camera_info, robot_pose_supplier);
 
         // Initialize vision sim
         if (vision_sim == null) {
@@ -35,15 +33,13 @@ public class VisionIOPhotonSim extends VisionIOPhoton {
 
         // Add sim camera
         final SimCameraProperties camera_properties = SimCameraProperties.LL2_960_720();
-        camera_properties.setFPS(30);
-        camera_properties.setExposureTimeMs(16);
         camera_sim = new PhotonCameraSim(camera, camera_properties);
         // camera_sim.canSeeTargetPose(null, null)
         vision_sim.addCamera(camera_sim, robot_to_camera);
     }
 
     @Override public void updateInputs(VisionIOInputs inputs) {
-        vision_sim.update(pose_supplier.get());
+        vision_sim.update(robot_pose_supplier.get());
         super.updateInputs(inputs);
     }
 }

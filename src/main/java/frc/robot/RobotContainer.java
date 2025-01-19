@@ -30,7 +30,7 @@ import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.vision.Cameras;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
-import frc.robot.subsystems.vision.VisionIOPhotonSim;
+import frc.robot.subsystems.vision.VisionIOPhotonServoSim;
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -88,8 +88,11 @@ public class RobotContainer {
                     new ModuleIOSim(drive_simulation.getModules()[3]));
                 this.vision = new Vision(
                     drive::addVisionMeasurement,
-                    new VisionIOPhotonSim(Cameras.cameras[0], drive_simulation::getSimulatedDriveTrainPose),
-                    new VisionIOPhotonSim(Cameras.cameras[1], drive_simulation::getSimulatedDriveTrainPose));
+                    new VisionIOPhotonServoSim(Cameras.cameras[0], drive_simulation::getSimulatedDriveTrainPose, 4));
+                // new VisionIOPhotonSim(Cameras.cameras[0],
+                // drive_simulation::getSimulatedDriveTrainPose),
+                // new VisionIOPhotonSim(Cameras.cameras[1],
+                // drive_simulation::getSimulatedDriveTrainPose));
 
                 this.elevator = new Elevator(new ElevatorIOSim());
                 break;

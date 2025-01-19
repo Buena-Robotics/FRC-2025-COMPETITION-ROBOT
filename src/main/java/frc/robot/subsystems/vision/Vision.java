@@ -56,7 +56,7 @@ public class Vision extends SubsystemBase {
         this.disconnected_alerts = new Alert[io.length];
         for (int i = 0; i < inputs.length; i++) {
             disconnected_alerts[i] = new Alert(
-                    "Vision camera " + Integer.toString(i) + " is disconnected.", AlertType.kWarning);
+                "Vision camera " + Integer.toString(i) + " is disconnected.", AlertType.kWarning);
         }
     }
 
@@ -71,8 +71,7 @@ public class Vision extends SubsystemBase {
         return inputs[camera_index].latest_target_observation.tx();
     }
 
-    @Override
-    public void periodic() {
+    @Override public void periodic() {
         for (int i = 0; i < io.length; i++) {
             io[i].updateInputs(inputs[i]);
             Logger.processInputs("Vision/Camera" + Integer.toString(i), inputs[i]);
@@ -107,15 +106,11 @@ public class Vision extends SubsystemBase {
             for (PoseObservation observation : inputs[i].pose_observations) {
                 // Check whether to reject pose
                 boolean reject_pose = observation.tag_count() == 0 // Must have at least one tag
-                        || (observation.tag_count() == 1
-                                && observation.ambiguity() > max_ambiguity) // Cannot be high ambiguity
-                        || Math.abs(observation.pose().getZ()) > max_z_error // Must have realistic Z coordinate
+                    || (observation.tag_count() == 1 && observation.ambiguity() > max_ambiguity) // Cannot be high ambiguity
+                    || Math.abs(observation.pose().getZ()) > max_z_error // Must have realistic Z coordinate
 
-                        // Must be within the field boundaries
-                        || observation.pose().getX() < 0.0
-                        || observation.pose().getX() > apriltag_layout.getFieldLength()
-                        || observation.pose().getY() < 0.0
-                        || observation.pose().getY() > apriltag_layout.getFieldWidth();
+                    // Must be within the field boundaries
+                    || observation.pose().getX() < 0.0 || observation.pose().getX() > apriltag_layout.getFieldLength() || observation.pose().getY() < 0.0 || observation.pose().getY() > apriltag_layout.getFieldWidth();
 
                 // Add pose to log
                 robot_poses.add(observation.pose());
@@ -145,24 +140,24 @@ public class Vision extends SubsystemBase {
 
                 // Send vision observation
                 consumer.accept(
-                        observation.pose().toPose2d(),
-                        observation.timestamp(),
-                        VecBuilder.fill(linear_std_dev, linear_std_dev, angular_std_dev));
+                    observation.pose().toPose2d(),
+                    observation.timestamp(),
+                    VecBuilder.fill(linear_std_dev, linear_std_dev, angular_std_dev));
             }
 
             // Log camera datadata
             Logger.recordOutput(
-                    "Vision/Camera" + Integer.toString(i) + "/TagPoses",
-                    tag_poses.toArray(new Pose3d[tag_poses.size()]));
+                "Vision/Camera" + Integer.toString(i) + "/TagPoses",
+                tag_poses.toArray(new Pose3d[tag_poses.size()]));
             Logger.recordOutput(
-                    "Vision/Camera" + Integer.toString(i) + "/RobotPoses",
-                    robot_poses.toArray(new Pose3d[robot_poses.size()]));
+                "Vision/Camera" + Integer.toString(i) + "/RobotPoses",
+                robot_poses.toArray(new Pose3d[robot_poses.size()]));
             Logger.recordOutput(
-                    "Vision/Camera" + Integer.toString(i) + "/RobotPosesAccepted",
-                    robot_poses_accepted.toArray(new Pose3d[robot_poses_accepted.size()]));
+                "Vision/Camera" + Integer.toString(i) + "/RobotPosesAccepted",
+                robot_poses_accepted.toArray(new Pose3d[robot_poses_accepted.size()]));
             Logger.recordOutput(
-                    "Vision/Camera" + Integer.toString(i) + "/RobotPosesRejected",
-                    robot_poses_rejected.toArray(new Pose3d[robot_poses_rejected.size()]));
+                "Vision/Camera" + Integer.toString(i) + "/RobotPosesRejected",
+                robot_poses_rejected.toArray(new Pose3d[robot_poses_rejected.size()]));
             all_tag_poses.addAll(tag_poses);
             all_robot_poses.addAll(robot_poses);
             all_robot_poses_accepted.addAll(robot_poses_accepted);
@@ -171,22 +166,21 @@ public class Vision extends SubsystemBase {
 
         // Log summary data
         Logger.recordOutput(
-                "Vision/Summary/TagPoses", all_tag_poses.toArray(new Pose3d[all_tag_poses.size()]));
+            "Vision/Summary/TagPoses", all_tag_poses.toArray(new Pose3d[all_tag_poses.size()]));
         Logger.recordOutput(
-                "Vision/Summary/RobotPoses", all_robot_poses.toArray(new Pose3d[all_robot_poses.size()]));
+            "Vision/Summary/RobotPoses", all_robot_poses.toArray(new Pose3d[all_robot_poses.size()]));
         Logger.recordOutput(
-                "Vision/Summary/RobotPosesAccepted",
-                all_robot_poses_accepted.toArray(new Pose3d[all_robot_poses_accepted.size()]));
+            "Vision/Summary/RobotPosesAccepted",
+            all_robot_poses_accepted.toArray(new Pose3d[all_robot_poses_accepted.size()]));
         Logger.recordOutput(
-                "Vision/Summary/RobotPosesRejected",
-                all_robot_poses_rejected.toArray(new Pose3d[all_robot_poses_rejected.size()]));
+            "Vision/Summary/RobotPosesRejected",
+            all_robot_poses_rejected.toArray(new Pose3d[all_robot_poses_rejected.size()]));
     }
 
-    @FunctionalInterface
-    public static interface VisionConsumer {
+    @FunctionalInterface public static interface VisionConsumer {
         public void accept(
-                Pose2d vision_robot_pose_meters,
-                double timestamp_seconds,
-                Matrix<N3, N1> vision_measurements_std_devs);
+            Pose2d vision_robot_pose_meters,
+            double timestamp_seconds,
+            Matrix<N3, N1> vision_measurements_std_devs);
     }
 }

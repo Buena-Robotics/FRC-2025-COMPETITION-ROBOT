@@ -1,5 +1,6 @@
 package frc.robot.subsystems.vision;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -10,6 +11,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
+
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -17,8 +20,11 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 /** IO implementation for real PhotonVision hardware. */
 public class VisionIOPhoton implements VisionIO {
+    protected final Supplier<Pose2d> robot_pose_supplier;
+    protected final Camera camera_info;
     protected final PhotonCamera camera;
     protected final Transform3d robot_to_camera;
+    protected Supplier<Transform3d> camera_transform_supplier;
 
     /**
      * Creates a new VisionIOPhotonVision.
@@ -28,9 +34,20 @@ public class VisionIOPhoton implements VisionIO {
      * @param rotationSupplier
      *            The 3D position of the camera relative to the robot.
      */
-    public VisionIOPhoton(final Camera camera_info) {
+    public VisionIOPhoton(final Camera camera_info, final Supplier<Pose2d> robot_pose_supplier, final Supplier<Transform3d> camera_transform_supplier) {
+        this.camera_info = camera_info;
         this.camera = new PhotonCamera(camera_info.name());
         this.robot_to_camera = camera_info.robot_to_camera();
+        this.robot_pose_supplier = robot_pose_supplier;
+        this.camera_transform_supplier = camera_transform_supplier;
+    }
+
+    public VisionIOPhoton(final Camera camera_info, final Supplier<Pose2d> robot_pose_supplier) {
+        this(camera_info, robot_pose_supplier, () -> new Transform3d());
+    }
+
+    public void setCameraTransformSupplier(final Supplier<Transform3d> camera_transform_supplier) {
+        this.camera_transform_supplier = camera_transform_supplier;
     }
 
     @Override public void updateInputs(final VisionIOInputs inputs) {
@@ -54,9 +71,9 @@ public class VisionIOPhoton implements VisionIO {
                 final MultiTargetPNPResult multitag_result = result.multitagResult.get();
 
                 // Calculate robot pose
-                final Transform3d fieldToCamera = multitag_result.estimatedPose.best;
-                final Transform3d fieldToRobot = fieldToCamera.plus(robot_to_camera.inverse());
-                final Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
+                final Transform3d field_to_camera = multitag_result.estimatedPose.best;
+                final Transform3d field_to_robot = field_to_camera.plus(robot_to_camera.inverse());
+                final Pose3d robot_pose = new Pose3d(field_to_robot.getTranslation(), field_to_robot.getRotation());
 
                 // Calculate average tag distance
                 double total_tag_distance = 0.0;
@@ -71,7 +88,7 @@ public class VisionIOPhoton implements VisionIO {
                 pose_observations.add(
                     new PoseObservation(
                         result.getTimestampSeconds(), // Timestamp
-                        robotPose, // 3D pose estimate
+                        robot_pose, // 3D pose estimate
                         multitag_result.estimatedPose.ambiguity, // Ambiguity
                         multitag_result.fiducialIDsUsed.size(), // Tag count
                         total_tag_distance / result.targets.size(), // Average tag distance
@@ -117,5 +134,9 @@ public class VisionIOPhoton implements VisionIO {
         for (int id : tag_ids) {
             inputs.tag_ids[i++] = id;
         }
+    }
+
+    @Override public Pose3d getCameraPose() {
+        return new Pose3d(robot_pose_supplier.get()).transformBy(robot_to_camera).transformBy(camera_transform_supplier.get());
     }
 }
