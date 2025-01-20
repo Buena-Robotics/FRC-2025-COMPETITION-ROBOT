@@ -8,7 +8,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -16,6 +15,10 @@ import frc.robot.controller.*;
 import frc.robot.Config.RobotMode;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
+import frc.robot.subsystems.climb.Climb;
+import frc.robot.subsystems.climb.ClimbIO;
+import frc.robot.subsystems.climb.ClimbIOReal;
+import frc.robot.subsystems.climb.ClimbIOSim;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIONavX;
@@ -27,6 +30,10 @@ import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOReal;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
+import frc.robot.subsystems.mailbox.Mailbox;
+import frc.robot.subsystems.mailbox.MailboxIO;
+import frc.robot.subsystems.mailbox.MailboxIOReal;
+import frc.robot.subsystems.mailbox.MailboxIOSim;
 import frc.robot.subsystems.vision.Cameras;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
@@ -46,9 +53,8 @@ public class RobotContainer {
         new SwerveDriveSimulation(Drive.MAPLE_SIM_CONFIG, new Pose2d(3, 3, new Rotation2d())) :
         null;
     private final Elevator elevator;
-
-    final Servo silly_servo = new Servo(1);
-    final Servo silly_servo2 = new Servo(0);
+    private final Climb climb;
+    private final Mailbox mailbox;
 
     // Controller
     private final CommandControllerIO controller = new XboxControllerIO(0);
@@ -73,6 +79,8 @@ public class RobotContainer {
                 );
 
                 this.elevator = new Elevator(new ElevatorIOReal());
+                this.climb = new Climb(new ClimbIOReal());
+                this.mailbox = new Mailbox(new MailboxIOReal());
                 break;
             case SIM:
                 // create a maple-sim swerve drive simulation instance
@@ -95,6 +103,8 @@ public class RobotContainer {
                 // drive_simulation::getSimulatedDriveTrainPose));
 
                 this.elevator = new Elevator(new ElevatorIOSim());
+                this.climb = new Climb(new ClimbIOSim());
+                this.mailbox = new Mailbox(new MailboxIOSim());
                 break;
             default:
                 // Replayed robot, disable IO implementations
@@ -103,6 +113,8 @@ public class RobotContainer {
                 this.vision = new Vision(drive::addVisionMeasurement,
                     new VisionIO() {}, new VisionIO() {});
                 this.elevator = new Elevator(new ElevatorIO() {});
+                this.climb = new Climb(new ClimbIO() {});
+                this.mailbox = new Mailbox(new MailboxIO() {});
                 break;
         }
 
@@ -120,11 +132,6 @@ public class RobotContainer {
         auto_chooser.addOption("Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
         configureBindings();
-    }
-
-    public void updateServo() {
-        silly_servo.set(controller.getTestAxis1());
-        silly_servo2.set(controller.getTestAxis2());
     }
 
     private void configureBindings() {

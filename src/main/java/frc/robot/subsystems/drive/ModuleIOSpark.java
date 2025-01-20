@@ -121,9 +121,9 @@ public class ModuleIOSpark implements ModuleIO {
     }
 
     @Override public void setDriveVelocity(final double velocity_radians_per_second) {
-        double ffVolts = DRIVE_S * Math.signum(velocity_radians_per_second) + DRIVE_V * velocity_radians_per_second;
+        double ff_volts = DRIVE_S * Math.signum(velocity_radians_per_second) + DRIVE_V * velocity_radians_per_second;
         drive_controller.setReference(
-            velocity_radians_per_second, ControlType.kVelocity, ClosedLoopSlot.kSlot0, ffVolts, ArbFFUnits.kVoltage);
+            velocity_radians_per_second, ControlType.kVelocity, ClosedLoopSlot.kSlot0, ff_volts, ArbFFUnits.kVoltage);
     }
 
     @Override public void setTurnPosition(final Rotation2d rotation) {

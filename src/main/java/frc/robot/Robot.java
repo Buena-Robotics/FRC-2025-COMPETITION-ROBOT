@@ -122,13 +122,12 @@ public class Robot extends LoggedRobot {
     }
 
     final XboxController silly_controller = new XboxController(1);
+
     @Override public void robotPeriodic() {
         // Switch thread to high priority to improve loop timing
         Threads.setCurrentThreadPriority(true, 99);
 
         CommandScheduler.getInstance().run();
-
-        robot_container.updateServo();
 
         // Check logging fault
         log_reciever_queue_alert.set(Logger.getReceiverQueueFault());

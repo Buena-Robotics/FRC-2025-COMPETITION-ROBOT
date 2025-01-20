@@ -1,5 +1,7 @@
 package frc.robot.subsystems.climb;
 
+import java.util.function.DoubleSupplier;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -24,16 +26,15 @@ public class ClimbIOReal implements ClimbIO {
     }
 
     @Override public void updateInputs(final ClimbIOInputs inputs) {
-
         SparkUtil.spark_sticky_fault = false;
-        inputs.winch_connected = true;
-        inputs.winch_velocity_radians_per_second = 0.0;
-        inputs.winch_applied_volts = 0.0;
-        inputs.winch_current_amps = 0.0;
+        SparkUtil.ifOk(winch_motor, winch_encoder::getPosition, (value) -> inputs.winch_position_radians = value);
+        SparkUtil.ifOk(winch_motor, winch_encoder::getVelocity, (value) -> inputs.winch_velocity_radians_per_second = value);
+        SparkUtil.ifOk(winch_motor, new DoubleSupplier[] { winch_motor::getAppliedOutput, winch_motor::getBusVoltage }, (values) -> inputs.winch_applied_volts = values[0] * values[1]);
+        SparkUtil.ifOk(winch_motor, winch_motor::getOutputCurrent, (value) -> inputs.winch_current_amps = value);
         inputs.winch_connected = winch_connected_debounce.calculate(!SparkUtil.spark_sticky_fault);
     }
 
     @Override public void setWinchSpeed(final double winch_speed) {
-
+        winch_motor.set(winch_speed);
     }
 }

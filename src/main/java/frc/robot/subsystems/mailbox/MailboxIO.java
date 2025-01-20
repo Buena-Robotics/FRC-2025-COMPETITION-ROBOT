@@ -14,5 +14,5 @@ public interface MailboxIO {
 
     public default void setShooterSpeed(final double shooter_speed) {}
 
-    public default void setShooterVelocity(final double shooter_velocity) {}
+    public default void setShooterVelocity(final double shooter_velocity_radians_per_second) {}
 }
