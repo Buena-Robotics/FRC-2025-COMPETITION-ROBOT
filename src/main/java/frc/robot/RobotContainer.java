@@ -13,11 +13,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.controller.*;
 import frc.robot.Config.RobotMode;
+import frc.robot.commands.ClimbCommands;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
+import frc.robot.commands.MailboxCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
-import frc.robot.subsystems.climb.ClimbIOReal;
 import frc.robot.subsystems.climb.ClimbIOSim;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -28,11 +29,9 @@ import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
-import frc.robot.subsystems.elevator.ElevatorIOReal;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.mailbox.Mailbox;
 import frc.robot.subsystems.mailbox.MailboxIO;
-import frc.robot.subsystems.mailbox.MailboxIOReal;
 import frc.robot.subsystems.mailbox.MailboxIOSim;
 import frc.robot.subsystems.vision.Cameras;
 import frc.robot.subsystems.vision.Vision;
@@ -78,9 +77,9 @@ public class RobotContainer {
                 // new VisionIOPhoton(Cameras.cameras[0])
                 );
 
-                this.elevator = new Elevator(new ElevatorIOReal());
-                this.climb = new Climb(new ClimbIOReal());
-                this.mailbox = new Mailbox(new MailboxIOReal());
+                this.elevator = new Elevator(new ElevatorIO() {});
+                this.climb = new Climb(new ClimbIO() {});
+                this.mailbox = new Mailbox(new MailboxIO() {});
                 break;
             case SIM:
                 // create a maple-sim swerve drive simulation instance
@@ -163,6 +162,8 @@ public class RobotContainer {
         controller.resetGyroBtn().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
         elevator.setDefaultCommand(ElevatorCommands.triggerElevatorHeight(elevator, () -> controller.getElevatorAxis()));
+        climb.setDefaultCommand(ClimbCommands.triggerClimbSpeed(climb));
+        mailbox.setDefaultCommand(MailboxCommands.triggerMailboxSpeed(mailbox));
     }
 
     public Command getAutonomousCommand() {

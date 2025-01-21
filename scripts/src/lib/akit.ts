@@ -90,17 +90,14 @@ export namespace Akit {
         widthInches: number; // Real width of the field (long side)
         heightInches: number; // Real height of the field (short side)
         defaultOrigin: "auto" | "blue" | "red"; // Default origin location, "auto" if unspecified
-        driverStations: [
-            [number, number][] // Driver station positions (X & Y in meters relative to the center of the field), ordered B1, B2, B3, R1, R2, R3
-        ]
-        gamePieces: [ // List of game piece types
+        driverStations: [number, number][] // Driver station positions (X & Y in meters relative to the center of the field), ordered B1, B2, B3, R1, R2, R3
+        gamePieces: // List of game piece types
             {
                 name: string; // Game piece name
                 rotations: Rotation[]; // Sequence of rotations along the x, y, and z axes
                 position: Position3D; // Position offset in meters, applied after rotation
                 stagedObjects: string[]; // Names of staged game piece objects, to hide if user poses are supplied
-            }
-        ]
+            }[]
     }
 
     function is_custom_asset_folder_name(file: string){
