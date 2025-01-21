@@ -13,10 +13,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.controller.*;
 import frc.robot.Config.RobotMode;
-import frc.robot.commands.ClimbCommands;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
-import frc.robot.commands.MailboxCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
@@ -162,8 +160,8 @@ public class RobotContainer {
         controller.resetGyroBtn().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
         elevator.setDefaultCommand(ElevatorCommands.triggerElevatorHeight(elevator, () -> controller.getElevatorAxis()));
-        climb.setDefaultCommand(ClimbCommands.triggerClimbSpeed(climb));
-        mailbox.setDefaultCommand(MailboxCommands.triggerMailboxSpeed(mailbox));
+        // climb.setDefaultCommand(ClimbCommands.triggerClimbSpeed(climb));
+        // mailbox.setDefaultCommand(MailboxCommands.triggerMailboxSpeed(mailbox));
     }
 
     public Command getAutonomousCommand() {
