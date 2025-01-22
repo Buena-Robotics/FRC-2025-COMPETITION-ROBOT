@@ -15,10 +15,10 @@ public class ElevatorIOSim implements ElevatorIO {
     private final PIDController lift_controller = new PIDController(LIFT_SIM_P, 0, LIFT_SIM_D);
 
     private double lift_applied_volts = 0.0;
+    private boolean lift_brake_mode = true;
 
     @Override public void updateInputs(final ElevatorIOInputs inputs) {
         lift_applied_volts = lift_controller.calculate(lift_sim.getAngularPositionRad());
-
         lift_sim.setInputVoltage(MathUtil.clamp(lift_applied_volts, -12.0, 12.0));
         lift_sim.update(0.02);
 
@@ -27,6 +27,7 @@ public class ElevatorIOSim implements ElevatorIO {
         if (lift_sim.getAngularPositionRad() < 0)
             lift_sim.setState(0, 0.0);
 
+        inputs.lift_setpoint_position_inches = lift_controller.getSetpoint();
         inputs.lift_position_inches = lift_sim.getAngularPositionRad();
         inputs.lift_velocity_inches_per_second = lift_sim.getAngularVelocityRadPerSec();
         inputs.lift_applied_volts = lift_sim.getInputVoltage();
@@ -34,7 +35,18 @@ public class ElevatorIOSim implements ElevatorIO {
         inputs.lift_connected = true;
     }
 
-    @Override public void setLiftPosition(final double lift_setpoint_position_inches) {
-        lift_controller.setSetpoint(lift_setpoint_position_inches);
+    @Override public void setLiftPosition(double lift_setpoint_position_inches) {
+        if (lift_brake_mode)
+            lift_controller.setSetpoint(0.0);
+        else
+            lift_controller.setSetpoint(lift_setpoint_position_inches);
+    }
+
+    @Override public void setLiftBrakeMode(final boolean brake_mode) {
+        lift_brake_mode = brake_mode;
+    }
+
+    @Override public void zeroLiftPosition() {
+        lift_sim.setState(0.0, 0.0);
     }
 }

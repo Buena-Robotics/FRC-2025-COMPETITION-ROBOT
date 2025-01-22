@@ -38,7 +38,6 @@ import org.littletonrobotics.junction.inputs.LoggedPowerDistribution;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
-import org.littletonrobotics.urcl.URCL;
 
 public class Robot extends LoggedRobot {
     private static final Map<Integer, String> GIT_DIRTY_MSG_MAP = Map.of(0, "All changes committed", 1, "Uncomitted changes");
@@ -87,7 +86,7 @@ public class Robot extends LoggedRobot {
         }
 
         // Initialize URCL
-        Logger.registerURCL(URCL.startExternal());
+        // Logger.registerURCL(URCL.startExternal());
 
         // Start AdvantageKit logger
         Logger.start();
