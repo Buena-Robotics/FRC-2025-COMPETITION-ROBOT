@@ -51,4 +51,17 @@ public class Elevator extends SubsystemBase {
     public void runSetpoint(final double lift_position_inches) {
         io.setLiftPosition(lift_position_inches);
     }
+
+    public static enum ElevatorSetpoint {
+        BOTTOM(0.0), TOP(Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
+
+        private double setpoint_inches = 0.0;
+        private ElevatorSetpoint(final double setpoint_inches) {
+            this.setpoint_inches = setpoint_inches;
+        }
+
+        public double getValue() {
+            return setpoint_inches;
+        }
+    }
 }

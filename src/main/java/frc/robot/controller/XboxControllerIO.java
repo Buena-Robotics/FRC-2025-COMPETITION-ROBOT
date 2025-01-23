@@ -26,12 +26,8 @@ public class XboxControllerIO implements CommandControllerIO {
         return controller.getRightTriggerAxis();
     }
 
-    @Override public double getTestAxis1() {
-        return controller.getRightTriggerAxis();
-    }
-
-    @Override public double getTestAxis2() {
-        return controller.getLeftTriggerAxis();
+    @Override public double getMailboxAxis() {
+        return 0.0;
     }
 
     @Override public Trigger lockGyroBtn() {

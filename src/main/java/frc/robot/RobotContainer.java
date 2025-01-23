@@ -15,6 +15,7 @@ import frc.robot.controller.*;
 import frc.robot.Config.RobotMode;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
+import frc.robot.commands.MailboxCommands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIONavX;
@@ -26,6 +27,9 @@ import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOReal;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
+import frc.robot.subsystems.mailbox.Mailbox;
+import frc.robot.subsystems.mailbox.MailboxIO;
+import frc.robot.subsystems.mailbox.MailboxIOSim;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonSim;
@@ -46,7 +50,7 @@ public class RobotContainer {
         null;
     private final Elevator elevator;
     // private final Climb climb;
-    // private final Mailbox mailbox;
+    private final Mailbox mailbox;
 
     // Controller
     private final CommandControllerIO controller = new XboxControllerIO(0);
@@ -72,7 +76,7 @@ public class RobotContainer {
 
                 this.elevator = new Elevator(new ElevatorIOReal() {});
                 // this.climb = new Climb(new ClimbIO() {});
-                // this.mailbox = new Mailbox(new MailboxIO() {});
+                this.mailbox = new Mailbox(new MailboxIO() {});
                 break;
             case SIM:
                 // create a maple-sim swerve drive simulation instance
@@ -93,7 +97,7 @@ public class RobotContainer {
 
                 this.elevator = new Elevator(new ElevatorIOSim());
                 // this.climb = new Climb(new ClimbIOSim());
-                // this.mailbox = new Mailbox(new MailboxIOSim());
+                this.mailbox = new Mailbox(new MailboxIOSim());
                 break;
             default:
                 // Replayed robot, disable IO implementations
@@ -101,7 +105,7 @@ public class RobotContainer {
                 this.vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
                 this.elevator = new Elevator(new ElevatorIO() {});
                 // this.climb = new Climb(new ClimbIO() {});
-                // this.mailbox = new Mailbox(new MailboxIO() {});
+                this.mailbox = new Mailbox(new MailboxIO() {});
                 break;
         }
 
@@ -151,7 +155,7 @@ public class RobotContainer {
 
         elevator.setDefaultCommand(ElevatorCommands.triggerElevatorHeight(elevator, () -> controller.getElevatorAxis()));
         // climb.setDefaultCommand(ClimbCommands.triggerClimbSpeed(climb));
-        // mailbox.setDefaultCommand(MailboxCommands.triggerMailboxSpeed(mailbox));
+        mailbox.setDefaultCommand(MailboxCommands.triggerMailboxSpeed(mailbox, () -> controller.getMailboxAxis() ));
     }
 
     public Command getAutonomousCommand() {

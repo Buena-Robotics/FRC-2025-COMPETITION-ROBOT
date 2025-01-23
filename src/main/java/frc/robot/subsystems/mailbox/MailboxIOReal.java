@@ -15,7 +15,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import frc.robot.util.SparkUtil;
 
 public class MailboxIOReal implements MailboxIO {
-    private static final int SHOOTER_MOTOR_CAN_ID = 10;
+    private static final int SHOOTER_MOTOR_CAN_ID = 14;
     private static final double SHOOTER_S = 0.1;
     private static final double SHOOTER_V = 0.1;
 

@@ -19,7 +19,6 @@ public class Mailbox extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Mailbox", inputs);
 
-        // Update alerts
         shooter_disconnect_alert.set(!inputs.shooter_connected);
     }
 
