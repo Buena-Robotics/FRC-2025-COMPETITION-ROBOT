@@ -26,6 +26,10 @@ import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOReal;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOPhotonSim;
+import frc.robot.subsystems.vision.Cameras;
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -34,8 +38,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
     // Subsystems
-    // @SuppressWarnings("unused")
-    // private final Vision vision;
+    @SuppressWarnings("unused")
+    private final Vision vision;
     private final Drive drive;
     private final SwerveDriveSimulation drive_simulation = Config.ROBOT_MODE == RobotMode.SIM ?
         new SwerveDriveSimulation(Drive.MAPLE_SIM_CONFIG, new Pose2d(3, 3, new Rotation2d())) :
@@ -45,7 +49,7 @@ public class RobotContainer {
     // private final Mailbox mailbox;
 
     // Controller
-    private final CommandControllerIO controller = new SaitekControllerIO(0);
+    private final CommandControllerIO controller = new XboxControllerIO(0);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> auto_chooser;
@@ -61,10 +65,10 @@ public class RobotContainer {
                     new ModuleIOSpark(2),
                     new ModuleIOSpark(3));
 
-                // this.vision = new Vision(
-                    // drive::addVisionMeasurement
+                this.vision = new Vision(
+                    drive::addVisionMeasurement
                 // new VisionIOPhoton(Cameras.cameras[0])
-                // );
+                );
 
                 this.elevator = new Elevator(new ElevatorIOReal() {});
                 // this.climb = new Climb(new ClimbIO() {});
@@ -74,6 +78,7 @@ public class RobotContainer {
                 // create a maple-sim swerve drive simulation instance
                 // add the simulated drivetrain to the simulation field
                 SimulatedArena.getInstance().addDriveTrainSimulation(drive_simulation);
+                resetSimulationField();
 
                 // Sim robot, instantiate physics sim IO implementations
                 this.drive = new Drive(
@@ -82,13 +87,9 @@ public class RobotContainer {
                     new ModuleIOSim(drive_simulation.getModules()[1]),
                     new ModuleIOSim(drive_simulation.getModules()[2]),
                     new ModuleIOSim(drive_simulation.getModules()[3]));
-                // this.vision = new Vision(
-                    // drive::addVisionMeasurement,
-                    // new VisionIOPhotonServoSim(Cameras.cameras[0], drive_simulation::getSimulatedDriveTrainPose, 4));
-                // new VisionIOPhotonSim(Cameras.cameras[0],
-                // drive_simulation::getSimulatedDriveTrainPose),
-                // new VisionIOPhotonSim(Cameras.cameras[1],
-                // drive_simulation::getSimulatedDriveTrainPose));
+                // new VisionIOPhotonSim(Cameras.cameras[0]), new
+                // VisionIOPhotonSim(Cameras.cameras[1])
+                this.vision = new Vision(drive::addVisionMeasurement, new VisionIOPhotonSim(Cameras.cameras[0], drive_simulation::getSimulatedDriveTrainPose));
 
                 this.elevator = new Elevator(new ElevatorIOSim());
                 // this.climb = new Climb(new ClimbIOSim());
@@ -96,10 +97,8 @@ public class RobotContainer {
                 break;
             default:
                 // Replayed robot, disable IO implementations
-                this.drive = new Drive(
-                    new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
-                // this.vision = new Vision(drive::addVisionMeasurement,
-                    // new VisionIO() {}, new VisionIO() {});
+                this.drive = new Drive(new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
+                this.vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
                 this.elevator = new Elevator(new ElevatorIO() {});
                 // this.climb = new Climb(new ClimbIO() {});
                 // this.mailbox = new Mailbox(new MailboxIO() {});
@@ -126,9 +125,9 @@ public class RobotContainer {
         // Default command, normal field-relative drive
         drive.setDefaultCommand(DriveCommands.joystickDrive(
             drive,
-            Config.ROBOT_MODE == RobotMode.REAL ? () -> controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
-            Config.ROBOT_MODE == RobotMode.REAL ? () -> controller.getDriveXAxis() : () -> -controller.getDriveXAxis(),
-            Config.ROBOT_MODE == RobotMode.REAL ? () -> controller.getTurnAxis() : () -> -controller.getTurnAxis(),
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> controller.getDriveYAxis(),
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> controller.getDriveXAxis(),
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getTurnAxis() : () -> controller.getTurnAxis(),
             () -> false));
 
         // Lock to 0° when A button is held

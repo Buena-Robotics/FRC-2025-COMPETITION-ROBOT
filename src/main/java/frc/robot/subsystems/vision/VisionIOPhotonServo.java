@@ -20,13 +20,14 @@ public class VisionIOPhotonServo extends VisionIOPhoton {
     private static final double MAX_SIGHT_RANGE_METERS = 6.0;
     private static VisionTargetSim[] targets;
 
-    private final Transform3d servo_camera_offset;
+    // private final Transform3d servo_camera_offset;
     protected final SillyServo servo;
 
     public VisionIOPhotonServo(final Camera camera_info, final Supplier<Pose2d> robot_pose_supplier, final int servo_channel, final double servo_radius_cm) {
         super(camera_info, robot_pose_supplier);
         this.servo = new SillyServo(servo_channel);
-        this.servo_camera_offset = new Transform3d(servo_radius_cm / 100.0, 0.0, 0.0, new Rotation3d());
+        // this.servo_camera_offset = new Transform3d(servo_radius_cm / 100.0, 0.0, 0.0,
+        // new Rotation3d());
 
         this.servo.setAngle(90.0);
 

@@ -50,13 +50,13 @@ public class ElevatorIOReal implements ElevatorIO {
         SparkUtil.ifOk(lift_motor, new DoubleSupplier[] { lift_motor::getAppliedOutput, lift_motor::getBusVoltage }, (values) -> inputs.lift_applied_volts = values[0] * values[1]);
         SparkUtil.ifOk(lift_motor, lift_motor::getOutputCurrent, (value) -> inputs.lift_current_amps = value);
         inputs.lift_connected = lift_connected_debounce.calculate(!SparkUtil.spark_sticky_fault);
-        if(lift_fall_reset_debounce.calculate(!lift_brake_mode)){
+        if (lift_fall_reset_debounce.calculate(!lift_brake_mode)) {
             zeroLiftPosition();
         }
     }
 
     @Override public void setLiftPosition(double lift_setpoint_position_inches) {
-        if(lift_setpoint_position_inches < LIFT_CLAMP_MIN_POSITION)
+        if (lift_setpoint_position_inches < LIFT_CLAMP_MIN_POSITION)
             lift_setpoint_position_inches = LIFT_CLAMP_MIN_POSITION;
         this.lift_setpoint_position_inches = lift_setpoint_position_inches;
         lift_controller.setReference(lift_setpoint_position_inches, ControlType.kPosition);
