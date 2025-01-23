@@ -18,11 +18,11 @@ public class SaitekControllerIO implements CommandControllerIO {
     }
 
     @Override public double getTurnAxis() {
-        return controller.joystickRotationAxis();
+        return 0.0;
     }
 
     @Override public double getElevatorAxis() {
-        return controller.throttleSliderAxis() + 0.5;
+        return (controller.throttleSliderAxis() + 1.0) / 2.0;
     }
 
     @Override public double getMailboxAxis() {

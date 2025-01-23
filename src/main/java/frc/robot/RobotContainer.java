@@ -53,7 +53,7 @@ public class RobotContainer {
     private final Mailbox mailbox;
 
     // Controller
-    private final CommandControllerIO controller = new XboxControllerIO(0);
+    private final CommandControllerIO controller = new SaitekControllerIO(0);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> auto_chooser;
