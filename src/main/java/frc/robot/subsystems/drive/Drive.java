@@ -52,7 +52,7 @@ public class Drive extends SubsystemBase {
     public static final double TURN_ENCODER_POSITION_FACTOR = 2 * Math.PI; // Rotations -> Radians
     public static final double TURN_ENCODER_VELOCITY_FACTOR = (2 * Math.PI) / 60.0; // RPM -> Rad/Sec
 
-    public static final int DRIVE_MOTOR_CURRENT_LIMIT = 50;
+    public static final int DRIVE_MOTOR_CURRENT_LIMIT = 44;
     public static final double DRIVE_MOTOR_REDUCTION = 6.75; // MAXSwerve with 14 pinion teeth 22 spur teeth
 
     public static final double TURN_MOTOR_REDUCTION = 12.8;
@@ -62,8 +62,11 @@ public class Drive extends SubsystemBase {
 
     public static final double WHEEL_RADIUS_METERS = Units.inchesToMeters(1.5);
     public static final double MAX_SPEED_METERS_PER_SECOND = 4.2;
-    public static final double TRACK_WIDTH = Units.inchesToMeters(29);
-    public static final double WHEEL_BASE = Units.inchesToMeters(29);
+    public static final double BUMPER_WIDTH = Units.inchesToMeters(3);
+    public static final double ROBOT_WIDTH = Units.inchesToMeters(26);
+    public static final double ROBOT_LENGTH = Units.inchesToMeters(26);
+    public static final double TRACK_WIDTH = Units.inchesToMeters(18.5);
+    public static final double WHEEL_BASE = Units.inchesToMeters(18.5);
     public static final double DRIVE_BASE_RADIUS = Math.hypot(TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0);
     public static final Translation2d[] MODULE_TRANSLATIONS = new Translation2d[] {
             new Translation2d(TRACK_WIDTH / 2.0, -WHEEL_BASE / 2.0),
@@ -105,7 +108,7 @@ public class Drive extends SubsystemBase {
         .withRobotMass(Kilogram.of(ROBOT_MASS_KG))
         .withGyro(COTS.ofNav2X())
         .withSwerveModule(MARK4)
-        .withBumperSize(Inches.of(29 + 6), Inches.of(29 + 6));
+        .withBumperSize(Meters.of(ROBOT_LENGTH + (BUMPER_WIDTH * 2)), Meters.of(ROBOT_WIDTH + (BUMPER_WIDTH * 2)));
 
     public static final double ODOMETRY_FREQUENCY_HERTZ = 100.0; // Hz
     public static final Lock odometry_lock = new ReentrantLock();
