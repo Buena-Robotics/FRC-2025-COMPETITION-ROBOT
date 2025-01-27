@@ -7,7 +7,7 @@ import edu.wpi.first.math.util.Units;
 import java.util.Queue;
 
 public class GyroIONavX implements GyroIO {
-    private final AHRS navx = new AHRS(NavXComType.kUSB2, (byte) Drive.ODOMETRY_FREQUENCY_HERTZ);
+    private final AHRS navx = new AHRS(NavXComType.kUSB1, (byte) Drive.ODOMETRY_FREQUENCY_HERTZ);
     private final Queue<Double> yaw_position_queue;
     private final Queue<Double> yaw_timestamp_queue;
 
