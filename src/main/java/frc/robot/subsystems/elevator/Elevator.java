@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Elevator extends SubsystemBase {
@@ -41,7 +40,7 @@ public class Elevator extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Elevator", inputs);
 
-        io.setLiftBrakeMode(DriverStation.isEnabled());
+        // io.setLiftBrakeMode(DriverStation.isEnabled());
         elevator_mech_shaft.setLength(Units.inchesToMeters(inputs.lift_position_inches));
 
         // Update alerts
@@ -56,6 +55,7 @@ public class Elevator extends SubsystemBase {
         BOTTOM(0.0), TOP(Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
 
         private double setpoint_inches = 0.0;
+
         private ElevatorSetpoint(final double setpoint_inches) {
             this.setpoint_inches = setpoint_inches;
         }

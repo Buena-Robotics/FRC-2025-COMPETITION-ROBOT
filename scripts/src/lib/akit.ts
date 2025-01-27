@@ -120,22 +120,22 @@ export namespace Akit {
         return full_path; 
     }
 
-    function publish_misc(type: TypeName, name: string, named_obj: {name: string}){
+    function publish_misc(type: TypeName, name: string, named_obj: {name: string}, publish_name: string){
         const folder_path = create_folder(folder_name(type, named_obj.name));
-        fs.cpSync(assets_folder_path + name, folder_path + '/image.png');
+        fs.cpSync(assets_folder_path + name, folder_path + '/model.glb');
         fs.writeFileSync(folder_path + '/config.json', JSON.stringify(named_obj), 'utf-8');
     }
 
     export function publish_field2d(image_name: string, field2d: FieldFlat){
-        publish_misc('Field2d', image_name, field2d);
+        publish_misc('Field2d', image_name, field2d, '/image.png');
     }
     export function publish_joystick(image_name: string, joystick: Joystick){
-        publish_misc('Joystick', image_name, joystick);
+        publish_misc('Joystick', image_name, joystick, '/image.png');
     }
     export function publish_field3d(model_name: string, field3d: Field3d){
-        publish_misc('Field3d', model_name, field3d);
+        publish_misc('Field3d', model_name, field3d, '/model.glb');
     }
     export function publish_robot(model_name: string, robot: Robot){
-        publish_misc('Robot', model_name, robot);
+        publish_misc('Robot', model_name, robot, '/model.glb');
     }
 }

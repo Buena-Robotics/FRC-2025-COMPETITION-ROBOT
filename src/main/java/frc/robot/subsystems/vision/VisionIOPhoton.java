@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import frc.robot.FieldConstants;
 import frc.robot.subsystems.vision.Cameras.Camera;
 
 import java.util.HashSet;
@@ -98,7 +99,7 @@ public class VisionIOPhoton implements VisionIO {
                 final PhotonTrackedTarget target = result.targets.get(0);
 
                 // Calculate robot pose
-                final Optional<Pose3d> tag_pose = Vision.apriltag_layout.getTagPose(target.fiducialId);
+                final Optional<Pose3d> tag_pose = FieldConstants.APRILTAG_LAYOUT.getTagPose(target.fiducialId);
                 if (tag_pose.isPresent()) {
                     final Transform3d field_to_target = new Transform3d(tag_pose.get().getTranslation(), tag_pose.get().getRotation());
                     final Transform3d camera_to_target = target.bestCameraToTarget;

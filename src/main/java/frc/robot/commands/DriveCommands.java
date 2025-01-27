@@ -21,9 +21,13 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathConstraints;
 
 public class DriveCommands {
     private static final double DEADBAND = 0.32;
@@ -108,7 +112,7 @@ public class DriveCommands {
      * include snapping to an angle, aiming at a vision target, or controlling
      * absolute rotation with a joystick.
      */
-    public static Command joystickDriveAtAngle(Drive drive, DoubleSupplier x_supplier, DoubleSupplier y_supplier, Supplier<Rotation2d> rotation_supplier) {
+    public static Command joystickDriveAtAngle(final Drive drive, final DoubleSupplier x_supplier, final DoubleSupplier y_supplier, final Supplier<Rotation2d> rotation_supplier) {
 
         // Create PID controller
         ProfiledPIDController angle_controller = new ProfiledPIDController(
@@ -148,7 +152,7 @@ public class DriveCommands {
      * <p>
      * This command should only be used in voltage control mode.
      */
-    public static Command feedforwardCharacterization(Drive drive) {
+    public static Command feedforwardCharacterization(final Drive drive) {
         List<Double> velocity_samples = new LinkedList<>();
         List<Double> voltage_samples = new LinkedList<>();
         Timer timer = new Timer();
@@ -205,7 +209,7 @@ public class DriveCommands {
     }
 
     /** Measures the robot's wheel radius by spinning in a circle. */
-    public static Command wheelRadiusCharacterization(Drive drive) {
+    public static Command wheelRadiusCharacterization(final Drive drive) {
         final SlewRateLimiter limiter = new SlewRateLimiter(WHEEL_RADIUS_RAMP_RATE);
         final WheelRadiusCharacterizationState state = new WheelRadiusCharacterizationState();
 
@@ -264,5 +268,17 @@ public class DriveCommands {
         double[] positions = new double[4];
         Rotation2d last_angle = new Rotation2d();
         double gyro_delta = 0.0;
+    }
+
+    private static final PathConstraints pathfinding_constraints = new PathConstraints(5, 3, Units.degreesToRadians(540), Units.degreesToRadians(720));
+
+    public static Command pathfindToPose(final Drive drive, final Pose2d pose) {
+        return AutoBuilder.pathfindToPose(pose, pathfinding_constraints, 0.0);
+    }
+
+    public static Command pathfindToPoseSupplier(final Drive drive, final Supplier<Pose2d> pose_supplier) {
+        return Commands.defer(
+            () -> AutoBuilder.pathfindToPose(pose_supplier.get(), pathfinding_constraints),
+            Set.of(drive));
     }
 }

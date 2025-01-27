@@ -104,7 +104,8 @@ public class Drive extends SubsystemBase {
         .withCustomModuleTranslations(MODULE_TRANSLATIONS)
         .withRobotMass(Kilogram.of(ROBOT_MASS_KG))
         .withGyro(COTS.ofNav2X())
-        .withSwerveModule(MARK4);
+        .withSwerveModule(MARK4)
+        .withBumperSize(Inches.of(29 + 6), Inches.of(29 + 6));
 
     public static final double ODOMETRY_FREQUENCY_HERTZ = 100.0; // Hz
     public static final Lock odometry_lock = new ReentrantLock();
@@ -186,11 +187,11 @@ public class Drive extends SubsystemBase {
             // Log empty setpoint states when disabled
             Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
             Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
-            for (Module module : modules)
-                module.setCoastMode();
+            // for (Module module : modules)
+            // module.setCoastMode();
         } else if (driver_station_enabled) {
-            for (Module module : modules)
-                module.setBrakeMode();
+            // for (Module module : modules)
+            // module.setBrakeMode();
         }
 
         // Update odometry

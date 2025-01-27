@@ -20,7 +20,6 @@ public class ElevatorIOReal implements ElevatorIO {
     private static final int LIFT_MOTOR_CURRENT_LIMIT = 10;
     private static final double LIFT_ENCODER_POSITION_FACTOR = 0.2663130456; // 0.3141592654
     private static final double LIFT_ENCODER_VELOCITY_FACTOR = LIFT_ENCODER_POSITION_FACTOR / 60.0;
-    private static final double LIFT_CLAMP_MIN_POSITION = 0.5;
 
     private static final SparkMaxConfig DEFAULT_LIFT_SPARK_CONFIG = defaultLiftSparkConfig();
 
@@ -57,9 +56,9 @@ public class ElevatorIOReal implements ElevatorIO {
 
     @Override public void setLiftPosition(double lift_setpoint_position_inches) {
         // if (lift_setpoint_position_inches < LIFT_CLAMP_MIN_POSITION)
-            // lift_setpoint_position_inches = LIFT_CLAMP_MIN_POSITION;
+        // lift_setpoint_position_inches = LIFT_CLAMP_MIN_POSITION;
         // if (lift_setpoint_position_inches > Elevator.ELEVATOR_MAX_HEIGHT_INCHES)
-            // lift_setpoint_position_inches = Elevator.ELEVATOR_MAX_HEIGHT_INCHES;
+        // lift_setpoint_position_inches = Elevator.ELEVATOR_MAX_HEIGHT_INCHES;
         this.lift_setpoint_position_inches = lift_setpoint_position_inches;
         lift_controller.setReference(lift_setpoint_position_inches, ControlType.kPosition);
     }
@@ -79,10 +78,10 @@ public class ElevatorIOReal implements ElevatorIO {
     private static SparkMaxConfig defaultLiftSparkConfig() {
         final SparkMaxConfig lift_config = new SparkMaxConfig();
         // lift_config.softLimit
-            // .forwardSoftLimit(Elevator.ELEVATOR_MAX_HEIGHT_INCHES)
-            // .forwardSoftLimitEnabled(true)
-            // .reverseSoftLimit(0.0)
-            // .reverseSoftLimitEnabled(true);
+        // .forwardSoftLimit(Elevator.ELEVATOR_MAX_HEIGHT_INCHES)
+        // .forwardSoftLimitEnabled(true)
+        // .reverseSoftLimit(0.0)
+        // .reverseSoftLimitEnabled(true);
         SparkUtil.setSparkBaseConfig(lift_config, LIFT_MOTOR_CURRENT_LIMIT);
         SparkUtil.setSparkEncoderConfig(lift_config.encoder, LIFT_ENCODER_POSITION_FACTOR, LIFT_ENCODER_VELOCITY_FACTOR);
         SparkUtil.setSparkSignalsConfig(lift_config.signals, 20);

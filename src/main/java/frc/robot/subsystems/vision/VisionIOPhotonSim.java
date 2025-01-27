@@ -1,19 +1,16 @@
 package frc.robot.subsystems.vision;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.util.Units;
+import frc.robot.FieldConstants;
 import frc.robot.subsystems.vision.Cameras.Camera;
 
-import java.util.List;
 import java.util.function.Supplier;
 
-import org.ironmaple.simulation.SimulatedArena;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
-import org.photonvision.simulation.VisionTargetSim;
 
 /** IO implementation for physics sim using PhotonVision simulator. */
 public class VisionIOPhotonSim extends VisionIOPhoton {
@@ -38,7 +35,7 @@ public class VisionIOPhotonSim extends VisionIOPhoton {
         // Initialize vision sim
         if (vision_sim == null) {
             vision_sim = new VisionSystemSim("main");
-            vision_sim.addAprilTags(Vision.apriltag_layout);
+            vision_sim.addAprilTags(FieldConstants.APRILTAG_LAYOUT);
         }
 
         // Add sim camera
@@ -51,14 +48,17 @@ public class VisionIOPhotonSim extends VisionIOPhoton {
     @Override public void updateInputs(VisionIOInputs inputs) {
         vision_sim.update(robot_pose_supplier.get());
         super.updateInputs(inputs);
-        vision_sim.clearVisionTargets();
-        final List<Pose3d> algae_poses = SimulatedArena.getInstance().getGamePiecesByType("Algae");
-        final List<Pose3d> coral_poses = SimulatedArena.getInstance().getGamePiecesByType("Coral");
-        for (int i = 0; i < algae_poses.size(); i++) {
-            vision_sim.addVisionTargets("algae", new VisionTargetSim[] { new VisionTargetSim(algae_poses.get(i), TARGET_MODEL_ALGAE) });
-        }
-        for (int i = 0; i < coral_poses.size(); i++) {
-            vision_sim.addVisionTargets("coral", new VisionTargetSim[] { new VisionTargetSim(coral_poses.get(i), TARGET_MODEL_CORAL) });
-        }
+        // final List<Pose3d> algae_poses =
+        // SimulatedArena.getInstance().getGamePiecesByType("Algae");
+        // final List<Pose3d> coral_poses =
+        // SimulatedArena.getInstance().getGamePiecesByType("Coral");
+        // for (int i = 0; i < algae_poses.size(); i++) {
+        // vision_sim.addVisionTargets("algae", new VisionTargetSim[] { new
+        // VisionTargetSim(algae_poses.get(i), TARGET_MODEL_ALGAE) });
+        // }
+        // for (int i = 0; i < coral_poses.size(); i++) {
+        // vision_sim.addVisionTargets("coral", new VisionTargetSim[] { new
+        // VisionTargetSim(coral_poses.get(i), TARGET_MODEL_CORAL) });
+        // }
     }
 }

@@ -7,6 +7,7 @@ import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import frc.robot.FieldConstants;
 import frc.robot.subsystems.vision.Cameras.Camera;
 
 public class VisionIOPhotonServoSim extends VisionIOPhotonServo {
@@ -29,7 +30,7 @@ public class VisionIOPhotonServoSim extends VisionIOPhotonServo {
         // Initialize vision sim
         if (VisionIOPhotonSim.vision_sim == null) {
             VisionIOPhotonSim.vision_sim = new VisionSystemSim("main");
-            VisionIOPhotonSim.vision_sim.addAprilTags(Vision.apriltag_layout);
+            VisionIOPhotonSim.vision_sim.addAprilTags(FieldConstants.APRILTAG_LAYOUT);
         }
 
         // Add sim camera

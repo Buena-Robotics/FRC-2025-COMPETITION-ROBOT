@@ -1,8 +1,6 @@
 package frc.robot.subsystems.vision;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -12,6 +10,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import frc.robot.FieldConstants;
 import frc.robot.subsystems.vision.VisionIO.PoseObservation;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
 import java.util.LinkedList;
@@ -22,7 +21,6 @@ import org.littletonrobotics.junction.Logger;
 
 public class Vision extends SubsystemBase {
     // AprilTag layout
-    public static AprilTagFieldLayout apriltag_layout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
     // Basic filtering thresholds
     public static double max_ambiguity = 0.3;
@@ -96,7 +94,7 @@ public class Vision extends SubsystemBase {
 
             // Add tag poses
             for (int tag_id : inputs[i].tag_ids) {
-                Optional<Pose3d> tag_pose = apriltag_layout.getTagPose(tag_id);
+                Optional<Pose3d> tag_pose = FieldConstants.APRILTAG_LAYOUT.getTagPose(tag_id);
                 if (tag_pose.isPresent()) {
                     tag_poses.add(tag_pose.get());
                 }
@@ -110,7 +108,8 @@ public class Vision extends SubsystemBase {
                     || Math.abs(observation.pose().getZ()) > max_z_error // Must have realistic Z coordinate
 
                     // Must be within the field boundaries
-                    || observation.pose().getX() < 0.0 || observation.pose().getX() > apriltag_layout.getFieldLength() || observation.pose().getY() < 0.0 || observation.pose().getY() > apriltag_layout.getFieldWidth();
+                    || observation.pose().getX() < 0.0 || observation.pose().getX() > FieldConstants.APRILTAG_LAYOUT.getFieldLength() || observation.pose().getY() < 0.0 || observation.pose().getY() > FieldConstants.APRILTAG_LAYOUT
+                        .getFieldWidth();
 
                 // Add pose to log
                 robot_poses.add(observation.pose());

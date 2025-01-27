@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
+import frc.robot.FieldConstants;
 import frc.robot.subsystems.vision.Cameras.Camera;
 
 public class VisionIOPhotonServo extends VisionIOPhoton {
@@ -32,7 +33,7 @@ public class VisionIOPhotonServo extends VisionIOPhoton {
         this.servo.setAngle(90.0);
 
         if (targets == null) {
-            final List<AprilTag> apriltags = Vision.apriltag_layout.getTags();
+            final List<AprilTag> apriltags = FieldConstants.APRILTAG_LAYOUT.getTags();
             targets = new VisionTargetSim[apriltags.size()];
             for (int i = 0; i < targets.length; i++) {
                 targets[i] = new VisionTargetSim(apriltags.get(i).pose, TargetModel.kAprilTag36h11, apriltags.get(i).ID);

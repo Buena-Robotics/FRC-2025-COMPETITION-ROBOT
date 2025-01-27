@@ -53,7 +53,7 @@ public class RobotContainer {
     private final Mailbox mailbox;
 
     // Controller
-    private final CommandControllerIO controller = new SaitekControllerIO(0);
+    private final CommandControllerIO controller = Config.ROBOT_MODE == RobotMode.SIM ? new XboxControllerIO(0) : new SaitekControllerIO(0);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> auto_chooser;
@@ -145,6 +145,8 @@ public class RobotContainer {
 
         // Switch to X pattern when X button is pressed
         controller.stopXBtn().onTrue(Commands.runOnce(drive::stopWithX, drive));
+        // controller.stopXBtn().whileTrue(DriveCommands.pathfindToPose(drive,
+        // FieldConstants.RED_REEF_SIDE_2_POSE));
 
         // Reset gyro / odometry
         final Runnable resetGyro = Config.ROBOT_MODE == RobotMode.SIM ? () -> drive.setPose(
@@ -155,7 +157,7 @@ public class RobotContainer {
 
         elevator.setDefaultCommand(ElevatorCommands.triggerElevatorHeight(elevator, () -> controller.getElevatorAxis()));
         // climb.setDefaultCommand(ClimbCommands.triggerClimbSpeed(climb));
-        mailbox.setDefaultCommand(MailboxCommands.triggerMailboxSpeed(mailbox, () -> controller.getMailboxAxis() ));
+        mailbox.setDefaultCommand(MailboxCommands.triggerMailboxSpeed(mailbox, () -> controller.getMailboxAxis()));
     }
 
     public Command getAutonomousCommand() {

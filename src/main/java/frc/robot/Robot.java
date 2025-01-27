@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -118,9 +117,8 @@ public class Robot extends LoggedRobot {
         disabled_timer.start();
 
         robot_container = new RobotContainer();
+        // PathfindingCommand.warmupCommand().schedule();
     }
-
-    final XboxController silly_controller = new XboxController(1);
 
     @Override public void robotPeriodic() {
         // Switch thread to high priority to improve loop timing
