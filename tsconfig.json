@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "noEmitOnError": true,
+        "noEmit": true,
+        "module": "commonjs",
+        "esModuleInterop": true,
+        "target": "es2020",
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "sourceMap": true,
+        "outDir": "dist",
+        "noFallthroughCasesInSwitch": true,
+        "skipLibCheck": true,
+    },
+    "exclude": ["node_modules/**"],
+    "lib": [
+        "es2015"
+    ]
+}

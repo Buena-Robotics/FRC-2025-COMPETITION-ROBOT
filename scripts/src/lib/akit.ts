@@ -3,7 +3,8 @@ import * as fs from 'fs';
 // https://docs.advantagescope.org/more-features/custom-assets/
 export namespace Akit {
     const assets_folder_path = 'assets/';
-    const akit_custom_assets_folder_path = 'C:\\Users\\raygo\\AppData\\Roaming\\AdvantageScope\\userAssets\\';
+    const akit_custom_assets_folder_path = '/Users/illusion/Library/Application Support/AdvantageScope/userAssets/';
+    // const akit_custom_assets_folder_path = 'C:\\Users\\raygo\\AppData\\Roaming\\AdvantageScope\\userAssets\\';
 
     type TypeName = "Field2d"|"Field3d"|"Robot"|"Joystick";
     type FolderName = `${TypeName}_${string}`;
@@ -110,7 +111,7 @@ export namespace Akit {
     export function clean_custom_assets(){
         for(const file of fs.readdirSync(akit_custom_assets_folder_path)){
             if(fs.statSync(akit_custom_assets_folder_path + file, {throwIfNoEntry: false})?.isDirectory && is_custom_asset_folder_name(file))
-                fs.rmSync(akit_custom_assets_folder_path + file, {force: true});
+                fs.rmSync(akit_custom_assets_folder_path + file, {force: true, recursive: true});
         }
     }
     function folder_name(type: TypeName, name: string): FolderName{ return `${type}_${name}`; }
@@ -122,7 +123,7 @@ export namespace Akit {
 
     function publish_misc(type: TypeName, name: string, named_obj: {name: string}, publish_name: string){
         const folder_path = create_folder(folder_name(type, named_obj.name));
-        fs.cpSync(assets_folder_path + name, folder_path + '/model.glb');
+        fs.cpSync(assets_folder_path + name, folder_path + publish_name);
         fs.writeFileSync(folder_path + '/config.json', JSON.stringify(named_obj), 'utf-8');
     }
 
