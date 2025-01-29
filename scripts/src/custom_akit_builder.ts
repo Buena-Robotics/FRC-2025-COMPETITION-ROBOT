@@ -31,10 +31,10 @@ Akit.publish_field3d("robotics_room_3d.glb", {
         // }
     ]
 });
-// Akit.publish_robot("NERDS_2025_ROBOT.glb", {
-//     name: "nerds_2025",
-//     rotations: [],
-//     position: [0,0,0], // Position offset in meters, applied after rotation
-//     cameras: [],
-//     components: [] // See "Articulated Components"
-// });
+Akit.publish_robot("NERDS_2025_ROBOT.glb", {
+    name: "nerds_2025",
+    rotations: [],
+    position: [0,0,0], // Position offset in meters, applied after rotation
+    cameras: [],
+    components: [] // See "Articulated Components"
+});

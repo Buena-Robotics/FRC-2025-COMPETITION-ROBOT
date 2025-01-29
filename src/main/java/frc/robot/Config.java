@@ -12,7 +12,7 @@ public final class Config {
 
     public static final RobotType ROBOT_TYPE = RobotType.ROBOT_2025_SCHOOL;
 
-    public static final String DEFAULT_LOG_FOLDER = "/media/sda1/akit-logs";
+    public static final String DEFAULT_LOG_FOLDER = "/media/sda1/";
     public static final Map<RobotType, String> log_folders_map = Map.of(
         RobotType.ROBOT_2025_COMPETION, DEFAULT_LOG_FOLDER,
         RobotType.ROBOT_2025_PRACTICE, DEFAULT_LOG_FOLDER,

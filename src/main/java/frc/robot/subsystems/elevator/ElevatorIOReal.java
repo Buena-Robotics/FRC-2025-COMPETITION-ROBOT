@@ -14,7 +14,8 @@ import edu.wpi.first.math.filter.Debouncer;
 import frc.robot.util.SparkUtil;
 
 public class ElevatorIOReal implements ElevatorIO {
-    private static final int LIFT_MOTOR_CAN_ID = 13;
+    private static final int LIFT_MOTOR_CAN_ID = 4;
+    // private static final int LIFT_MOTOR_CAN_ID = 13;
     private static final double LIFT_P = 0.03;
     private static final double LIFT_D = 0.0;
     private static final int LIFT_MOTOR_CURRENT_LIMIT = 10;

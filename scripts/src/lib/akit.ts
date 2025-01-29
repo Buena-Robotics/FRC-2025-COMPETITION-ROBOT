@@ -3,8 +3,9 @@ import * as fs from 'fs';
 // https://docs.advantagescope.org/more-features/custom-assets/
 export namespace Akit {
     const assets_folder_path = 'assets/';
-    const akit_custom_assets_folder_path = '/Users/illusion/Library/Application Support/AdvantageScope/userAssets/';
-    // const akit_custom_assets_folder_path = 'C:\\Users\\raygo\\AppData\\Roaming\\AdvantageScope\\userAssets\\';
+    const akit_custom_assets_folder_path_macos = '/Users/illusion/Library/Application Support/AdvantageScope/userAssets/';
+    const akit_custom_assets_folder_path_win32 = 'C:\\Users\\raygo\\AppData\\Roaming\\AdvantageScope\\userAssets\\';
+    const akit_custom_assets_folder_path = process.platform == 'darwin' ? akit_custom_assets_folder_path_macos : akit_custom_assets_folder_path_win32;
 
     type TypeName = "Field2d"|"Field3d"|"Robot"|"Joystick";
     type FolderName = `${TypeName}_${string}`;

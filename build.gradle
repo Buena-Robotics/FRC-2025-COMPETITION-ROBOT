@@ -178,7 +178,7 @@ spotless {
     java {
         target fileTree('.') {
             include '**/*.java'
-            exclude '**/build/**', '**/build-*/**'
+            exclude '**/build/**', '**/build-*/**', "**/scripts/**", "tsconfig.json"
         }
         toggleOffOn()
         // palantirJavaFormat('2.39.0').formatJavadoc(true)
@@ -190,7 +190,7 @@ spotless {
     groovyGradle {
         target fileTree(".") {
             include "**/*.gradle"
-            exclude "**/build/**", "**/build-*/**"
+            exclude "**/build/**", "**/build-*/**", "**/scripts/**", "tsconfig.json"
         }
         greclipse()
         indentWithSpaces(4)
@@ -200,14 +200,14 @@ spotless {
     json {
         target fileTree(".") {
             include "**/*.json"
-            exclude "**/build/**", "**/build-*/**", "**/.vscode/**"
+            exclude "**/build/**", "**/build-*/**", "**/.vscode/**", "**/scripts/**", "tsconfig.json"
         }
         gson().indentWithSpaces(4)
     }
     format "misc", {
         target fileTree(".") {
             include "**/*.md", "**/.gitignore"
-            exclude "**/build/**", "**/build-*/**"
+            exclude "**/build/**", "**/build-*/**", "**/scripts/**", "tsconfig.json"
         }
         trimTrailingWhitespace()
         indentWithSpaces(4)
