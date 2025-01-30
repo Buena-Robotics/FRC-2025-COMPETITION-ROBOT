@@ -15,11 +15,19 @@ import frc.robot.util.SparkUtil;
 
 public class ElevatorIOReal implements ElevatorIO {
     private static final int LIFT_MOTOR_CAN_ID = 4;
-    // private static final int LIFT_MOTOR_CAN_ID = 13;
-    private static final double LIFT_P = 0.05;
-    private static final double LIFT_D = 0.1;
+
+    // Constants when lift is empty
+    private static final double LIFT_EMPTY_P = 0.1;
+    private static final double LIFT_EMPTY_I = 0.0;
+    private static final double LIFT_EMPTY_D = 0.05;
+
+    // Constants when lift is carrying a coral
+    // private static final double LIFT_CARRY_P = 0.1;
+    // private static final double LIFT_CARRY_I = 0.1;
+    // private static final double LIFT_CARRY_D = 0.2;
+
     private static final int LIFT_MOTOR_CURRENT_LIMIT = 10;
-    private static final double LIFT_ENCODER_POSITION_FACTOR = 0.2663130456; // 0.3141592654
+    private static final double LIFT_ENCODER_POSITION_FACTOR = 0.2663130456; // Math.PI * 2 * (1.0/Elevator.LIFT_MOTOR_REDUCTION);
     private static final double LIFT_ENCODER_VELOCITY_FACTOR = LIFT_ENCODER_POSITION_FACTOR / 60.0;
 
     private static final SparkMaxConfig DEFAULT_LIFT_SPARK_CONFIG = defaultLiftSparkConfig();
@@ -28,7 +36,6 @@ public class ElevatorIOReal implements ElevatorIO {
     private final RelativeEncoder lift_encoder;
     private final SparkClosedLoopController lift_controller;
     private final Debouncer lift_connected_debounce = new Debouncer(0.5);
-    private final Debouncer lift_fall_reset_debounce = new Debouncer(Elevator.ELEVATOR_COAST_FALL_TIME_SECONDS);
 
     private double lift_setpoint_position_inches = 0.0;
     private boolean lift_brake_mode = true;
@@ -51,9 +58,10 @@ public class ElevatorIOReal implements ElevatorIO {
         SparkUtil.ifOk(lift_motor, new DoubleSupplier[] { lift_motor::getAppliedOutput, lift_motor::getBusVoltage }, (values) -> inputs.lift_applied_volts = values[0] * values[1]);
         SparkUtil.ifOk(lift_motor, lift_motor::getOutputCurrent, (value) -> inputs.lift_current_amps = value);
         inputs.lift_connected = lift_connected_debounce.calculate(!SparkUtil.spark_sticky_fault);
-        if (lift_fall_reset_debounce.calculate(!lift_brake_mode)) {
-            zeroLiftPosition();
-        }
+    }
+
+    @Override public void setLiftOpenLoop(final double output){
+        lift_motor.setVoltage(output);
     }
 
     @Override public void setLiftPosition(double lift_setpoint_position_inches) {
@@ -82,14 +90,14 @@ public class ElevatorIOReal implements ElevatorIO {
         lift_config.softLimit
             .forwardSoftLimit(Elevator.ELEVATOR_MAX_HEIGHT_INCHES)
             .forwardSoftLimitEnabled(true)
-            .reverseSoftLimit(0.0)
+            .reverseSoftLimit(0.1)
             .reverseSoftLimitEnabled(true);
         SparkUtil.setSparkBaseConfig(lift_config, LIFT_MOTOR_CURRENT_LIMIT);
         SparkUtil.setSparkEncoderConfig(lift_config.encoder, LIFT_ENCODER_POSITION_FACTOR, LIFT_ENCODER_VELOCITY_FACTOR);
         SparkUtil.setSparkSignalsConfig(lift_config.signals, 20);
         lift_config.closedLoop
             .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-            .pidf(LIFT_P, 0.0, LIFT_D, 0.0);
+            .pidf(LIFT_EMPTY_P, LIFT_EMPTY_I, LIFT_EMPTY_D, 0.0);
         return lift_config;
     }
 }

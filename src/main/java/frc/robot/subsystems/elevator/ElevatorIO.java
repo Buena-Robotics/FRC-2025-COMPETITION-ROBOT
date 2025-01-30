@@ -17,6 +17,8 @@ public interface ElevatorIO {
 
     public default void setLiftBrakeMode(final boolean brake_mode) {}
 
+    public default void setLiftOpenLoop(final double output){}
+
     public default void setLiftPosition(double lift_setpoint_position_inches) {}
 
     public default void zeroLiftPosition() {}

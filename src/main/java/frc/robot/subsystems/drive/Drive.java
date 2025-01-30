@@ -43,8 +43,6 @@ import org.littletonrobotics.junction.Logger;
 
 // Swerve Mk4 L2 Ratio
 // https://www.swervedrivespecialties.com/products/mk4-swerve-module
-//TODO: Characterize Drive :3
-//TODO: Set coast on disable :3
 public class Drive extends SubsystemBase {
     public static final double DRIVE_ENCODER_POSITION_FACTOR = 2 * Math.PI / Drive.DRIVE_MOTOR_REDUCTION; // Rotor Rotations -> Wheel Radians
     public static final double DRIVE_ENCODER_VELOCITY_FACTOR = (2 * Math.PI) / 60.0 / Drive.DRIVE_MOTOR_REDUCTION; // Rotor RPM -> Wheel Rad/Sec
@@ -178,25 +176,18 @@ public class Drive extends SubsystemBase {
         }
         odometry_lock.unlock();
 
-        final boolean driver_station_disabled = DriverStation.isDisabled();
-        final boolean driver_station_enabled = DriverStation.isEnabled();
-
         // Stop moving when disabled
-        if (driver_station_disabled) {
+        if (DriverStation.isDisabled()) {
             for (Module module : modules) {
                 module.stop();
             }
-        }
-
-        if (driver_station_disabled) {
-            // Log empty setpoint states when disabled
             Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
             Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
-            // for (Module module : modules)
-            // module.setCoastMode();
-        } else if (driver_station_enabled) {
-            // for (Module module : modules)
-            // module.setBrakeMode();
+            for (Module module : modules)
+                module.setCoastMode();;
+        } else {
+            for (Module module : modules)
+                module.setBrakeMode();
         }
 
         // Update odometry
