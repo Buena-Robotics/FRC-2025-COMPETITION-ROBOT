@@ -226,9 +226,13 @@ public class Robot extends LoggedRobot {
 
     private void initializeDriverstationSim() {
         DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
-        DriverStationSim.setFmsAttached(Config.ROBOT_TYPE == RobotType.ROBOT_2025_COMPETION);
         DriverStationSim.setEventName("SimEvent");
         DriverStationSim.setEnabled(true);
+        DriverStationSim.setAutonomous(false);
+        DriverStationSim.setTest(false);
+        DriverStationSim.setEStop(false);
+        DriverStationSim.setFmsAttached(Config.ROBOT_TYPE == RobotType.ROBOT_2025_COMPETION);
+        DriverStationSim.setDsAttached(true);
     }
 
     private static Consumer<Command> acceptLogCommand(BiConsumer<Command, Boolean> log_commmand_function, boolean u) {

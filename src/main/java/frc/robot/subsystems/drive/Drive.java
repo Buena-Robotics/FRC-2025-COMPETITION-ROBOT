@@ -43,6 +43,8 @@ import org.littletonrobotics.junction.Logger;
 
 // Swerve Mk4 L2 Ratio
 // https://www.swervedrivespecialties.com/products/mk4-swerve-module
+//TODO: Characterize Drive :3
+//TODO: Set coast on disable :3
 public class Drive extends SubsystemBase {
     public static final double DRIVE_ENCODER_POSITION_FACTOR = 2 * Math.PI / Drive.DRIVE_MOTOR_REDUCTION; // Rotor Rotations -> Wheel Radians
     public static final double DRIVE_ENCODER_VELOCITY_FACTOR = (2 * Math.PI) / 60.0 / Drive.DRIVE_MOTOR_REDUCTION; // Rotor RPM -> Wheel Rad/Sec

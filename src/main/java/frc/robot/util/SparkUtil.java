@@ -81,6 +81,10 @@ public class SparkUtil {
         SparkUtil.tryUntilOk(spark, () -> spark.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
     }
 
+    public static void configureSparkMaxAsyncNonPersist(final SparkBase spark, final SparkMaxConfig config) {
+        SparkUtil.tryUntilOk(spark, () -> spark.configureAsync(config, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters));
+    }
+
     public static void setPosition(final SparkBase spark, final RelativeEncoder encoder, final double position) {
         SparkUtil.tryUntilOk(spark, () -> encoder.setPosition(position));
     }

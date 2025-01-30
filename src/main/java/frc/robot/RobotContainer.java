@@ -61,17 +61,17 @@ public class RobotContainer {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
                 this.drive = new Drive(
-                    new GyroIO(){},
-                    new ModuleIO(){},
-                    new ModuleIO(){},
-                    new ModuleIO(){},
-                    new ModuleIO(){});
+                    new GyroIO() {},
+                    new ModuleIO() {},
+                    new ModuleIO() {},
+                    new ModuleIO() {},
+                    new ModuleIO() {});
                 // this.drive = new Drive(
-                //     new GyroIONavX(),
-                //     new ModuleIOSpark(0),
-                //     new ModuleIOSpark(1),
-                //     new ModuleIOSpark(2),
-                //     new ModuleIOSpark(3));
+                // new GyroIONavX(),
+                // new ModuleIOSpark(0),
+                // new ModuleIOSpark(1),
+                // new ModuleIOSpark(2),
+                // new ModuleIOSpark(3));
 
                 this.vision = new Vision(
                     drive::addVisionMeasurement

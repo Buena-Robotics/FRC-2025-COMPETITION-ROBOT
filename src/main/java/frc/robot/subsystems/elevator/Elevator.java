@@ -4,6 +4,7 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -11,6 +12,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+//TODO: Characterize Elevator :3
 public class Elevator extends SubsystemBase {
     public static final double ELEVATOR_MAX_HEIGHT_INCHES = 17.0;
     public static final double ELEVATOR_BASE_HEIGHT = 36.0;
@@ -40,7 +42,7 @@ public class Elevator extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Elevator", inputs);
 
-        // io.setLiftBrakeMode(DriverStation.isEnabled());
+        io.setLiftBrakeMode(DriverStation.isEnabled());
         elevator_mech_shaft.setLength(Units.inchesToMeters(inputs.lift_position_inches));
 
         // Update alerts
