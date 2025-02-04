@@ -281,6 +281,9 @@ public class DriveCommands {
             }))
         );
     }
+    public static Command viewWheelForwardDirection(final Drive drive, final DoubleSupplier voltage){
+        return Commands.run(() -> drive.runCharacterization(voltage.getAsDouble()), drive);
+    }
 
     private static final PathConstraints pathfinding_constraints = new PathConstraints(5, 3, Units.degreesToRadians(540), Units.degreesToRadians(720));
 
