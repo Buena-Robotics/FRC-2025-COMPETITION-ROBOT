@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.util.Printf;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -268,6 +269,17 @@ public class DriveCommands {
         double[] positions = new double[4];
         Rotation2d last_angle = new Rotation2d();
         double gyro_delta = 0.0;
+    }
+
+    public static Command trueMaxDriveSpeedCharacterization(final Drive drive) {
+        return Commands.parallel(
+            Commands.run(() -> {
+                Printf.info("True Max Drive Speed(m/s): %f");
+            }, drive),
+            Commands.sequence(Commands.waitSeconds(3.0), Commands.runOnce(() -> {
+                
+            }))
+        );
     }
 
     private static final PathConstraints pathfinding_constraints = new PathConstraints(5, 3, Units.degreesToRadians(540), Units.degreesToRadians(720));
