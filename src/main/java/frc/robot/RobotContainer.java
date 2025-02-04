@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.controller.*;
 import frc.robot.Config.RobotMode;
+import frc.robot.Config.RobotType;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
 import frc.robot.commands.MailboxCommands;
@@ -31,6 +32,7 @@ import frc.robot.subsystems.mailbox.MailboxIOSim;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonSim;
+import frc.robot.util.ArenaSchool2025Reefscape;
 import frc.robot.subsystems.vision.Cameras;
 
 import org.ironmaple.simulation.SimulatedArena;
@@ -85,6 +87,8 @@ public class RobotContainer {
             case SIM:
                 // create a maple-sim swerve drive simulation instance
                 // add the simulated drivetrain to the simulation field
+                if (Config.ROBOT_TYPE == RobotType.ROBOT_2025_SCHOOL)
+                    SimulatedArena.overrideInstance(new ArenaSchool2025Reefscape());
                 SimulatedArena.getInstance().addDriveTrainSimulation(drive_simulation);
                 resetSimulationField();
 
@@ -152,9 +156,8 @@ public class RobotContainer {
                 () -> new Rotation2d()));
 
         // Switch to X pattern when X button is pressed
-        controller.stopXBtn().onTrue(Commands.runOnce(drive::stopWithX, drive));
-        // controller.stopXBtn().whileTrue(DriveCommands.pathfindToPose(drive,
-        // FieldConstants.RED_REEF_SIDE_2_POSE));
+        // controller.stopXBtn().onTrue(Commands.runOnce(drive::stopWithX, drive));
+        controller.stopXBtn().whileTrue(DriveCommands.pathfindToPose(drive, FieldConstants.RED_REEF_SIDE_2_POSE));
 
         // Reset gyro / odometry
         final Runnable resetGyro = Config.ROBOT_MODE == RobotMode.SIM ? () -> drive.setPose(
@@ -175,7 +178,7 @@ public class RobotContainer {
     public void resetSimulationField() {
         if (Config.ROBOT_MODE != RobotMode.SIM)
             return;
-        drive_simulation.setSimulationWorldPose(new Pose2d(3, 3, new Rotation2d()));
+        drive_simulation.setSimulationWorldPose(new Pose2d(2, 2, new Rotation2d()));
         SimulatedArena.getInstance().resetFieldForAuto();
     }
 

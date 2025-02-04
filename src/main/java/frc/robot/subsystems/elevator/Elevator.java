@@ -2,6 +2,7 @@ package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.*;
 
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.util.Units;
@@ -33,6 +34,9 @@ public class Elevator extends SubsystemBase {
 
     private final SysIdRoutine sys_id;
 
+    @AutoLogOutput(key = "Elevator/BrakeModeEnabled")
+    private boolean brake_mode_enabled = true;
+
     public Elevator(final ElevatorIO io) {
         this.io = io;
         this.elevator_mech = new Mechanism2d(Units.inchesToMeters(29), Units.inchesToMeters(ELEVATOR_MAX_HEIGHT_INCHES + ELEVATOR_BASE_HEIGHT), new Color8Bit("#202020"));
@@ -43,7 +47,7 @@ public class Elevator extends SubsystemBase {
         SmartDashboard.putData("ElevatorMechData", elevator_mech);
 
         this.sys_id = new SysIdRoutine(
-            new SysIdRoutine.Config(null, null, null, (state) -> Logger.recordOutput("Elevator/SysIdState", state.toString())),
+            new SysIdRoutine.Config(Volts.of(0.01).per(Second), Volts.of(0.01), Seconds.of(60), (state) -> Logger.recordOutput("Elevator/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism((voltage) -> runCharacterization(voltage.in(Volts)), null, this));
     }
 
@@ -51,11 +55,13 @@ public class Elevator extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Elevator", inputs);
 
-        io.setLiftBrakeMode(DriverStation.isEnabled());
+        brake_mode_enabled = DriverStation.isEnabled();
+        io.setLiftBrakeMode(brake_mode_enabled);
         elevator_mech_shaft.setLength(Units.inchesToMeters(inputs.lift_position_inches));
 
         // Update alerts
         lift_disconnect_alert.set(!inputs.lift_connected);
+        Logger.recordOutput("Elevator/Error", Math.abs(inputs.lift_position_inches - inputs.lift_setpoint_position_inches));
     }
 
     public void runCharacterization(final double output) {

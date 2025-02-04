@@ -132,6 +132,9 @@ public class Drive extends SubsystemBase {
     private final SwerveDrivePoseEstimator pose_estimator = new SwerveDrivePoseEstimator(
         kinematics, raw_gyro_rotation, last_module_positions, new Pose2d(3, 3, new Rotation2d()));
 
+    @AutoLogOutput(key = "Drive/BrakeModeEnabled")
+    private boolean brake_mode_enabled = true;
+
     public Drive(final GyroIO gyro_io, final ModuleIO fl_module, final ModuleIO fr_module, final ModuleIO bl_module, final ModuleIO br_module) {
         this.gryo_io = gyro_io;
         this.modules[0] = new Module(fl_module, 0);
@@ -183,9 +186,12 @@ public class Drive extends SubsystemBase {
             }
             Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
             Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
+
+            brake_mode_enabled = false;
             for (Module module : modules)
-                module.setCoastMode();;
+                module.setCoastMode();
         } else {
+            brake_mode_enabled = true;
             for (Module module : modules)
                 module.setBrakeMode();
         }

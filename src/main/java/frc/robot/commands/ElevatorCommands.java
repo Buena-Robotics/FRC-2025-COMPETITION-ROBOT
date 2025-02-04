@@ -16,7 +16,7 @@ import frc.robot.subsystems.elevator.Elevator.ElevatorSetpoint;
 
 public class ElevatorCommands {
     private static final double FF_START_DELAY = 2.0; // Secs
-    private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
+    private static final double FF_RAMP_RATE = 0.01; // Volts/Sec
 
     private ElevatorCommands() {}
 

@@ -21,6 +21,7 @@ public class ElevatorIOSim implements ElevatorIO {
 
     private double lift_applied_volts = 0.0;
     private boolean lift_brake_mode = true;
+    private boolean open_loop = false;
 
     public ElevatorIOSim() {
         lift_controller.setIntegratorRange(0.01, 1.0);
@@ -28,12 +29,12 @@ public class ElevatorIOSim implements ElevatorIO {
     }
 
     @Override public void updateInputs(final ElevatorIOInputs inputs) {
-        lift_applied_volts = MathUtil.clamp(lift_controller.calculate(Units.metersToInches(lift_sim.getPositionMeters())), -12.0, 12.0);
-        lift_sim.setInputVoltage(lift_applied_volts);
+        if (!open_loop) {
+            lift_applied_volts = MathUtil.clamp(lift_controller.calculate(Units.metersToInches(lift_sim.getPositionMeters())), -12.0, 12.0);
+            lift_sim.setInputVoltage(lift_applied_volts);
+        }
         lift_sim.update(0.02);
 
-        // inputs.lift_setpoint_position_inches =
-        // lift_controller.getSetpoint().position;
         inputs.lift_setpoint_position_inches = lift_controller.getGoal().position;
         inputs.lift_position_inches = Units.metersToInches(lift_sim.getPositionMeters());
         inputs.lift_velocity_inches_per_second = Units.metersToInches(lift_sim.getVelocityMetersPerSecond());
@@ -42,7 +43,14 @@ public class ElevatorIOSim implements ElevatorIO {
         inputs.lift_connected = true;
     }
 
+    @Override public void setLiftOpenLoop(final double output) {
+        open_loop = true;
+        lift_applied_volts = output;
+        lift_sim.setInputVoltage(output);
+    }
+
     @Override public void setLiftPosition(double lift_setpoint_position_inches) {
+        open_loop = false;
         if (!lift_brake_mode)
             lift_controller.setGoal(0.0);
         else
