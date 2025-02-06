@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.controller.*;
 import frc.robot.Config.RobotMode;
@@ -138,6 +139,12 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
+        if(Config.ROBOT_TYPE == RobotType.SETUP_TUNING){
+            drive.setDefaultCommand(DriveCommands.viewWheelForwardDirection(drive, controller::getMailboxAxis));
+            controller.stopXBtn().onTrue(new InstantCommand(drive::logModuleOffsets));
+            return;
+        }
+
         // Default command, normal field-relative drive
         drive.setDefaultCommand(DriveCommands.joystickDrive(
             drive,

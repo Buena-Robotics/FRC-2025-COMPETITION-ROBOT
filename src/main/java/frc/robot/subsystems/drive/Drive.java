@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Config;
 import frc.robot.Config.RobotMode;
 import frc.robot.util.LocalADStarAK;
+import frc.robot.util.Printf;
 import frc.robot.util.sim.COTS;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -366,5 +367,12 @@ public class Drive extends SubsystemBase {
     /** Returns the maximum angular speed in radians per sec. */
     public double getMaxAngularSpeedRadPerSec() {
         return MAX_SPEED_METERS_PER_SECOND / DRIVE_BASE_RADIUS;
+    }
+
+    public void logModuleOffsets(){
+        Printf.info("LOGGING MODULE OFFSETS------------");
+        for(int i = 0; i < modules.length; i++){
+            Printf.info("Module(%d): ", i, modules[i].getAngle().getRadians());
+        }
     }
 }
