@@ -15,7 +15,7 @@ public class GameState {
     public static List<Pose2d> robots; // [Assume]: Robots are 30x30 inches perimeter (not including bumpers)
 
     private GameState(){}
-    
+
     public static List<Pair<Translation2d, Translation2d>> getDynamicObstacles(){
         List<Pair<Translation2d, Translation2d>> obstacles = new ArrayList<>();
         return obstacles;

@@ -3,10 +3,10 @@ import { Akit } from "./lib/akit";
 Akit.clean_custom_assets();
 Akit.publish_field2d("robotics_room.png", {
     name: "RoboticsRoom",
-    topLeft: [0, 1236],
-    bottomRight: [1197, 0],
-    widthInches: 336, // Real width of the field (long side)
-    heightInches: 336, // Real height of the field (short side)
+    topLeft: [30,100],
+    bottomRight: [1000,1000],
+    widthInches: 323.04, // Real width of the field (long side)
+    heightInches: 340.683, // Real height of the field (short side)
     defaultOrigin: "blue"
 })
 Akit.publish_field3d("robotics_room_3d.glb", {
