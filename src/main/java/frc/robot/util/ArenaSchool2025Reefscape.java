@@ -91,7 +91,7 @@ public class ArenaSchool2025Reefscape extends SimulatedArena {
         // super.addGamePiece(new ReefscapeCoralAlgaeStack(position));
     }
 
-    @Override public void competitionPeriodic() {}
+    // @Override public void competitionPeriodic() {}
 
     @Override public synchronized List<Pose3d> getGamePiecesByType(String type) {
         List<Pose3d> poses = super.getGamePiecesByType(type);
