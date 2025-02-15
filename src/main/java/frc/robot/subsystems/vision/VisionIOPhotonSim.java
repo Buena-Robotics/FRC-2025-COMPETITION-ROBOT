@@ -39,7 +39,7 @@ public class VisionIOPhotonSim extends VisionIOPhoton {
         }
 
         // Add sim camera
-        final SimCameraProperties camera_properties = SimCameraProperties.LL2_960_720();
+        final SimCameraProperties camera_properties = SimCameraProperties.PERFECT_90DEG();
         camera_sim = new PhotonCameraSim(camera, camera_properties);
         camera_sim.enableDrawWireframe(true);
         vision_sim.addCamera(camera_sim, robot_to_camera);
