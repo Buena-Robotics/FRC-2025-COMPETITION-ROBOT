@@ -85,7 +85,9 @@ public class Elevator extends SubsystemBase {
     }
 
     public static enum ElevatorSetpoint {
-        BOTTOM(0.0), TOP(Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
+        BOTTOM(0.0),
+        L2(3.135223388671875),
+        TOP(Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
 
         private double setpoint_inches = 0.0;
 

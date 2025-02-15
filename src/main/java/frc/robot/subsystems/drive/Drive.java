@@ -378,7 +378,7 @@ public class Drive extends SubsystemBase {
     public void logModuleOffsets(){
         Printf.info("LOGGING MODULE OFFSETS------------");
         for(int i = 0; i < modules.length; i++){
-            Printf.info("Module(%d): %f", i, modules[i].getAngle().getRadians());
+            Printf.info("%f,", modules[i].getAngle().getRadians());
         }
     }
 }
