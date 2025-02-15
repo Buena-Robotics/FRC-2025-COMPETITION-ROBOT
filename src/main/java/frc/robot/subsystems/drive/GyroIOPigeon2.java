@@ -12,7 +12,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import java.util.Queue;
 
 public class GyroIOPigeon2 implements GyroIO {
-    private final int PIGEON_CAN_ID = 9;
+    private final int PIGEON_CAN_ID = 10;
 
     private final Pigeon2 pigeon = new Pigeon2(PIGEON_CAN_ID);
     private final StatusSignal<Angle> yaw = pigeon.getYaw();

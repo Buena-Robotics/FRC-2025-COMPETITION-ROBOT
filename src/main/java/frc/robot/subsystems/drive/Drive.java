@@ -70,10 +70,10 @@ public class Drive extends SubsystemBase {
     public static final double WHEEL_BASE = Units.inchesToMeters(18.5);
     public static final double DRIVE_BASE_RADIUS = Math.hypot(TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0);
     public static final Translation2d[] MODULE_TRANSLATIONS = new Translation2d[] {
-            new Translation2d(TRACK_WIDTH / 2.0, -WHEEL_BASE / 2.0),
             new Translation2d(TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0),
-            new Translation2d(-TRACK_WIDTH / 2.0, -WHEEL_BASE / 2.0),
-            new Translation2d(-TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0)
+            new Translation2d(TRACK_WIDTH / 2.0, -WHEEL_BASE / 2.0),
+            new Translation2d(-TRACK_WIDTH / 2.0, WHEEL_BASE / 2.0),
+            new Translation2d(-TRACK_WIDTH / 2.0, -WHEEL_BASE / 2.0)
     };
 
     public static final double ROBOT_MASS_KG = 45.3592;
@@ -107,7 +107,7 @@ public class Drive extends SubsystemBase {
     public static final DriveTrainSimulationConfig MAPLE_SIM_CONFIG = DriveTrainSimulationConfig.Default()
         .withCustomModuleTranslations(MODULE_TRANSLATIONS)
         .withRobotMass(Kilogram.of(ROBOT_MASS_KG))
-        .withGyro(COTS.ofNav2X())
+        .withGyro(COTS.ofPigeon2())
         .withSwerveModule(MARK4)
         .withBumperSize(Meters.of(ROBOT_LENGTH + (BUMPER_WIDTH * 2)), Meters.of(ROBOT_WIDTH + (BUMPER_WIDTH * 2)));
 
@@ -188,9 +188,9 @@ public class Drive extends SubsystemBase {
             Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
             Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
 
-            brake_mode_enabled = false;
-            for (Module module : modules)
-                module.setCoastMode();
+            // brake_mode_enabled = false;
+            // for (Module module : modules)
+                // module.setCoastMode();
         } else {
             brake_mode_enabled = true;
             for (Module module : modules)
@@ -253,6 +253,12 @@ public class Drive extends SubsystemBase {
 
         // Log optimized setpoints (runSetpoint mutates each state)
         Logger.recordOutput("SwerveStates/SetpointsOptimized", setpoint_states);
+    }
+
+    public void runForward(final double output){
+        for (int i = 0; i < 4; i++) {
+            modules[i].runForward(output);
+        }
     }
 
     /** Runs the drive in a straight line with the specified drive output. */
@@ -372,7 +378,7 @@ public class Drive extends SubsystemBase {
     public void logModuleOffsets(){
         Printf.info("LOGGING MODULE OFFSETS------------");
         for(int i = 0; i < modules.length; i++){
-            Printf.info("Module(%d): ", i, modules[i].getAngle().getRadians());
+            Printf.info("Module(%d): %f", i, modules[i].getAngle().getRadians());
         }
     }
 }

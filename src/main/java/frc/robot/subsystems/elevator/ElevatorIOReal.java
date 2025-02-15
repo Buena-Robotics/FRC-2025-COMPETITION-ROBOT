@@ -14,7 +14,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import frc.robot.util.SparkUtil;
 
 public class ElevatorIOReal implements ElevatorIO {
-    private static final int LIFT_MOTOR_CAN_ID = 4;
+    private static final int LIFT_MOTOR_CAN_ID = 9;
 
     // Constants when lift is empty
     private static final double LIFT_EMPTY_P = 0.1;
@@ -27,7 +27,7 @@ public class ElevatorIOReal implements ElevatorIO {
     // private static final double LIFT_CARRY_D = 0.2;
 
     private static final int LIFT_MOTOR_CURRENT_LIMIT = 10;
-    private static final double LIFT_ENCODER_POSITION_FACTOR = 0.2663130456; // Math.PI * 2 * (1.0/Elevator.LIFT_MOTOR_REDUCTION);
+    private static final double LIFT_ENCODER_POSITION_FACTOR = 1.0 / 2.7643; // Math.PI * 2 * (1.0/Elevator.LIFT_MOTOR_REDUCTION);
     private static final double LIFT_ENCODER_VELOCITY_FACTOR = LIFT_ENCODER_POSITION_FACTOR / 60.0;
 
     private static final SparkMaxConfig DEFAULT_LIFT_SPARK_CONFIG = defaultLiftSparkConfig();

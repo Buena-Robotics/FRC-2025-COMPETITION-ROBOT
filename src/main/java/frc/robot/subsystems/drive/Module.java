@@ -61,6 +61,11 @@ public class Module {
         io.setTurnPosition(state.angle);
     }
 
+    public void runForward(final double output){
+        io.setDriveOpenLoop(output);
+
+    }
+
     /**
      * Runs the module with the specified output while controlling to zero degrees.
      */

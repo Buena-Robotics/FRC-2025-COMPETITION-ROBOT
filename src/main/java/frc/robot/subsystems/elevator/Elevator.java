@@ -18,9 +18,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 public class Elevator extends SubsystemBase {
-    public static final double ELEVATOR_MAX_HEIGHT_INCHES = 17.0;
+    public static final double ELEVATOR_MAX_HEIGHT_INCHES = 19.3; // 20
     public static final double ELEVATOR_BASE_HEIGHT = 36.0;
-    public static final double LIFT_MOTOR_REDUCTION = 20.0;
+    public static final double LIFT_MOTOR_REDUCTION = 15.0;
     public static final double ELEVATOR_COAST_FALL_TIME_SECONDS = 4.0;
 
     private final Mechanism2d elevator_mech;

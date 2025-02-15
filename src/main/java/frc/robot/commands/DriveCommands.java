@@ -277,12 +277,15 @@ public class DriveCommands {
                 Printf.info("True Max Drive Speed(m/s): %f");
             }, drive),
             Commands.sequence(Commands.waitSeconds(3.0), Commands.runOnce(() -> {
-                
+
             }))
         );
     }
+    public static Command viewWheelForwardCharacterization(final Drive drive, final DoubleSupplier voltage){
+        return Commands.run(() -> drive.runCharacterization(voltage.getAsDouble() * 2), drive);
+    }
     public static Command viewWheelForwardDirection(final Drive drive, final DoubleSupplier voltage){
-        return Commands.run(() -> drive.runCharacterization(voltage.getAsDouble()), drive);
+        return Commands.run(() -> drive.runForward(voltage.getAsDouble()), drive);
     }
 
     private static final PathConstraints pathfinding_constraints = new PathConstraints(5, 3, Units.degreesToRadians(540), Units.degreesToRadians(720));

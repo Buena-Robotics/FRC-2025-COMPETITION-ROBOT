@@ -20,9 +20,11 @@ import frc.robot.commands.ElevatorCommands;
 import frc.robot.commands.MailboxCommands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
+import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.GyroSim;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
+import frc.robot.subsystems.drive.ModuleIOSpark;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOReal;
@@ -54,7 +56,8 @@ public class RobotContainer {
     private final Mailbox mailbox;
 
     // Controller
-    private final CommandControllerIO controller = Config.ROBOT_MODE == RobotMode.SIM ? new XboxControllerIO(0) : new SaitekControllerIO(0);
+    // private final CommandControllerIO controller = Config.ROBOT_MODE == RobotMode.SIM ? new XboxControllerIO(0) : new SaitekControllerIO(0);
+    private final CommandControllerIO controller = new SaitekControllerIO(0);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> auto_chooser;
@@ -63,18 +66,18 @@ public class RobotContainer {
         switch (Config.ROBOT_MODE) {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
-                this.drive = new Drive(
-                    new GyroIO() {},
-                    new ModuleIO() {},
-                    new ModuleIO() {},
-                    new ModuleIO() {},
-                    new ModuleIO() {});
                 // this.drive = new Drive(
-                // new GyroIONavX(),
-                // new ModuleIOSpark(0),
-                // new ModuleIOSpark(1),
-                // new ModuleIOSpark(2),
-                // new ModuleIOSpark(3));
+                    // new GyroIO() {},
+                    // new ModuleIO() {},
+                    // new ModuleIO() {},
+                    // new ModuleIO() {},
+                    // new ModuleIO() {});
+                this.drive = new Drive(
+                new GyroIOPigeon2(),
+                new ModuleIOSpark(0),
+                new ModuleIOSpark(1),
+                new ModuleIOSpark(2),
+                new ModuleIOSpark(3));
 
                 this.vision = new Vision(
                     drive::addVisionMeasurement
@@ -140,6 +143,7 @@ public class RobotContainer {
 
     private void configureBindings() {
         if(Config.ROBOT_TYPE == RobotType.SETUP_TUNING){
+            // drive.setDefaultCommand(DriveCommands.viewWheelForwardCharacterization(drive, controller::getMailboxAxis));
             drive.setDefaultCommand(DriveCommands.viewWheelForwardDirection(drive, controller::getMailboxAxis));
             controller.stopXBtn().onTrue(new InstantCommand(drive::logModuleOffsets));
             return;
@@ -148,9 +152,9 @@ public class RobotContainer {
         // Default command, normal field-relative drive
         drive.setDefaultCommand(DriveCommands.joystickDrive(
             drive,
-            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> controller.getDriveYAxis(),
-            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> controller.getDriveXAxis(),
-            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getTurnAxis() : () -> controller.getTurnAxis(),
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis(),
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getTurnAxis() : () -> -controller.getTurnAxis(),
             () -> false));
 
         // Lock to 0° when A button is held

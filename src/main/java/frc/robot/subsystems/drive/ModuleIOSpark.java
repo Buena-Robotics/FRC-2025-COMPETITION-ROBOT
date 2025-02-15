@@ -21,10 +21,11 @@ import java.util.function.DoubleSupplier;
 public class ModuleIOSpark implements ModuleIO {
     // 4.071693, 2.830042 + Math.PI, 5.274043, 1.992770 + Math.PI
     public static double[] ZERO_ROTATIONS = {
-            4.071693,
-            2.830042 + Math.PI,
-            5.274043,
-            1.992770 };
+        5.968574,
+        4.047637,
+        8.437362,
+        1.967771,
+    };
 
     public static final double DRIVE_P = 0.0;
     public static final double DRIVE_D = 0.0;
