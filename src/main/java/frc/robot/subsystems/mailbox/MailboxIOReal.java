@@ -15,7 +15,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import frc.robot.util.SparkUtil;
 
 public class MailboxIOReal implements MailboxIO {
-    private static final int SHOOTER_MOTOR_CAN_ID = 14;
+    private static final int SHOOTER_MOTOR_CAN_ID = 11;
     private static final double SHOOTER_S = 0.1;
     private static final double SHOOTER_V = 0.1;
 
@@ -48,7 +48,7 @@ public class MailboxIOReal implements MailboxIO {
     }
 
     @Override public void setShooterVelocity(final double shooter_velocity_radians_per_second) {
-        double ffVolts = SHOOTER_S * Math.signum(shooter_velocity_radians_per_second) + SHOOTER_V * shooter_velocity_radians_per_second;
+        final double ffVolts = SHOOTER_S * Math.signum(shooter_velocity_radians_per_second) + SHOOTER_V * shooter_velocity_radians_per_second;
         shooter_controller.setReference(shooter_velocity_radians_per_second, ControlType.kVelocity, ClosedLoopSlot.kSlot0, ffVolts, ArbFFUnits.kVoltage);
     }
 }

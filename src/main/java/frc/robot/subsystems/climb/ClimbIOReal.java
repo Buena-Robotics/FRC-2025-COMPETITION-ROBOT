@@ -11,7 +11,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import frc.robot.util.SparkUtil;
 
 public class ClimbIOReal implements ClimbIO {
-    private static final int WINCH_MOTOR_CAN_ID = 10;
+    private static final int WINCH_MOTOR_CAN_ID = 12;
     private final SparkMax winch_motor;
     private final RelativeEncoder winch_encoder;
     private final Debouncer winch_connected_debounce = new Debouncer(0.5);

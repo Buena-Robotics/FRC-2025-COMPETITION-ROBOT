@@ -21,6 +21,8 @@ public class ElevatorIOReal implements ElevatorIO {
     private static final double LIFT_EMPTY_I = 0.0;
     private static final double LIFT_EMPTY_D = 0.05;
 
+    private static final double LIFT_CLAMP_MIN_POSITION = 0.25;
+
     // Constants when lift is carrying a coral
     // private static final double LIFT_CARRY_P = 0.1;
     // private static final double LIFT_CARRY_I = 0.1;
@@ -65,10 +67,10 @@ public class ElevatorIOReal implements ElevatorIO {
     }
 
     @Override public void setLiftPosition(double lift_setpoint_position_inches) {
-        // if (lift_setpoint_position_inches < LIFT_CLAMP_MIN_POSITION)
-        // lift_setpoint_position_inches = LIFT_CLAMP_MIN_POSITION;
-        // if (lift_setpoint_position_inches > Elevator.ELEVATOR_MAX_HEIGHT_INCHES)
-        // lift_setpoint_position_inches = Elevator.ELEVATOR_MAX_HEIGHT_INCHES;
+        if (lift_setpoint_position_inches < LIFT_CLAMP_MIN_POSITION)
+            lift_setpoint_position_inches = LIFT_CLAMP_MIN_POSITION;
+        if (lift_setpoint_position_inches > Elevator.ELEVATOR_MAX_HEIGHT_INCHES)
+            lift_setpoint_position_inches = Elevator.ELEVATOR_MAX_HEIGHT_INCHES;
         this.lift_setpoint_position_inches = lift_setpoint_position_inches;
         lift_controller.setReference(lift_setpoint_position_inches, ControlType.kPosition);
     }
@@ -90,7 +92,7 @@ public class ElevatorIOReal implements ElevatorIO {
         lift_config.softLimit
             .forwardSoftLimit(Elevator.ELEVATOR_MAX_HEIGHT_INCHES)
             .forwardSoftLimitEnabled(true)
-            .reverseSoftLimit(0.1)
+            .reverseSoftLimit(0.25)
             .reverseSoftLimitEnabled(true);
         SparkUtil.setSparkBaseConfig(lift_config, LIFT_MOTOR_CURRENT_LIMIT);
         SparkUtil.setSparkEncoderConfig(lift_config.encoder, LIFT_ENCODER_POSITION_FACTOR, LIFT_ENCODER_VELOCITY_FACTOR);
