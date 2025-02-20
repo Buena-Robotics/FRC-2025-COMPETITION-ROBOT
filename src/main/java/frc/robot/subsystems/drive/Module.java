@@ -47,17 +47,17 @@ public class Module {
      */
     public void runSetpoint(final SwerveModuleState state) {
         // keep modules at current state when no input is given
-        if (Math.abs(state.speedMetersPerSecond) < 0.01) {
-            stop();
-            return;
-        }
+        // if (Math.abs(state.speedMetersPerSecond) < 0.01) {
+            // stop();
+            // return;
+        // }
 
         // Optimize velocity setpoint
         state.optimize(getAngle());
         state.cosineScale(inputs.turn_position);
 
         // Apply setpoints
-        io.setDriveVelocity(state.speedMetersPerSecond / Drive.WHEEL_RADIUS_METERS);
+        io.setDriveVelocity(state.speedMetersPerSecond);
         io.setTurnPosition(state.angle);
     }
 

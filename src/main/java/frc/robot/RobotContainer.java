@@ -144,8 +144,8 @@ public class RobotContainer {
 
     private void configureBindings() {
         if(Config.ROBOT_TYPE == RobotType.SETUP_TUNING){
-            // drive.setDefaultCommand(DriveCommands.viewWheelForwardCharacterization(drive, controller::getMailboxAxis));
-            drive.setDefaultCommand(DriveCommands.viewWheelForwardDirection(drive, controller::getMailboxAxis));
+            // drive.setDefaultCommand(DriveCommands.viewWheelForwardCharacterization(drive, controller::getElevatorAxis));
+            drive.setDefaultCommand(DriveCommands.viewWheelForwardDirection(drive, controller::getElevatorAxis));
             controller.stopXBtn().onTrue(new InstantCommand(drive::logModuleOffsets));
             return;
         }

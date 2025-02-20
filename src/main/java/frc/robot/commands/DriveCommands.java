@@ -31,7 +31,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 
 public class DriveCommands {
-    private static final double DEADBAND = 0.32;
+    private static final double DEADBAND = 0.14;
     private static final double ANGLE_KP = 5.0;
     private static final double ANGLE_KD = 0.4;
     private static final double ANGLE_MAX_VELOCITY = 8.0;

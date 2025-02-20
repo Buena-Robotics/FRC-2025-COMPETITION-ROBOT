@@ -21,19 +21,28 @@ import java.util.function.DoubleSupplier;
 public class ModuleIOSpark implements ModuleIO {
     // 4.071693, 2.830042 + Math.PI, 5.274043, 1.992770 + Math.PI
     public static double[] ZERO_ROTATIONS = {
-        6.041201,
-        4.062565,
-        1.966582,
-        -4.092057,
+        5.971324,
+        4.019633,
+        1.993597,
+        2.158301,
+        // 6.041201,
+        // 4.062565,
+        // 1.966582,
+        // -4.092057,
     };
 
-    public static final double DRIVE_P = 0.0;
-    public static final double DRIVE_D = 0.0;
-    public static final double DRIVE_S = 0.0;
-    public static final double DRIVE_V = 0.1;
+    public static final double[][] DRIVE_P_D_S_V_A = {
+        {0.00016607, 0.0, 0.1408, 3.5358, 0.26601},
+        {3.2561E-05, 0.0, 0.1694, 3.5289, 0.23403},
+        {0.0036216, 0.0, 0.10601, 3.4979, 0.37033},
+        {0.0056219, 0.0, 0.07187, 3.6257, 0.29537},
+    };
 
-    public static final double TURN_P = 0.12;
-    public static final double TURN_D = 0.0;
+    public static final double DRIVE_P = 0.001;
+    public static final double DRIVE_D = 0.0;
+
+    public static final double TURN_P = 0.75;
+    public static final double TURN_D = 0.01;
     public static final double TURN_PID_MIN_INPUT_RADIANS = 0;
     public static final double TURN_PID_MAX_INPUT_RADIANS = 2 * Math.PI;
 
@@ -60,10 +69,12 @@ public class ModuleIOSpark implements ModuleIO {
     private final Debouncer drive_connected_debounce = new Debouncer(0.5);
     private final Debouncer turn_connected_debounce = new Debouncer(0.5);
 
+    final int module;
     private boolean drive_brake_mode = true;
     private boolean turn_brake_mode = true;
 
     public ModuleIOSpark(final int module) {
+        this.module = module;
         this.turn_absolute_encoder = new AnalogEncoder(module, 2.0 * Math.PI, ZERO_ROTATIONS[module]);
         this.drive_motor = new SparkMax((module * 2) + 1, MotorType.kBrushless);
         this.turn_motor = new SparkMax((module * 2) + 2, MotorType.kBrushless);
@@ -121,14 +132,15 @@ public class ModuleIOSpark implements ModuleIO {
         turn_motor.setVoltage(output);
     }
 
-    @Override public void setDriveVelocity(final double velocity_radians_per_second) {
-        double ff_volts = DRIVE_S * Math.signum(velocity_radians_per_second) + DRIVE_V * velocity_radians_per_second;
+    @Override public void setDriveVelocity(final double velocity_meters_per_second) {
+        // final double ff_volts = DRIVE_P_D_S_V_A[module][2] * Math.signum(velocity_radians_per_second) + DRIVE_P_D_S_V_A[module][3] * velocity_radians_per_second;
+        final double ff_volts = DRIVE_P_D_S_V_A[module][2] * Math.signum(velocity_meters_per_second) + DRIVE_P_D_S_V_A[module][3] * velocity_meters_per_second;
         drive_controller.setReference(
-            velocity_radians_per_second, ControlType.kVelocity, ClosedLoopSlot.kSlot0, ff_volts, ArbFFUnits.kVoltage);
+            velocity_meters_per_second, ControlType.kVelocity, ClosedLoopSlot.kSlot0, ff_volts, ArbFFUnits.kVoltage);
     }
 
     @Override public void setTurnPosition(final Rotation2d rotation) {
-        double setpoint = MathUtil.inputModulus(
+        final double setpoint = MathUtil.inputModulus(
             rotation.getRadians(), TURN_PID_MIN_INPUT_RADIANS, TURN_PID_MAX_INPUT_RADIANS);
         turn_controller.setReference(setpoint, ControlType.kPosition);
     }

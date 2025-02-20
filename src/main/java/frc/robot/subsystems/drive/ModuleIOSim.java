@@ -95,7 +95,8 @@ public class ModuleIOSim implements ModuleIO {
         turn_applied_volts = output;
     }
 
-    @Override public void setDriveVelocity(final double velocity_radians_per_second) {
+    @Override public void setDriveVelocity(final double velocity_meters_per_second) {
+        final double velocity_radians_per_second = velocity_meters_per_second / Drive.WHEEL_RADIUS_METERS;
         drive_closed_loop = true;
         drive_ff_volts = DRIVE_SIM_S * Math.signum(velocity_radians_per_second) + DRIVE_SIM_V * velocity_radians_per_second;
         drive_controller.setSetpoint(velocity_radians_per_second);

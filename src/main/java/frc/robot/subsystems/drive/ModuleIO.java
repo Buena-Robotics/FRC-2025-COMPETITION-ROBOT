@@ -27,7 +27,7 @@ public interface ModuleIO {
     public default void updateInputs(final ModuleIOInputs inputs) {}
 
     public default void setDriveOpenLoop(final double output) {}
-    public default void setDriveVelocity(final double velocity_radians_per_second) {}
+    public default void setDriveVelocity(final double velocity_meters_per_second) {}
     public default void setDriveBrakeMode(final boolean brake_mode) {}
 
     public default void setTurnOpenLoop(final double output) {}
