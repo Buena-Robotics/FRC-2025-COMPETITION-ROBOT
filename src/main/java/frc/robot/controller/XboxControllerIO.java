@@ -27,9 +27,11 @@ public class XboxControllerIO implements CommandControllerIO {
     }
 
     @Override public double getMailboxAxis() {
-        // return controller.getRightY();
         return controller.rightBumper().getAsBoolean() ? -0.5 : 0.0;
-        // return controller.leftBumper().getAsBoolean() ? -1.0 : controller.rightBumper().getAsBoolean() ? 1.0 : 0.0;
+    }
+
+    @Override public double getClimbAxis() {
+        return controller.povDown().getAsBoolean() ? -0.25 : controller.povUp().getAsBoolean() ? 0.25 : 0.0;
     }
 
     @Override public Trigger lockGyroBtn() {

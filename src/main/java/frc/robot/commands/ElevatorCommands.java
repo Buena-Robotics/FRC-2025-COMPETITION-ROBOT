@@ -5,6 +5,7 @@ import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -19,6 +20,13 @@ public class ElevatorCommands {
     private static final double FF_RAMP_RATE = 0.01; // Volts/Sec
 
     private ElevatorCommands() {}
+
+    public static Command triggerElevatorHeightAndSetpoint(final Elevator elevator, final DoubleSupplier height_supplier, final Supplier<ElevatorSetpoint> setpoint_supplier) {
+        return Commands.run(
+            () -> {
+                elevator.runSetpoint(height_supplier.getAsDouble() * Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
+            }, elevator);
+    }
 
     public static Command triggerElevatorHeight(final Elevator elevator, final DoubleSupplier height_supplier) {
         return Commands.run(

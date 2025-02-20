@@ -1,6 +1,7 @@
 package frc.robot.controller;
 
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.controller.CommandSaitekController.Button;
 
 public class SaitekControllerIO implements CommandControllerIO {
     private final CommandSaitekController controller;
@@ -22,11 +23,15 @@ public class SaitekControllerIO implements CommandControllerIO {
     }
 
     @Override public double getElevatorAxis() {
-        return (controller.throttleSliderAxis() + 1.0) / 2.0;
+        return 1.0 - ((controller.throttleMainAxis() + 1.0) / 2.0);
     }
 
     @Override public double getMailboxAxis() {
-        return 0.0;
+        return controller.getTrigger(Button.D).getAsBoolean() ? -0.5 : 0.0;
+    }
+
+    @Override public double getClimbAxis() {
+        return controller.povDown().getAsBoolean() ? -0.25 : controller.povUp().getAsBoolean() ? 0.25 : 0.0;
     }
 
     @Override public Trigger lockGyroBtn() {

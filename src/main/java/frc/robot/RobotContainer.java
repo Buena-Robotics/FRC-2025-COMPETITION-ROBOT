@@ -15,9 +15,14 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.controller.*;
 import frc.robot.Config.RobotMode;
 import frc.robot.Config.RobotType;
+import frc.robot.commands.ClimbCommands;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
 import frc.robot.commands.MailboxCommands;
+import frc.robot.subsystems.climb.Climb;
+import frc.robot.subsystems.climb.ClimbIO;
+import frc.robot.subsystems.climb.ClimbIOReal;
+import frc.robot.subsystems.climb.ClimbIOSim;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -53,12 +58,13 @@ public class RobotContainer {
         new SwerveDriveSimulation(Drive.MAPLE_SIM_CONFIG, new Pose2d(3, 3, new Rotation2d())) :
         null;
     private final Elevator elevator;
-    // private final Climb climb;
+    private final Climb climb;
     private final Mailbox mailbox;
 
     // Controller
-    // private final CommandControllerIO controller = Config.ROBOT_MODE == RobotMode.SIM ? new XboxControllerIO(0) : new SaitekControllerIO(0);
-    private final CommandControllerIO controller = new XboxControllerIO(0);
+    // private final CommandControllerIO controller = Config.ROBOT_MODE ==
+    // RobotMode.SIM ? new XboxControllerIO(0) : new SaitekControllerIO(0);
+    private final CommandControllerIO controller = new SaitekControllerIO(0);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> auto_chooser;
@@ -68,17 +74,17 @@ public class RobotContainer {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
                 // this.drive = new Drive(
-                    // new GyroIO() {},
-                    // new ModuleIO() {},
-                    // new ModuleIO() {},
-                    // new ModuleIO() {},
-                    // new ModuleIO() {});
+                // new GyroIO() {},
+                // new ModuleIO() {},
+                // new ModuleIO() {},
+                // new ModuleIO() {},
+                // new ModuleIO() {});
                 this.drive = new Drive(
-                new GyroIOPigeon2(){},
-                new ModuleIOSpark(0),
-                new ModuleIOSpark(1),
-                new ModuleIOSpark(2),
-                new ModuleIOSpark(3));
+                    new GyroIOPigeon2() {},
+                    new ModuleIOSpark(0),
+                    new ModuleIOSpark(1),
+                    new ModuleIOSpark(2),
+                    new ModuleIOSpark(3));
 
                 this.vision = new Vision(
                     drive::addVisionMeasurement
@@ -86,7 +92,7 @@ public class RobotContainer {
                 );
 
                 this.elevator = new Elevator(new ElevatorIOReal() {});
-                // this.climb = new Climb(new ClimbIO() {});
+                this.climb = new Climb(new ClimbIOReal() {});
                 this.mailbox = new Mailbox(new MailboxIOReal() {});
                 break;
             case SIM:
@@ -109,7 +115,7 @@ public class RobotContainer {
                 this.vision = new Vision(drive::addVisionMeasurement, new VisionIOPhotonSim(Cameras.cameras[0], drive_simulation::getSimulatedDriveTrainPose));
 
                 this.elevator = new Elevator(new ElevatorIOSim());
-                // this.climb = new Climb(new ClimbIOSim());
+                this.climb = new Climb(new ClimbIOSim());
                 this.mailbox = new Mailbox(new MailboxIOSim());
                 break;
             default:
@@ -117,7 +123,7 @@ public class RobotContainer {
                 this.drive = new Drive(new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
                 this.vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
                 this.elevator = new Elevator(new ElevatorIO() {});
-                // this.climb = new Climb(new ClimbIO() {});
+                this.climb = new Climb(new ClimbIO() {});
                 this.mailbox = new Mailbox(new MailboxIO() {});
                 break;
         }
@@ -143,8 +149,9 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        if(Config.ROBOT_TYPE == RobotType.SETUP_TUNING){
-            // drive.setDefaultCommand(DriveCommands.viewWheelForwardCharacterization(drive, controller::getElevatorAxis));
+        if (Config.ROBOT_TYPE == RobotType.SETUP_TUNING) {
+            // drive.setDefaultCommand(DriveCommands.viewWheelForwardCharacterization(drive,
+            // controller::getElevatorAxis));
             drive.setDefaultCommand(DriveCommands.viewWheelForwardDirection(drive, controller::getElevatorAxis));
             controller.stopXBtn().onTrue(new InstantCommand(drive::logModuleOffsets));
             return;
@@ -179,7 +186,7 @@ public class RobotContainer {
         controller.resetGyroBtn().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
         elevator.setDefaultCommand(ElevatorCommands.triggerElevatorHeight(elevator, () -> controller.getElevatorAxis()));
-        // climb.setDefaultCommand(ClimbCommands.triggerClimbSpeed(climb));
+        climb.setDefaultCommand(ClimbCommands.triggerClimbSpeed(climb, () -> controller.getClimbAxis()));
         mailbox.setDefaultCommand(MailboxCommands.triggerMailboxSpeed(mailbox, () -> controller.getMailboxAxis()));
     }
 

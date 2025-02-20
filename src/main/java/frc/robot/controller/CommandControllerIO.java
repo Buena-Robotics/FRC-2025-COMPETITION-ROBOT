@@ -13,6 +13,8 @@ public interface CommandControllerIO {
 
     public double getMailboxAxis();
 
+    public double getClimbAxis();
+
     public Trigger lockGyroBtn();
 
     public Trigger resetGyroBtn();
