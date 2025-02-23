@@ -83,31 +83,31 @@ public class CommandSaitekController extends CommandGenericHID {
 
     public enum Button {
         // Joystick
-        FIRE(1),
-        DOUBLE_TRIGGER_1(0),
-        DOUBLE_TRIGGER_2(14),
-        A(2),
-        B(3),
-        C(4),
-        PINKY_TRIGGER(5),
-        DPAD_UP_JOYSTICK(15),
-        DPAD_RIGHT_JOYSTICK(16),
-        DPAD_DOWN_JOYSTICK(17),
-        DPAD_LEFT_JOYSTICK(18),
-        T1(8),
-        T2(9),
-        T3(10),
-        T4(11),
-        T5(12),
-        T6(13),
+        FIRE(2),
+        DOUBLE_TRIGGER_1(1),
+        DOUBLE_TRIGGER_2(15),
+        A(3),
+        B(4),
+        C(5),
+        PINKY_TRIGGER(6),
+        DPAD_UP_JOYSTICK(16),
+        DPAD_RIGHT_JOYSTICK(17),
+        DPAD_DOWN_JOYSTICK(18),
+        DPAD_LEFT_JOYSTICK(19),
+        T1(9),
+        T2(10),
+        T3(11),
+        T4(12),
+        T5(13),
+        T6(14),
         //Throttle
         D(7),
         E(8),
         I(30),
-        DPAD_UP_THROTTLE(19),
-        DPAD_RIGHT_THROTTLE(20),
-        DPAD_DOWN_THROTTLE(21),
-        DPAD_LEFT_THROTTLE(22);
+        DPAD_UP_THROTTLE(20),
+        DPAD_RIGHT_THROTTLE(21),
+        DPAD_DOWN_THROTTLE(22),
+        DPAD_LEFT_THROTTLE(23);
 
         int button;
 

@@ -27,22 +27,54 @@ public class SaitekControllerIO implements CommandControllerIO {
     }
 
     @Override public double getMailboxAxis() {
-        return controller.getTrigger(Button.D).getAsBoolean() ? -0.5 : 0.0;
+        return controller.getTrigger(Button.I).getAsBoolean() ? -1.0 : 0.0;
     }
 
     @Override public double getClimbAxis() {
         return controller.povDown().getAsBoolean() ? -0.25 : controller.povUp().getAsBoolean() ? 0.25 : 0.0;
     }
 
-    @Override public Trigger lockGyroBtn() {
-        return controller.button(3);
-    }
-
     @Override public Trigger resetGyroBtn() {
-        return controller.button(1);
+        return controller.getTrigger(Button.DOUBLE_TRIGGER_1);
     }
 
     @Override public Trigger stopXBtn() {
-        return controller.button(2);
+        return controller.getTrigger(Button.DOUBLE_TRIGGER_2);
+    }
+
+    @Override public Trigger elevatorSetpointModeBtn() {
+        return controller.getTrigger(Button.D);
+    }
+
+    @Override public Trigger fieldOrientedBtn() {
+        return controller.getTrigger(Button.FIRE);
+    }
+
+    @Override public Trigger driveAssistBtn() {
+        return controller.getTrigger(Button.B);
+    }
+
+    @Override public Trigger mailboxFeedBtn() {
+        return controller.getTrigger(Button.I);
+    }
+
+    @Override public Trigger flipRobotBtn() {
+        return controller.getTrigger(Button.C);
+    }
+
+    @Override public Trigger flyToCoralStation1() {
+        return controller.getTrigger(Button.T1);
+    }
+
+    @Override public Trigger flyToCoralStation2() {
+        return controller.getTrigger(Button.T2);
+    }
+
+    @Override public Trigger FlyToClosestReefSide1() {
+        return controller.getTrigger(Button.T3);
+    }
+
+    @Override public Trigger FlyToClosestReefSide2() {
+        return controller.getTrigger(Button.T4);
     }
 }

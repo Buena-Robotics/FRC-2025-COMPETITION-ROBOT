@@ -4,34 +4,61 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
 
-import org.littletonrobotics.junction.Logger;
-
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.Elevator.ElevatorSetpoint;
 
 public class ElevatorCommands {
+    private static final double SHAKE_DELAY_SECONDS = 0.3;
     private static final double FF_START_DELAY = 2.0; // Secs
-    private static final double FF_RAMP_RATE = 0.01; // Volts/Sec
+    private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
 
     private ElevatorCommands() {}
 
-    public static Command triggerElevatorHeightAndSetpoint(final Elevator elevator, final DoubleSupplier height_supplier, final Supplier<ElevatorSetpoint> setpoint_supplier) {
+    private static List<Pair<Double, ElevatorSetpoint>> estimate_setpoint_pairs = List.of(
+        new Pair<>(0.00, ElevatorSetpoint.CORAL_STATION),
+        new Pair<>(0.33, ElevatorSetpoint.L2),
+        new Pair<>(0.66, ElevatorSetpoint.BARGE),
+        new Pair<>(1.00, ElevatorSetpoint.L3)
+    );
+    // estimate is between 0-1
+    private static ElevatorSetpoint closestSetpoint(final double estimate){
+        int closest_index = 0;
+        double closest_distance = Double.MAX_VALUE;
+        for(int i = 0; i < estimate_setpoint_pairs.size(); i++){
+            double distance = Math.abs(estimate - estimate_setpoint_pairs.get(i).getFirst());
+            if(distance < closest_distance) {
+                closest_distance = distance;
+                closest_index = i;
+            }
+        }
+        return estimate_setpoint_pairs.get(closest_index).getSecond();
+    }
+
+    public static Command triggerElevatorHeightAndSetpoint(final Elevator elevator, final BooleanSupplier setpoint_mode_supplier, final DoubleSupplier height_supplier, final DoubleSupplier setpoint_estimate_supplier) {
         return Commands.run(
             () -> {
-                elevator.runSetpoint(height_supplier.getAsDouble() * Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
+                if(setpoint_mode_supplier.getAsBoolean()){
+                    final ElevatorSetpoint closest = closestSetpoint(setpoint_estimate_supplier.getAsDouble());
+                    elevator.runSetpoint(closest.getValue());
+                }
+                else {
+                    elevator.runSetpoint(height_supplier.getAsDouble() * Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
+                }
             }, elevator);
     }
 
     public static Command triggerElevatorHeight(final Elevator elevator, final DoubleSupplier height_supplier) {
         return Commands.run(
             () -> {
-                Logger.recordOutput("Elevator/Height Guess", height_supplier.getAsDouble());
                 elevator.runSetpoint(height_supplier.getAsDouble() * Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
             }, elevator);
     }
@@ -41,6 +68,14 @@ public class ElevatorCommands {
             () -> {
                 elevator.runSetpoint(setpoint.getValue());
             }, elevator);
+    }
+
+    public static Command shakeElevator(final Elevator elevator){
+        return Commands.sequence(
+            new InstantCommand(()-> { elevator.runSetpoint(Elevator.ELEVATOR_MAX_HEIGHT_INCHES); }, elevator),
+            new WaitCommand(SHAKE_DELAY_SECONDS),
+            new InstantCommand(() -> {elevator.runSetpoint(0.0);})
+        );
     }
 
     public static Command feedforwardCharacterization(final Elevator elevator) {

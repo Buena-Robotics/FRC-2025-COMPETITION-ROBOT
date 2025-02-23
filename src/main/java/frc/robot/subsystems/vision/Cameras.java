@@ -7,21 +7,31 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 
 public class Cameras {
+    // 7 inches behind the centers; 21 inches
+    // 10 degrees up
+
     public static final Camera[] cameras = {
             new Camera(
-                "camera_0",
+                "Microsoft_LifeCam_HD-3000",
                 new Transform3d(
-                    0.0, 0.0, Units.inchesToMeters(24),
-                    new Rotation3d(0.0, 0.0, 0.0)),
-                1.0,
+                    Units.inchesToMeters(-7), 0.0, Units.inchesToMeters(21),
+                    new Rotation3d(0.0, Units.degreesToRadians(5), 0.0)),
+                3,
                 SimCameraProperties.PERFECT_90DEG()),
             new Camera(
-                "camera_1",
+                "USB_Camera",
                 new Transform3d(
-                    0.0, 0.0, Units.inchesToMeters(24),
-                    new Rotation3d(0.0, 0.0, Math.PI)),
-                1.0,
-                SimCameraProperties.PERFECT_90DEG())
+                    Units.inchesToMeters(-12), Units.inchesToMeters(-2), Units.inchesToMeters(21),
+                    new Rotation3d(0.0, 0.0, Units.degreesToRadians(225))),
+                10,
+                SimCameraProperties.PERFECT_90DEG()),
+            new Camera(
+                "NEXIGO_HD_Webcam",
+                new Transform3d(
+                    Units.inchesToMeters(-12), Units.inchesToMeters(2), Units.inchesToMeters(21),
+                    new Rotation3d(0.0, 0.0, Units.degreesToRadians(135))),
+                5,
+                SimCameraProperties.PERFECT_90DEG()),
     };
 
     public static record Camera(String name, Transform3d robot_to_camera, double std_dev_factor, SimCameraProperties camera_properties) {

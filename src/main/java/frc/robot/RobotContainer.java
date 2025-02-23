@@ -8,6 +8,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -34,12 +36,14 @@ import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOReal;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
+import frc.robot.subsystems.elevator.Elevator.ElevatorSetpoint;
 import frc.robot.subsystems.mailbox.Mailbox;
 import frc.robot.subsystems.mailbox.MailboxIO;
 import frc.robot.subsystems.mailbox.MailboxIOReal;
 import frc.robot.subsystems.mailbox.MailboxIOSim;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOPhoton;
 import frc.robot.subsystems.vision.VisionIOPhotonSim;
 import frc.robot.util.ArenaSchool2025Reefscape;
 import frc.robot.subsystems.vision.Cameras;
@@ -87,11 +91,12 @@ public class RobotContainer {
                     new ModuleIOSpark(3));
 
                 this.vision = new Vision(
-                    drive::addVisionMeasurement
-                // new VisionIOPhoton(Cameras.cameras[0])
-                );
+                    drive::addVisionMeasurement,
+                    new VisionIOPhoton(Cameras.cameras[0], drive::getPose),
+                    new VisionIOPhoton(Cameras.cameras[1], drive::getPose),
+                    new VisionIOPhoton(Cameras.cameras[2], drive::getPose));
 
-                this.elevator = new Elevator(new ElevatorIOReal() {});
+                this.elevator = new Elevator(new ElevatorIOReal() {}, drive::getPose);
                 this.climb = new Climb(new ClimbIOReal() {});
                 this.mailbox = new Mailbox(new MailboxIOReal() {});
                 break;
@@ -114,7 +119,7 @@ public class RobotContainer {
                 // VisionIOPhotonSim(Cameras.cameras[1])
                 this.vision = new Vision(drive::addVisionMeasurement, new VisionIOPhotonSim(Cameras.cameras[0], drive_simulation::getSimulatedDriveTrainPose));
 
-                this.elevator = new Elevator(new ElevatorIOSim());
+                this.elevator = new Elevator(new ElevatorIOSim(), drive_simulation::getSimulatedDriveTrainPose);
                 this.climb = new Climb(new ClimbIOSim());
                 this.mailbox = new Mailbox(new MailboxIOSim());
                 break;
@@ -122,7 +127,7 @@ public class RobotContainer {
                 // Replayed robot, disable IO implementations
                 this.drive = new Drive(new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
                 this.vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
-                this.elevator = new Elevator(new ElevatorIO() {});
+                this.elevator = new Elevator(new ElevatorIO() {}, drive::getPose);
                 this.climb = new Climb(new ClimbIO() {});
                 this.mailbox = new Mailbox(new MailboxIO() {});
                 break;
@@ -148,6 +153,8 @@ public class RobotContainer {
         configureBindings();
     }
 
+    private boolean elevator_setpoint_mode = false;
+
     private void configureBindings() {
         if (Config.ROBOT_TYPE == RobotType.SETUP_TUNING) {
             // drive.setDefaultCommand(DriveCommands.viewWheelForwardCharacterization(drive,
@@ -163,17 +170,48 @@ public class RobotContainer {
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getTurnAxis() : () -> -controller.getTurnAxis(),
-            () -> false));
+            () -> !controller.fieldOrientedBtn().getAsBoolean()));
+        controller.driveAssistBtn().whileTrue(DriveCommands.driveAssistJoystickDrive(
+            drive,
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis(),
+            () -> !controller.fieldOrientedBtn().getAsBoolean()));
+
+        elevator.setDefaultCommand(ElevatorCommands.triggerElevatorHeightAndSetpoint(elevator,
+            () -> elevator_setpoint_mode,
+            () -> controller.getElevatorAxis(),
+            () -> controller.getElevatorAxis()));
+        climb.setDefaultCommand(ClimbCommands.triggerClimbSpeed(climb, () -> controller.getClimbAxis()));
+        mailbox.setDefaultCommand(MailboxCommands.triggerMailboxSpeed(mailbox, () -> controller.getMailboxAxis()));
 
         // Lock to 0° when A button is held
-        controller
-            .lockGyroBtn()
-            .whileTrue(DriveCommands.joystickDriveAtAngle(
-                drive,
-                () -> controller.getDriveYAxis(),
-                () -> controller.getDriveXAxis(),
-                () -> new Rotation2d()));
+        // controller
+        // .lockGyroBtn()
+        // .toggleOnTrue(DriveCommands.joystickDriveAtAngle(
+        // drive,
+        // () -> controller.getDriveYAxis(),
+        // () -> controller.getDriveXAxis(),
+        // () -> new Rotation2d()));
 
+        controller.flipRobotBtn().onTrue(DriveCommands.flipRobot(
+            drive,
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis(),
+            () -> !controller.fieldOrientedBtn().getAsBoolean()));
+        controller.flyToCoralStation1().onTrue(
+            Commands.parallel(
+                DriveCommands.pathfindToPose(drive, FieldConstants.BLUE_CORAL_STATION_2_POSE),
+                ElevatorCommands.triggerElevatorSetpoint(elevator, ElevatorSetpoint.CORAL_STATION)));
+        controller.flyToCoralStation2().onTrue(
+            Commands.parallel(
+                DriveCommands.pathfindToPose(drive, FieldConstants.BLUE_CORAL_STATION_1_POSE),
+                ElevatorCommands.triggerElevatorSetpoint(elevator, ElevatorSetpoint.CORAL_STATION)));
+        controller.FlyToClosestReefSide1().onTrue(
+            DriveCommands.pathfindToPoseSupplier(drive, () -> getClosestReefPose().plus(
+                new Transform2d(0, Units.inchesToMeters(-8.5), new Rotation2d())).transformBy(FieldConstants.REEF_TRANSFORM_LEFT)));
+        controller.FlyToClosestReefSide1().onTrue(
+            DriveCommands.pathfindToPoseSupplier(drive, () -> getClosestReefPose().plus(
+                new Transform2d(0, Units.inchesToMeters(-8.5), new Rotation2d())).transformBy(FieldConstants.REEF_TRANSFORM_RIGHT)));
         // Switch to X pattern when X button is pressed
         // controller.stopXBtn().onTrue(Commands.runOnce(drive::stopWithX, drive));
         controller.stopXBtn().whileTrue(DriveCommands.pathfindToPose(drive, FieldConstants.RED_REEF_SIDE_2_POSE));
@@ -185,9 +223,10 @@ public class RobotContainer {
             : () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
         controller.resetGyroBtn().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
-        elevator.setDefaultCommand(ElevatorCommands.triggerElevatorHeight(elevator, () -> controller.getElevatorAxis()));
-        climb.setDefaultCommand(ClimbCommands.triggerClimbSpeed(climb, () -> controller.getClimbAxis()));
-        mailbox.setDefaultCommand(MailboxCommands.triggerMailboxSpeed(mailbox, () -> controller.getMailboxAxis()));
+        controller.elevatorSetpointModeBtn().onTrue(Commands.runOnce(() -> {
+            elevator_setpoint_mode = !elevator_setpoint_mode;
+        }));
+        controller.mailboxFeedBtn().onTrue(MailboxCommands.latchOntoCoral(mailbox));
     }
 
     public Command getAutonomousCommand() {
@@ -199,6 +238,20 @@ public class RobotContainer {
             return;
         drive_simulation.setSimulationWorldPose(new Pose2d(2, 2, new Rotation2d()));
         SimulatedArena.getInstance().resetFieldForAuto();
+    }
+
+    public Pose2d getClosestReefPose() {
+        int closest_index = 0;
+        double closest_distance = Double.MAX_VALUE;
+        Pose2d[] pose_list = FieldConstants.REEF_SIDE_POSES();
+        for (int i = 0; i < pose_list.length; i++) {
+            double distance = drive.getPose().getTranslation().getDistance(pose_list[i].getTranslation());
+            if (distance < closest_distance) {
+                closest_distance = distance;
+                closest_index = i;
+            }
+        }
+        return pose_list[closest_index];
     }
 
     public void displaySimFieldToAdvantageScope() {

@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Config;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.Printf;
 
@@ -31,7 +32,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 
 public class DriveCommands {
-    private static final double DEADBAND = 0.14;
+    private static final double DEADBAND = 0.10;
     private static final double ANGLE_KP = 5.0;
     private static final double ANGLE_KD = 0.4;
     private static final double ANGLE_MAX_VELOCITY = 8.0;
@@ -42,6 +43,31 @@ public class DriveCommands {
     private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
 
     private DriveCommands() {}
+
+    private static Rotation2d[] turn_assist_snap_points = {
+            new Rotation2d(), // Forward
+            new Rotation2d(Math.PI), // Backward
+            new Rotation2d(Math.PI / 3.0), // 60 degrees left
+            new Rotation2d(-Math.PI / 3.0), // 60 degrees right
+            new Rotation2d((Math.PI / 6.0) + Math.PI), // 120 degrees left
+            new Rotation2d(-((Math.PI / 6.0) + Math.PI)), // 120 degrees right
+            new Rotation2d(Math.PI / 4.0), // 45 degrees left
+            new Rotation2d(-Math.PI / 4.0), // 45 degrees right
+    };
+
+    private static double closestRotationSnapPoint(double estimate_radians){
+        int closest_index = 0;
+        double closest_distance = Double.MAX_VALUE;
+        for(int i = 0; i < turn_assist_snap_points.length; i++){
+            final double snap_point = Config.getRobotAlliance().equals(Alliance.Blue) ? turn_assist_snap_points[i].getRadians() : turn_assist_snap_points[i].plus(new Rotation2d(Math.PI)).getRadians();
+            final double distance = Math.abs(estimate_radians + Math.abs(snap_point));
+            if(distance < closest_distance) {
+                closest_distance = distance;
+                closest_index = i;
+            }
+        }
+        return turn_assist_snap_points[closest_index].getRadians();
+    }
 
     private static Translation2d getLinearVelocityFromJoysticks(final double x, final double y) {
         // Apply deadband
@@ -73,6 +99,66 @@ public class DriveCommands {
             }, drive);
     }
 
+    private static Rotation2d flip_robot_rotation = new Rotation2d();
+    public static Command flipRobot(final Drive drive, final DoubleSupplier x_supplier, final DoubleSupplier y_supplier, final BooleanSupplier field_oriented_supplier) {
+        final ProfiledPIDController angle_controller = new ProfiledPIDController(
+            ANGLE_KP, 0.0, ANGLE_KD, new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+        angle_controller.enableContinuousInput(-Math.PI, Math.PI);
+        return Commands.runOnce(() -> {
+            flip_robot_rotation = drive.getRotation();
+        }).andThen(
+            Commands.deadline(Commands.waitUntil(() -> Math.abs(drive.getRotation().getRadians() - flip_robot_rotation.minus(new Rotation2d(Math.PI)).getRadians()) < 0.05),
+            Commands.run(() -> {
+                // Get linear velocity
+                final Translation2d linear_velocity = field_oriented_supplier.getAsBoolean() ? getLinearVelocityFromJoysticks(x_supplier.getAsDouble(), y_supplier.getAsDouble()) : new Translation2d();
+
+            // Calculate angular speed
+            final double omega = angle_controller.calculate(
+                drive.getRotation().getRadians(),
+                flip_robot_rotation.minus(new Rotation2d(Math.PI)).getRadians());
+
+            // Convert to field relative speeds & send command
+            ChassisSpeeds speeds = new ChassisSpeeds(
+                linear_velocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                linear_velocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                omega);
+            boolean is_flipped = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
+            drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
+                speeds,
+                is_flipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
+        }, drive)));
+    }
+
+    private static Rotation2d assist_robot_rotation = new Rotation2d();
+    public static Command driveAssistJoystickDrive(final Drive drive, final DoubleSupplier x_supplier, final DoubleSupplier y_supplier, final BooleanSupplier field_oriented_supplier) {
+        final ProfiledPIDController angle_controller = new ProfiledPIDController(
+            ANGLE_KP, 0.0, ANGLE_KD, new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+        angle_controller.enableContinuousInput(-Math.PI, Math.PI);
+        return Commands.runOnce(() -> {
+            assist_robot_rotation = new Rotation2d(closestRotationSnapPoint(drive.getRotation().getRadians()));
+        }).andThen(
+            Commands.deadline(Commands.waitUntil(() -> Math.abs(drive.getRotation().getRadians() - assist_robot_rotation.getRadians()) < 0.05),
+            Commands.run(() -> {
+                // Get linear velocity
+                final Translation2d linear_velocity = field_oriented_supplier.getAsBoolean() ? getLinearVelocityFromJoysticks(x_supplier.getAsDouble(), y_supplier.getAsDouble()) : new Translation2d();
+
+            // Calculate angular speed
+            final double omega = angle_controller.calculate(
+                drive.getRotation().getRadians(),
+                assist_robot_rotation.getRadians());
+
+            // Convert to field relative speeds & send command
+            ChassisSpeeds speeds = new ChassisSpeeds(
+                linear_velocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                linear_velocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                omega);
+            boolean is_flipped = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
+            drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
+                speeds,
+                is_flipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
+        }, drive)));
+    }
+
     /**
      * Drive command using two joysticks (controlling linear and
      * angular velocities).
@@ -87,7 +173,8 @@ public class DriveCommands {
                 double omega = MathUtil.applyDeadband(omega_supplier.getAsDouble(), DEADBAND);
 
                 // Square rotation value for more precise control
-                omega = Math.copySign(omega * omega, omega);
+                omega = Math.copySign(omega * omega * omega, omega);
+                omega = MathUtil.clamp(omega, -0.6, 0.6);
 
                 // Convert to field relative speeds & send command
                 final ChassisSpeeds speeds = new ChassisSpeeds(
@@ -116,7 +203,7 @@ public class DriveCommands {
     public static Command joystickDriveAtAngle(final Drive drive, final DoubleSupplier x_supplier, final DoubleSupplier y_supplier, final Supplier<Rotation2d> rotation_supplier) {
 
         // Create PID controller
-        ProfiledPIDController angle_controller = new ProfiledPIDController(
+        final ProfiledPIDController angle_controller = new ProfiledPIDController(
             ANGLE_KP, 0.0, ANGLE_KD, new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
         angle_controller.enableContinuousInput(-Math.PI, Math.PI);
 
@@ -278,17 +365,18 @@ public class DriveCommands {
             }, drive),
             Commands.sequence(Commands.waitSeconds(3.0), Commands.runOnce(() -> {
 
-            }))
-        );
+            })));
     }
-    public static Command viewWheelForwardCharacterization(final Drive drive, final DoubleSupplier voltage){
+
+    public static Command viewWheelForwardCharacterization(final Drive drive, final DoubleSupplier voltage) {
         return Commands.run(() -> drive.runCharacterization(voltage.getAsDouble() * 2), drive);
     }
-    public static Command viewWheelForwardDirection(final Drive drive, final DoubleSupplier voltage){
+
+    public static Command viewWheelForwardDirection(final Drive drive, final DoubleSupplier voltage) {
         return Commands.run(() -> drive.runForward(voltage.getAsDouble()), drive);
     }
 
-    private static final PathConstraints pathfinding_constraints = new PathConstraints(5, 3, Units.degreesToRadians(540), Units.degreesToRadians(720));
+    private static final PathConstraints pathfinding_constraints = new PathConstraints(0.5, 0.5, Units.degreesToRadians(540), Units.degreesToRadians(720));
 
     public static Command pathfindToPose(final Drive drive, final Pose2d pose) {
         return AutoBuilder.pathfindToPose(pose, pathfinding_constraints, 0.0);

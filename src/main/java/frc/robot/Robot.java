@@ -38,6 +38,8 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
+import com.pathplanner.lib.commands.PathfindingCommand;
+
 public class Robot extends LoggedRobot {
     private static final Map<Integer, String> GIT_DIRTY_MSG_MAP = Map.of(0, "All changes committed", 1, "Uncomitted changes");
 
@@ -117,7 +119,7 @@ public class Robot extends LoggedRobot {
         disabled_timer.start();
 
         robot_container = new RobotContainer();
-        // PathfindingCommand.warmupCommand().schedule();
+        PathfindingCommand.warmupCommand().schedule();
     }
 
     @Override public void robotPeriodic() {

@@ -34,15 +34,47 @@ public class XboxControllerIO implements CommandControllerIO {
         return controller.povDown().getAsBoolean() ? -0.25 : controller.povUp().getAsBoolean() ? 0.25 : 0.0;
     }
 
-    @Override public Trigger lockGyroBtn() {
-        return controller.a();
-    }
-
     @Override public Trigger resetGyroBtn() {
         return controller.start();
     }
 
     @Override public Trigger stopXBtn() {
         return controller.x();
+    }
+
+    @Override public Trigger elevatorSetpointModeBtn() {
+        throw new UnsupportedOperationException("Unimplemented method 'elevatorSetpointModeBtn'");
+    }
+
+    @Override public Trigger fieldOrientedBtn() {
+        throw new UnsupportedOperationException("Unimplemented method 'fieldOrientedBtn'");
+    }
+
+    @Override public Trigger driveAssistBtn() {
+        throw new UnsupportedOperationException("Unimplemented method 'driveAssistBtn'");
+    }
+
+    @Override public Trigger mailboxFeedBtn() {
+        throw new UnsupportedOperationException("Unimplemented method 'mailboxFeedBtn'");
+    }
+
+    @Override public Trigger flipRobotBtn() {
+        throw new UnsupportedOperationException("Unimplemented method 'flipRobotBtn'");
+    }
+
+    @Override public Trigger flyToCoralStation1() {
+        throw new UnsupportedOperationException("Unimplemented method 'flyToCoralStation1'");
+    }
+
+    @Override public Trigger flyToCoralStation2() {
+        throw new UnsupportedOperationException("Unimplemented method 'flyToCoralStation2'");
+    }
+
+    @Override public Trigger FlyToClosestReefSide1() {
+        throw new UnsupportedOperationException("Unimplemented method 'FlyToClosestReefSide1'");
+    }
+
+    @Override public Trigger FlyToClosestReefSide2() {
+        throw new UnsupportedOperationException("Unimplemented method 'FlyToClosestReefSide2'");
     }
 }

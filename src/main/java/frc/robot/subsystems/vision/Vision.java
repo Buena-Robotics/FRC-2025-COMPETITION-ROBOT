@@ -23,8 +23,8 @@ public class Vision extends SubsystemBase {
     // AprilTag layout
 
     // Basic filtering thresholds
-    public static double max_ambiguity = 0.3;
-    public static double max_z_error = 0.75;
+    public static double max_ambiguity = 0.2;
+    public static double max_z_error = 0.5;
 
     // Standard deviation baselines, for 1 meter distance and 1 tag
     // (Adjusted automatically based on distance and # of tags)

@@ -53,6 +53,7 @@ public class VisionIOPhoton implements VisionIO {
 
     @Override public void updateInputs(final VisionIOInputs inputs) {
         inputs.connected = camera.isConnected();
+        inputs.virtual_cam = getCameraPose();
 
         // Read new camera observations
         final Set<Short> tag_ids = new HashSet<>();
@@ -138,6 +139,6 @@ public class VisionIOPhoton implements VisionIO {
     }
 
     @Override public Pose3d getCameraPose() {
-        return new Pose3d(robot_pose_supplier.get()).transformBy(robot_to_camera).transformBy(camera_transform_supplier.get());
+        return new Pose3d(robot_pose_supplier.get()).transformBy(robot_to_camera);
     }
 }

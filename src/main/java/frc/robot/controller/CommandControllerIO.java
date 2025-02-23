@@ -15,9 +15,25 @@ public interface CommandControllerIO {
 
     public double getClimbAxis();
 
-    public Trigger lockGyroBtn();
+    public Trigger fieldOrientedBtn();
+
+    public Trigger driveAssistBtn();
+
+    public Trigger flipRobotBtn();
 
     public Trigger resetGyroBtn();
 
     public Trigger stopXBtn();
+
+    public Trigger elevatorSetpointModeBtn();
+
+    public Trigger mailboxFeedBtn();
+
+    public Trigger flyToCoralStation1();
+
+    public Trigger flyToCoralStation2();
+
+    public Trigger FlyToClosestReefSide1();
+
+    public Trigger FlyToClosestReefSide2();
 }

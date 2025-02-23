@@ -2,9 +2,16 @@ package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.Supplier;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -34,10 +41,12 @@ public class Elevator extends SubsystemBase {
 
     private final SysIdRoutine sys_id;
 
+    final Supplier<Pose2d> robot_pose_supplier;
+
     @AutoLogOutput(key = "Elevator/BrakeModeEnabled")
     private boolean brake_mode_enabled = true;
 
-    public Elevator(final ElevatorIO io) {
+    public Elevator(final ElevatorIO io, final Supplier<Pose2d> robot_pose_supplier) {
         this.io = io;
         this.elevator_mech = new Mechanism2d(Units.inchesToMeters(29), Units.inchesToMeters(ELEVATOR_MAX_HEIGHT_INCHES + ELEVATOR_BASE_HEIGHT), new Color8Bit("#202020"));
         this.elevator_mech_base = new MechanismLigament2d("ElevatorBase", Units.inchesToMeters(ELEVATOR_BASE_HEIGHT), 90, 4, new Color8Bit("#FF50FF"));
@@ -45,10 +54,18 @@ public class Elevator extends SubsystemBase {
         this.elevator_mech_mailbox = new MechanismLigament2d("Mailbox", Units.inchesToMeters(12), -90, 2, new Color8Bit("#FF5050"));
         this.elevator_mech.getRoot("ElevatorMech", Units.inchesToMeters(5), 0).append(elevator_mech_base).append(elevator_mech_shaft).append(elevator_mech_mailbox);
         SmartDashboard.putData("ElevatorMechData", elevator_mech);
+        this.robot_pose_supplier = robot_pose_supplier;
 
         this.sys_id = new SysIdRoutine(
             new SysIdRoutine.Config(Volts.of(0.01).per(Second), Volts.of(0.01), Seconds.of(60), (state) -> Logger.recordOutput("Elevator/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism((voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+    }
+
+    private final Transform3d robot_to_elevator(){
+        return new Transform3d(
+            new Translation3d(Units.inchesToMeters(13),Units.inchesToMeters(-8.5), Units.inchesToMeters(29 + inputs.lift_position_inches)),
+            new Rotation3d()
+        );
     }
 
     @Override public void periodic() {
@@ -62,6 +79,9 @@ public class Elevator extends SubsystemBase {
         // Update alerts
         lift_disconnect_alert.set(!inputs.lift_connected);
         Logger.recordOutput("Elevator/Error", Math.abs(inputs.lift_position_inches - inputs.lift_setpoint_position_inches));
+
+        final Pose3d virtual_cam_position = new Pose3d(robot_pose_supplier.get()).transformBy(robot_to_elevator());
+        Logger.recordOutput("Elevator/VirtualCam", virtual_cam_position);
     }
 
     public void runCharacterization(final double output) {
@@ -80,13 +100,20 @@ public class Elevator extends SubsystemBase {
         return inputs.lift_velocity_inches_per_second;
     }
 
+    public double getPositionInches(){
+        return inputs.lift_position_inches;
+    }
+
     public void runSetpoint(final double lift_position_inches) {
         io.setLiftPosition(lift_position_inches);
     }
 
     public static enum ElevatorSetpoint {
         BOTTOM(0.0),
-        L2(3.135223388671875),
+        CORAL_STATION(2.36),
+        L2(4.195),
+        BARGE(5.505),
+        L3(Elevator.ELEVATOR_MAX_HEIGHT_INCHES),
         TOP(Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
 
         private double setpoint_inches = 0.0;

@@ -11,6 +11,7 @@ public interface VisionIO {
         public TargetObservation latest_target_observation = new TargetObservation(new Rotation2d(), new Rotation2d());
         public PoseObservation[] pose_observations = new PoseObservation[0];
         public int[] tag_ids = new int[0];
+        public Pose3d virtual_cam = new Pose3d();
     }
 
     /** Represents the angle to a simple target, not used for pose estimation. */

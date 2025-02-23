@@ -5,6 +5,7 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Config.RobotType;
 import frc.robot.util.SchoolField;
@@ -37,8 +38,12 @@ public class FieldConstants {
     public static final int BLUE_REEF_SIDE_6_TAGID = Config.ROBOT_TYPE == RobotType.ROBOT_2025_SCHOOL ? 3 : 22;
     public static final int BLUE_PROCESSOR_TAGID = Config.ROBOT_TYPE == RobotType.ROBOT_2025_SCHOOL ? 2 : 16;
 
-    public static final Pose2d BLUE_CORAL_STATION_1_POSE = apriltagIdToRobotPose(BLUE_CORAL_STATION_1_TAGID);
-    public static final Pose2d BLUE_CORAL_STATION_2_POSE = apriltagIdToRobotPose(BLUE_CORAL_STATION_2_TAGID);
+    private static final double REEF_OFFSET_INCHES = 5;
+    public static final Transform2d REEF_TRANSFORM_LEFT = new Transform2d(new Translation2d(0.0, Units.inchesToMeters(REEF_OFFSET_INCHES)), new Rotation2d());
+    public static final Transform2d REEF_TRANSFORM_RIGHT = new Transform2d(new Translation2d(0.0, Units.inchesToMeters(-REEF_OFFSET_INCHES)), new Rotation2d());
+
+    public static final Pose2d BLUE_CORAL_STATION_1_POSE = apriltagIdToRobotPose(BLUE_CORAL_STATION_1_TAGID).rotateBy(new Rotation2d(Math.PI));
+    public static final Pose2d BLUE_CORAL_STATION_2_POSE = apriltagIdToRobotPose(BLUE_CORAL_STATION_2_TAGID).rotateBy(new Rotation2d(Math.PI));
     public static final Pose2d BLUE_REEF_SIDE_1_POSE = apriltagIdToRobotPose(BLUE_REEF_SIDE_1_TAGID);
     public static final Pose2d BLUE_REEF_SIDE_2_POSE = apriltagIdToRobotPose(BLUE_REEF_SIDE_2_TAGID);
     public static final Pose2d BLUE_REEF_SIDE_3_POSE = apriltagIdToRobotPose(BLUE_REEF_SIDE_3_TAGID);
@@ -47,8 +52,8 @@ public class FieldConstants {
     public static final Pose2d BLUE_REEF_SIDE_6_POSE = apriltagIdToRobotPose(BLUE_REEF_SIDE_6_TAGID);
     public static final Pose2d BLUE_PROCESSOR_POSE = apriltagIdToRobotPose(BLUE_PROCESSOR_TAGID);
 
-    public static final Pose2d RED_CORAL_STATION_1_POSE = apriltagIdToRobotPose(RED_CORAL_STATION_1_TAGID);
-    public static final Pose2d RED_CORAL_STATION_2_POSE = apriltagIdToRobotPose(RED_CORAL_STATION_2_TAGID);
+    public static final Pose2d RED_CORAL_STATION_1_POSE = apriltagIdToRobotPose(RED_CORAL_STATION_1_TAGID).rotateBy(new Rotation2d(Math.PI));
+    public static final Pose2d RED_CORAL_STATION_2_POSE = apriltagIdToRobotPose(RED_CORAL_STATION_2_TAGID).rotateBy(new Rotation2d(Math.PI));
     public static final Pose2d RED_REEF_SIDE_1_POSE = apriltagIdToRobotPose(RED_REEF_SIDE_1_TAGID);
     public static final Pose2d RED_REEF_SIDE_2_POSE = apriltagIdToRobotPose(RED_REEF_SIDE_2_TAGID);
     public static final Pose2d RED_REEF_SIDE_3_POSE = apriltagIdToRobotPose(RED_REEF_SIDE_3_TAGID);
@@ -56,4 +61,15 @@ public class FieldConstants {
     public static final Pose2d RED_REEF_SIDE_5_POSE = apriltagIdToRobotPose(RED_REEF_SIDE_5_TAGID);
     public static final Pose2d RED_REEF_SIDE_6_POSE = apriltagIdToRobotPose(RED_REEF_SIDE_6_TAGID);
     public static final Pose2d RED_PROCESSOR_POSE = apriltagIdToRobotPose(RED_PROCESSOR_TAGID);
+
+    public static final Pose2d[] REEF_SIDE_POSES() {
+        return new Pose2d[]{
+            BLUE_REEF_SIDE_1_POSE,
+            BLUE_REEF_SIDE_2_POSE,
+            BLUE_REEF_SIDE_3_POSE,
+            BLUE_REEF_SIDE_4_POSE,
+            BLUE_REEF_SIDE_5_POSE,
+            BLUE_REEF_SIDE_6_POSE,
+        };
+    }
 }
