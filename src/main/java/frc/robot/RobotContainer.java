@@ -91,6 +91,7 @@ public class RobotContainer {
 
                 this.vision = new Vision(
                     drive::addVisionMeasurement,
+                    drive::getPose,
                     new VisionIOPhoton(Cameras.cameras[0], drive::getPose),
                     new VisionIOPhoton(Cameras.cameras[1], drive::getPose),
                     new VisionIOPhoton(Cameras.cameras[2], drive::getPose));
@@ -117,6 +118,7 @@ public class RobotContainer {
                 // new VisionIOPhotonSim(Cameras.cameras[0]), new
                 // VisionIOPhotonSim(Cameras.cameras[1])
                 this.vision = new Vision(drive::addVisionMeasurement,
+                    drive::getPose,
                     new VisionIOPhotonSim(Cameras.cameras[0], drive_simulation::getSimulatedDriveTrainPose),
                     new VisionIOPhotonSim(Cameras.cameras[1], drive_simulation::getSimulatedDriveTrainPose),
                     new VisionIOPhotonSim(Cameras.cameras[2], drive_simulation::getSimulatedDriveTrainPose));
@@ -128,7 +130,7 @@ public class RobotContainer {
             default:
                 // Replayed robot, disable IO implementations
                 this.drive = new Drive(new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
-                this.vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
+                this.vision = new Vision(drive::addVisionMeasurement, drive::getPose, new VisionIO() {}, new VisionIO() {});
                 this.elevator = new Elevator(new ElevatorIO() {}, drive::getPose);
                 this.climb = new Climb(new ClimbIO() {});
                 this.mailbox = new Mailbox(new MailboxIO() {});

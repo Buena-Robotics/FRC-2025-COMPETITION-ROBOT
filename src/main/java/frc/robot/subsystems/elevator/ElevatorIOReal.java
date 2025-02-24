@@ -17,9 +17,9 @@ public class ElevatorIOReal implements ElevatorIO {
     private static final int LIFT_MOTOR_CAN_ID = 9;
 
     // Constants when lift is empty
-    private static final double LIFT_EMPTY_P = 0.15;
+    private static final double LIFT_EMPTY_P = 0.25;
     private static final double LIFT_EMPTY_I = 0.0;
-    private static final double LIFT_EMPTY_D = 0.03;
+    private static final double LIFT_EMPTY_D = 0.025;
 
     private static final double LIFT_CLAMP_MIN_POSITION = 0.25;
 

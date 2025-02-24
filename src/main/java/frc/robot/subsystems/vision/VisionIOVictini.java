@@ -1,6 +1,6 @@
 package frc.robot.subsystems.vision;
 
-import edu.wpi.first.math.geometry.Pose3d;
+// import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
@@ -10,8 +10,8 @@ public class VisionIOVictini implements VisionIO {
 
     @Override public void updateInputs(final VisionIOInputs inputs) {
         inputs.connected = true;
-        inputs.pose_observations = new PoseObservation[]{
-            new PoseObservation(0, new Pose3d(), 0, 0, 0, PoseObservationType.VICTINI
-        )};
+        // inputs.pose_observations = new PoseObservation[]{
+            // new PoseObservation(0, new Pose3d(), 0, 0, 0, PoseObservationType.VICTINI
+        // )};
     }
 }

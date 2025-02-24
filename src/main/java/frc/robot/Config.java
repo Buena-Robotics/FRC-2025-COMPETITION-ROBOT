@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 
 public final class Config {
-    public static final RobotMode SIM_MODE = RobotMode.SIM;
+    public static final RobotMode SIM_MODE = RobotMode.REPLAY;
     public static final RobotMode ROBOT_MODE = RobotBase.isReal() ? RobotMode.REAL : SIM_MODE;
 
     public static final RobotType ROBOT_TYPE = RobotType.ROBOT_2025_COMPETION;

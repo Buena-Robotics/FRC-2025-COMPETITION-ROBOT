@@ -17,6 +17,7 @@ import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -28,9 +29,9 @@ public class Vision extends SubsystemBase {
 
     // Standard deviation baselines, for 1 meter distance and 1 tag
     // (Adjusted automatically based on distance and # of tags)
-    public static double linear_std_dev_baseline_meters = 0.02; // Meters
-    public static double angular_std_dev_baseline_radians_disabled = 0.05; // Radians
-    public static double angular_std_dev_baseline_radians = Math.PI; // Radians
+    public static double linear_std_dev_baseline_meters = 0.001; // Meters
+    public static double angular_std_dev_baseline_radians_disabled = 0.01; // Radians
+    public static double angular_std_dev_baseline_radians = 4.5; // Radians
 
     // Multipliers to apply for MegaTag 2 observations
     public static double linear_std_dev_megatag_2_factor = 0.5; // More stable than full 3D solve
@@ -41,9 +42,12 @@ public class Vision extends SubsystemBase {
     private final VisionIOInputsAutoLogged[] inputs;
     private final Alert[] disconnected_alerts;
 
-    public Vision(VisionConsumer consumer, VisionIO... io) {
+    private final Supplier<Pose2d> robot_pose_supplier;
+
+    public Vision(VisionConsumer consumer, Supplier<Pose2d> robot_pose_supplier, VisionIO... io) {
         this.consumer = consumer;
         this.io = io;
+        this.robot_pose_supplier = robot_pose_supplier;
 
         // Initialize inputs
         this.inputs = new VisionIOInputsAutoLogged[io.length];
@@ -78,6 +82,7 @@ public class Vision extends SubsystemBase {
 
         // Initialize logging values
         List<Pose3d> all_tag_poses = new LinkedList<>();
+        List<Pose3d> all_relative_tag_poses = new LinkedList<>();
         List<Pose3d> all_robot_poses = new LinkedList<>();
         List<Pose3d> all_robot_poses_accepted = new LinkedList<>();
         List<Pose3d> all_robot_poses_rejected = new LinkedList<>();
@@ -89,6 +94,7 @@ public class Vision extends SubsystemBase {
 
             // Initialize logging values
             List<Pose3d> tag_poses = new LinkedList<>();
+            List<Pose3d> relative_tag_poses = new LinkedList<>();
             List<Pose3d> robot_poses = new LinkedList<>();
             List<Pose3d> robot_poses_accepted = new LinkedList<>();
             List<Pose3d> robot_poses_rejected = new LinkedList<>();
@@ -116,6 +122,7 @@ public class Vision extends SubsystemBase {
 
                 // Add pose to log
                 robot_poses.add(observation.pose());
+                relative_tag_poses.add(new Pose3d(robot_pose_supplier.get()).plus(observation.robot_to_tag()));
                 if (reject_pose) {
                     robot_poses_rejected.add(observation.pose());
                 } else {
@@ -152,6 +159,8 @@ public class Vision extends SubsystemBase {
                 "Vision/Camera" + Integer.toString(i) + "/TagPoses",
                 tag_poses.toArray(new Pose3d[tag_poses.size()]));
             Logger.recordOutput(
+                "Vision/Camera" + Integer.toString(i) + "/RelativeTagPoses", relative_tag_poses.toArray(new Pose3d[relative_tag_poses.size()]));
+            Logger.recordOutput(
                 "Vision/Camera" + Integer.toString(i) + "/RobotPoses",
                 robot_poses.toArray(new Pose3d[robot_poses.size()]));
             Logger.recordOutput(
@@ -164,11 +173,14 @@ public class Vision extends SubsystemBase {
             all_robot_poses.addAll(robot_poses);
             all_robot_poses_accepted.addAll(robot_poses_accepted);
             all_robot_poses_rejected.addAll(robot_poses_rejected);
+            all_relative_tag_poses.addAll(relative_tag_poses);
         }
 
         // Log summary data
         Logger.recordOutput(
             "Vision/Summary/TagPoses", all_tag_poses.toArray(new Pose3d[all_tag_poses.size()]));
+        Logger.recordOutput(
+            "Vision/Summary/RelativeTagPoses", all_relative_tag_poses.toArray(new Pose3d[all_relative_tag_poses.size()]));
         Logger.recordOutput(
             "Vision/Summary/RobotPoses", all_robot_poses.toArray(new Pose3d[all_robot_poses.size()]));
         Logger.recordOutput(

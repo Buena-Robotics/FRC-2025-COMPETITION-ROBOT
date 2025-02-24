@@ -35,6 +35,9 @@ public class GyroIOPigeon2 implements GyroIO {
         inputs.yaw_position = Rotation2d.fromDegrees(yaw.getValueAsDouble());
         inputs.yaw_velocity_radians_per_second = Units.degreesToRadians(yaw_velocity.getValueAsDouble());
 
+        inputs.world_linear_acceleration_x = pigeon.getAccelerationX().getValueAsDouble();
+        inputs.world_linear_acceleration_y = pigeon.getAccelerationY().getValueAsDouble();
+
         inputs.odometry_yaw_timestamps = yaw_timestamp_queue.stream()
             .mapToDouble((Double value) -> value)
             .toArray();

@@ -15,12 +15,15 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 /** IO implementation for real PhotonVision hardware. */
 public class VisionIOPhoton implements VisionIO {
+    protected final PhotonPoseEstimator photon_estimator;
     protected final Supplier<Pose2d> robot_pose_supplier;
     protected final Camera camera_info;
     protected final PhotonCamera camera;
@@ -36,6 +39,10 @@ public class VisionIOPhoton implements VisionIO {
      *            The 3D position of the camera relative to the robot.
      */
     public VisionIOPhoton(final Camera camera_info, final Supplier<Pose2d> robot_pose_supplier, final Supplier<Transform3d> camera_transform_supplier) {
+        this.photon_estimator = new PhotonPoseEstimator(
+            FieldConstants.APRILTAG_LAYOUT,
+            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+            camera_info.robot_to_camera());
         this.camera_info = camera_info;
         this.camera = new PhotonCamera(camera_info.name());
         this.robot_to_camera = camera_info.robot_to_camera();
@@ -93,6 +100,7 @@ public class VisionIOPhoton implements VisionIO {
                         robot_pose, // 3D pose estimate
                         multitag_result.estimatedPose.ambiguity, // Ambiguity
                         multitag_result.fiducialIDsUsed.size(), // Tag count
+                        new Transform3d(), // robot_to_tag
                         total_tag_distance / result.targets.size(), // Average tag distance
                         PoseObservationType.PHOTONVISION)); // Observation type
 
@@ -118,6 +126,7 @@ public class VisionIOPhoton implements VisionIO {
                             robot_pose, // 3D pose estimate
                             target.poseAmbiguity, // Ambiguity
                             1, // Tag count
+                            camera_to_target.plus(robot_to_camera.inverse()), // robot_to_tag
                             camera_to_target.getTranslation().getNorm(), // Average tag distance
                             PoseObservationType.PHOTONVISION)); // Observation type
                 }

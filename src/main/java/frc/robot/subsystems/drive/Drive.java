@@ -114,6 +114,8 @@ public class Drive extends SubsystemBase {
     public static final double ODOMETRY_FREQUENCY_HERTZ = 100.0; // Hz
     public static final Lock odometry_lock = new ReentrantLock();
 
+    private static final double COLLISION_THRESHOLD_DELTAG = 0.5f;
+
     private final GyroIO gryo_io;
     private final GyroIOInputsAutoLogged gyro_inputs = new GyroIOInputsAutoLogged();
     private final Module[] modules = new Module[4]; // FL, FR, BL, BR
@@ -135,6 +137,9 @@ public class Drive extends SubsystemBase {
 
     @AutoLogOutput(key = "Drive/BrakeModeEnabled")
     private boolean brake_mode_enabled = true;
+
+    double last_world_linear_accel_x;
+    double last_world_linear_accel_y;
 
     public Drive(final GyroIO gyro_io, final ModuleIO fl_module, final ModuleIO fr_module, final ModuleIO bl_module, final ModuleIO br_module) {
         this.gryo_io = gyro_io;
@@ -190,7 +195,7 @@ public class Drive extends SubsystemBase {
 
             // brake_mode_enabled = false;
             // for (Module module : modules)
-                // module.setCoastMode();
+            // module.setCoastMode();
         } else {
             brake_mode_enabled = true;
             for (Module module : modules)
@@ -228,6 +233,18 @@ public class Drive extends SubsystemBase {
 
         // Update gyro alert
         gyro_disconnect_alert.set(!gyro_inputs.connected && Config.ROBOT_MODE != RobotMode.SIM);
+
+        // Good to know when pathfinding
+        double curr_world_linear_accel_x = gyro_inputs.world_linear_acceleration_x;
+        double current_jerk_x = curr_world_linear_accel_x - last_world_linear_accel_x;
+        last_world_linear_accel_x = curr_world_linear_accel_x;
+        double curr_world_linear_accel_y = gyro_inputs.world_linear_acceleration_y;
+        double current_jerk_y = curr_world_linear_accel_y - last_world_linear_accel_y;
+        last_world_linear_accel_y = curr_world_linear_accel_y;
+
+        boolean collision_detected = (Math.abs(current_jerk_x) > COLLISION_THRESHOLD_DELTAG) ||
+            (Math.abs(current_jerk_y) > COLLISION_THRESHOLD_DELTAG);
+        Logger.recordOutput("Drive/CollisionDetected", collision_detected);
     }
 
     /**
@@ -255,7 +272,7 @@ public class Drive extends SubsystemBase {
         Logger.recordOutput("SwerveStates/SetpointsOptimized", setpoint_states);
     }
 
-    public void runForward(final double output){
+    public void runForward(final double output) {
         for (int i = 0; i < 4; i++) {
             modules[i].runForward(output);
         }
@@ -375,9 +392,9 @@ public class Drive extends SubsystemBase {
         return MAX_SPEED_METERS_PER_SECOND / DRIVE_BASE_RADIUS;
     }
 
-    public void logModuleOffsets(){
+    public void logModuleOffsets() {
         Printf.info("LOGGING MODULE OFFSETS------------");
-        for(int i = 0; i < modules.length; i++){
+        for (int i = 0; i < modules.length; i++) {
             Printf.info("%f,", modules[i].getAngle().getRadians());
         }
     }

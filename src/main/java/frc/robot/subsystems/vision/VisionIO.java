@@ -4,6 +4,7 @@ import org.littletonrobotics.junction.AutoLog;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 
 public interface VisionIO {
     @AutoLog public static class VisionIOInputs {
@@ -23,6 +24,7 @@ public interface VisionIO {
         Pose3d pose,
         double ambiguity,
         int tag_count,
+        Transform3d robot_to_tag,
         double average_tag_distance,
         PoseObservationType type) {}
 
