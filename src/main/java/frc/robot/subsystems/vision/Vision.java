@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.FieldConstants;
 import frc.robot.subsystems.vision.VisionIO.PoseObservation;
@@ -20,16 +21,16 @@ import java.util.Optional;
 import org.littletonrobotics.junction.Logger;
 
 public class Vision extends SubsystemBase {
-    // AprilTag layout
-
     // Basic filtering thresholds
     public static double max_ambiguity = 0.2;
-    public static double max_z_error = 0.5;
+    public static double max_z_error = 0.25;
+    public static double max_pitch_roll_error_radians = 0.2;
 
     // Standard deviation baselines, for 1 meter distance and 1 tag
     // (Adjusted automatically based on distance and # of tags)
     public static double linear_std_dev_baseline_meters = 0.02; // Meters
-    public static double angular_std_dev_baseline_radians = 0.06; // Radians
+    public static double angular_std_dev_baseline_radians_disabled = 0.05; // Radians
+    public static double angular_std_dev_baseline_radians = Math.PI; // Radians
 
     // Multipliers to apply for MegaTag 2 observations
     public static double linear_std_dev_megatag_2_factor = 0.5; // More stable than full 3D solve
@@ -109,7 +110,9 @@ public class Vision extends SubsystemBase {
 
                     // Must be within the field boundaries
                     || observation.pose().getX() < 0.0 || observation.pose().getX() > FieldConstants.APRILTAG_LAYOUT.getFieldLength() || observation.pose().getY() < 0.0 || observation.pose().getY() > FieldConstants.APRILTAG_LAYOUT
-                        .getFieldWidth();
+                        .getFieldWidth()
+
+                    || Math.abs(observation.pose().getRotation().getX()) > max_pitch_roll_error_radians || Math.abs(observation.pose().getRotation().getY()) > max_pitch_roll_error_radians;
 
                 // Add pose to log
                 robot_poses.add(observation.pose());
@@ -127,7 +130,7 @@ public class Vision extends SubsystemBase {
                 // Calculate standard deviations
                 double std_dev_factor = Math.pow(observation.average_tag_distance(), 2.0) / observation.tag_count();
                 double linear_std_dev = linear_std_dev_baseline_meters * std_dev_factor;
-                double angular_std_dev = angular_std_dev_baseline_radians * std_dev_factor;
+                double angular_std_dev = (DriverStation.isDisabled() ? angular_std_dev_baseline_radians_disabled : angular_std_dev_baseline_radians) * std_dev_factor;
                 if (observation.type() == PoseObservationType.MEGATAG_2) {
                     linear_std_dev *= linear_std_dev_megatag_2_factor;
                     angular_std_dev *= angular_std_dev_megatag_2_factor;

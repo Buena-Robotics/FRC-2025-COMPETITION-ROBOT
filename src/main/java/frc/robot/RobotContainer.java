@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -66,9 +67,7 @@ public class RobotContainer {
     private final Mailbox mailbox;
 
     // Controller
-    // private final CommandControllerIO controller = Config.ROBOT_MODE ==
-    // RobotMode.SIM ? new XboxControllerIO(0) : new SaitekControllerIO(0);
-    private final CommandControllerIO controller = new SaitekControllerIO(0);
+    private final CommandControllerIO controller = Config.ROBOT_MODE == RobotMode.SIM ? new XboxControllerIO(0) : new SaitekControllerIO(0);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> auto_chooser;
@@ -117,9 +116,12 @@ public class RobotContainer {
                     new ModuleIOSim(drive_simulation.getModules()[3]));
                 // new VisionIOPhotonSim(Cameras.cameras[0]), new
                 // VisionIOPhotonSim(Cameras.cameras[1])
-                this.vision = new Vision(drive::addVisionMeasurement, new VisionIOPhotonSim(Cameras.cameras[0], drive_simulation::getSimulatedDriveTrainPose));
+                this.vision = new Vision(drive::addVisionMeasurement,
+                    new VisionIOPhotonSim(Cameras.cameras[0], drive_simulation::getSimulatedDriveTrainPose),
+                    new VisionIOPhotonSim(Cameras.cameras[1], drive_simulation::getSimulatedDriveTrainPose),
+                    new VisionIOPhotonSim(Cameras.cameras[2], drive_simulation::getSimulatedDriveTrainPose));
 
-                this.elevator = new Elevator(new ElevatorIOSim(), drive_simulation::getSimulatedDriveTrainPose);
+                this.elevator = new Elevator(new ElevatorIOSim(), drive::getPose);
                 this.climb = new Climb(new ClimbIOSim());
                 this.mailbox = new Mailbox(new MailboxIOSim());
                 break;
@@ -136,19 +138,21 @@ public class RobotContainer {
         // Set up auto routines
         auto_chooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
-        // Set up SysId routines
-        auto_chooser.addOption("Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
-        auto_chooser.addOption("Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
-        auto_chooser.addOption("Drive SysId (Quasistatic Forward)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-        auto_chooser.addOption("Drive SysId (Quasistatic Reverse)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-        auto_chooser.addOption("Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-        auto_chooser.addOption("Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        if (!DriverStation.isFMSAttached()) {
+            auto_chooser.addOption("Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
+            auto_chooser.addOption("Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
+            auto_chooser.addOption("Drive SysId (Quasistatic Forward)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+            auto_chooser.addOption("Drive SysId (Quasistatic Reverse)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+            auto_chooser.addOption("Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+            auto_chooser.addOption("Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-        auto_chooser.addOption("Elevator Simple FF Characterization", ElevatorCommands.feedforwardCharacterization(elevator));
-        auto_chooser.addOption("Elevator SysId (Quasistatic Forward)", elevator.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-        auto_chooser.addOption("Elevator SysId (Quasistatic Reverse)", elevator.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-        auto_chooser.addOption("Elevator SysId (Dynamic Forward)", elevator.sysIdDynamic(SysIdRoutine.Direction.kForward));
-        auto_chooser.addOption("Elevator SysId (Dynamic Reverse)", elevator.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+            auto_chooser.addOption("Elevator Simple FF Characterization", ElevatorCommands.feedforwardCharacterization(elevator));
+            auto_chooser.addOption("Elevator SysId (Quasistatic Forward)", elevator.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+            auto_chooser.addOption("Elevator SysId (Quasistatic Reverse)", elevator.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+            auto_chooser.addOption("Elevator SysId (Dynamic Forward)", elevator.sysIdDynamic(SysIdRoutine.Direction.kForward));
+            auto_chooser.addOption("Elevator SysId (Dynamic Reverse)", elevator.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        }
+        // Set up SysId routines
 
         configureBindings();
     }
@@ -170,12 +174,12 @@ public class RobotContainer {
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getTurnAxis() : () -> -controller.getTurnAxis(),
-            () -> !controller.fieldOrientedBtn().getAsBoolean()));
+            () -> Config.ROBOT_MODE == RobotMode.SIM ? controller.fieldOrientedBtn().getAsBoolean() : !controller.fieldOrientedBtn().getAsBoolean()));
         controller.driveAssistBtn().whileTrue(DriveCommands.driveAssistJoystickDrive(
             drive,
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis(),
-            () -> !controller.fieldOrientedBtn().getAsBoolean()));
+            () -> Config.ROBOT_MODE == RobotMode.SIM ? controller.fieldOrientedBtn().getAsBoolean() : !controller.fieldOrientedBtn().getAsBoolean()));
 
         elevator.setDefaultCommand(ElevatorCommands.triggerElevatorHeightAndSetpoint(elevator,
             () -> elevator_setpoint_mode,
@@ -208,10 +212,10 @@ public class RobotContainer {
                 ElevatorCommands.triggerElevatorSetpoint(elevator, ElevatorSetpoint.CORAL_STATION)));
         controller.FlyToClosestReefSide1().onTrue(
             DriveCommands.pathfindToPoseSupplier(drive, () -> getClosestReefPose().plus(
-                new Transform2d(0, Units.inchesToMeters(-8.5), new Rotation2d())).transformBy(FieldConstants.REEF_TRANSFORM_LEFT)));
-        controller.FlyToClosestReefSide1().onTrue(
+                new Transform2d(0, Units.inchesToMeters(-8.5), new Rotation2d()).inverse()).transformBy(FieldConstants.REEF_TRANSFORM_LEFT)));
+        controller.FlyToClosestReefSide2().onTrue(
             DriveCommands.pathfindToPoseSupplier(drive, () -> getClosestReefPose().plus(
-                new Transform2d(0, Units.inchesToMeters(-8.5), new Rotation2d())).transformBy(FieldConstants.REEF_TRANSFORM_RIGHT)));
+                new Transform2d(0, Units.inchesToMeters(-8.5), new Rotation2d()).inverse()).transformBy(FieldConstants.REEF_TRANSFORM_RIGHT)));
         // Switch to X pattern when X button is pressed
         // controller.stopXBtn().onTrue(Commands.runOnce(drive::stopWithX, drive));
         controller.stopXBtn().whileTrue(DriveCommands.pathfindToPose(drive, FieldConstants.RED_REEF_SIDE_2_POSE));
@@ -264,5 +268,11 @@ public class RobotContainer {
         Logger.recordOutput(
             "FieldSimulation/Algae",
             SimulatedArena.getInstance().getGamePiecesByType("Algae").toArray(new Pose3d[0]));
+
+        Logger.recordOutput("Drive/ClosestSnapPoint",
+            new Pose2d(
+                drive_simulation.getSimulatedDriveTrainPose().getTranslation(),
+                new Rotation2d(DriveCommands.closestRotationSnapPoint(drive_simulation.getSimulatedDriveTrainPose()
+                    .getRotation()))));
     }
 }

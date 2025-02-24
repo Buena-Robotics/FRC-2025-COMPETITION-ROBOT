@@ -35,46 +35,46 @@ public class XboxControllerIO implements CommandControllerIO {
     }
 
     @Override public Trigger resetGyroBtn() {
-        return controller.start();
+        return new Trigger(() -> false);
     }
 
     @Override public Trigger stopXBtn() {
-        return controller.x();
+        return new Trigger(() -> false);
     }
 
     @Override public Trigger elevatorSetpointModeBtn() {
-        throw new UnsupportedOperationException("Unimplemented method 'elevatorSetpointModeBtn'");
+        return controller.povLeft();
     }
 
     @Override public Trigger fieldOrientedBtn() {
-        throw new UnsupportedOperationException("Unimplemented method 'fieldOrientedBtn'");
+        return controller.a();
     }
 
     @Override public Trigger driveAssistBtn() {
-        throw new UnsupportedOperationException("Unimplemented method 'driveAssistBtn'");
+        return controller.b();
     }
 
     @Override public Trigger mailboxFeedBtn() {
-        throw new UnsupportedOperationException("Unimplemented method 'mailboxFeedBtn'");
+        return new Trigger(() -> false);
     }
 
     @Override public Trigger flipRobotBtn() {
-        throw new UnsupportedOperationException("Unimplemented method 'flipRobotBtn'");
+        return new Trigger(() -> false);
     }
 
     @Override public Trigger flyToCoralStation1() {
-        throw new UnsupportedOperationException("Unimplemented method 'flyToCoralStation1'");
+        return new Trigger(() -> false);
     }
 
     @Override public Trigger flyToCoralStation2() {
-        throw new UnsupportedOperationException("Unimplemented method 'flyToCoralStation2'");
+        return new Trigger(() -> false);
     }
 
     @Override public Trigger FlyToClosestReefSide1() {
-        throw new UnsupportedOperationException("Unimplemented method 'FlyToClosestReefSide1'");
+        return controller.back();
     }
 
     @Override public Trigger FlyToClosestReefSide2() {
-        throw new UnsupportedOperationException("Unimplemented method 'FlyToClosestReefSide2'");
+        return controller.start();
     }
 }

@@ -10,12 +10,12 @@ import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 import org.ironmaple.simulation.motorsims.SimulatedMotorController;
 
 public class ModuleIOSim implements ModuleIO {
-    public static final double DRIVE_SIM_P = 0.05;
+    public static final double DRIVE_SIM_P = 0.2;
     public static final double DRIVE_SIM_D = 0.0;
     public static final double DRIVE_SIM_S = 0.0;
     public static final double DRIVE_SIM_V = 0.0789;
 
-    public static final double TURN_SIM_P = 9.0;
+    public static final double TURN_SIM_P = 8.0;
     public static final double TURN_SIM_D = 0.0;
 
     private final SwerveModuleSimulation module_simulation;

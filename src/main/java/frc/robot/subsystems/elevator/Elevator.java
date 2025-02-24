@@ -61,11 +61,10 @@ public class Elevator extends SubsystemBase {
             new SysIdRoutine.Mechanism((voltage) -> runCharacterization(voltage.in(Volts)), null, this));
     }
 
-    private final Transform3d robot_to_elevator(){
+    private final Transform3d robot_to_elevator() {
         return new Transform3d(
-            new Translation3d(Units.inchesToMeters(13),Units.inchesToMeters(-8.5), Units.inchesToMeters(29 + inputs.lift_position_inches)),
-            new Rotation3d()
-        );
+            new Translation3d(Units.inchesToMeters(13), Units.inchesToMeters(-8.5), Units.inchesToMeters(29 + inputs.lift_position_inches)),
+            new Rotation3d());
     }
 
     @Override public void periodic() {
@@ -100,7 +99,7 @@ public class Elevator extends SubsystemBase {
         return inputs.lift_velocity_inches_per_second;
     }
 
-    public double getPositionInches(){
+    public double getPositionInches() {
         return inputs.lift_position_inches;
     }
 
@@ -109,12 +108,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public static enum ElevatorSetpoint {
-        BOTTOM(0.0),
-        CORAL_STATION(2.36),
-        L2(4.195),
-        BARGE(5.505),
-        L3(Elevator.ELEVATOR_MAX_HEIGHT_INCHES),
-        TOP(Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
+        BOTTOM(0.0), CORAL_STATION(2.36), L2(4.195), BARGE(5.505), L3(Elevator.ELEVATOR_MAX_HEIGHT_INCHES), TOP(Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
 
         private double setpoint_inches = 0.0;
 
