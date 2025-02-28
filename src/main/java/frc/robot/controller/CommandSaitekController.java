@@ -100,14 +100,22 @@ public class CommandSaitekController extends CommandGenericHID {
         T4(12),
         T5(13),
         T6(14),
+        MODE_MIDDLE(25),
+        MODE_DOWN(26),
         //Throttle
         D(7),
         E(8),
         I(30),
+        FUNCTION(27),
+        START_STOP(28),
+        RESET(29),
         DPAD_UP_THROTTLE(20),
         DPAD_RIGHT_THROTTLE(21),
         DPAD_DOWN_THROTTLE(22),
-        DPAD_LEFT_THROTTLE(23);
+        DPAD_LEFT_THROTTLE(23),
+        MOUSE_BUTTON(31),
+        PRESS_WHEEL(32);
+
 
         int button;
 

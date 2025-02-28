@@ -18,8 +18,8 @@ public class VisionIOPhotonSim extends VisionIOPhoton {
     public static final TargetModel TARGET_MODEL_CORAL = new TargetModel(Units.inchesToMeters(11.875), Units.inchesToMeters(4.5), Units.inchesToMeters(4.5));
 
     public static VisionSystemSim vision_sim;
-
     private final PhotonCameraSim camera_sim;
+    private final Supplier<Pose2d> robot_pose_supplier;
 
     /**
      * Creates a new VisionIOPhotonVisionSim.
@@ -30,8 +30,8 @@ public class VisionIOPhotonSim extends VisionIOPhoton {
      *            Supplier for the robot pose to use in simulation.
      */
     public VisionIOPhotonSim(final Camera camera_info, final Supplier<Pose2d> robot_pose_supplier) {
-        super(camera_info, robot_pose_supplier);
-
+        super(camera_info);
+        this.robot_pose_supplier = robot_pose_supplier;
         // Initialize vision sim
         if (vision_sim == null) {
             vision_sim = new VisionSystemSim("main");

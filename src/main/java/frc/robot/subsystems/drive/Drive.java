@@ -290,6 +290,10 @@ public class Drive extends SubsystemBase {
         runVelocity(new ChassisSpeeds());
     }
 
+    public double yawRate(){
+        return gyro_inputs.yaw_velocity_radians_per_second;
+    }
+
     /**
      * Stops the drive and turns the modules to an X arrangement to resist movement.
      * The modules will return to their normal orientations the next time a nonzero

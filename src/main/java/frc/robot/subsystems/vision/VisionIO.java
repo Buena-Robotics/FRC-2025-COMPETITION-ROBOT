@@ -1,40 +1,46 @@
 package frc.robot.subsystems.vision;
 
-import org.littletonrobotics.junction.AutoLog;
 
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform3d;
+import java.util.Optional;
+
+import org.littletonrobotics.junction.LogTable;
+import org.littletonrobotics.junction.inputs.LoggableInputs;
+import org.photonvision.targeting.PhotonPipelineResult;
+
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.numbers.N8;
 
 public interface VisionIO {
-    @AutoLog public static class VisionIOInputs {
-        public boolean connected = false;
-        public TargetObservation latest_target_observation = new TargetObservation(new Rotation2d(), new Rotation2d());
-        public PoseObservation[] pose_observations = new PoseObservation[0];
-        public int[] tag_ids = new int[0];
-        public Pose3d virtual_cam = new Pose3d();
-    }
+    public static class VisionIOInputs implements LoggableInputs {
+        public boolean camera_connected = false;
+        public boolean driver_mode = false;
+        public int pipeline_index = 0;
+        public PhotonPipelineResult[] photon_results = new PhotonPipelineResult[0];
+        public Optional<Matrix<N3, N3>> camera_matrix_opt = Optional.empty();
+        public Optional<Matrix<N8, N1>> dist_coeffs_opt = Optional.empty();
 
-    /** Represents the angle to a simple target, not used for pose estimation. */
-    public static record TargetObservation(Rotation2d tx, Rotation2d ty) {}
+        public void toLog(LogTable table) {
+            table.put("Camera_connected", camera_connected);
+            table.put("Driver_mode", driver_mode);
+            table.put("Pipeline_index", pipeline_index);
 
-    /** Represents a robot pose sample used for pose estimation. */
-    public static record PoseObservation(
-        double timestamp,
-        Pose3d pose,
-        double ambiguity,
-        int tag_count,
-        Transform3d robot_to_tag,
-        double average_tag_distance,
-        PoseObservationType type) {}
+            PhotonLoggingUtils.cameraMatrixOptToLog(table, camera_matrix_opt);
+            PhotonLoggingUtils.distCoeffsOptToLog(table, dist_coeffs_opt);
+            PhotonLoggingUtils.pipelineResultsToLog(table, photon_results);
+        }
 
-    public static enum PoseObservationType {
-        MEGATAG_1, MEGATAG_2, PHOTONVISION, VICTINI
+        public void fromLog(LogTable table) {
+            camera_connected = table.get("Camera_connected", camera_connected);
+            driver_mode = table.get("Driver_mode", driver_mode);
+            pipeline_index = table.get("Pipeline_index", pipeline_index);
+
+            photon_results = PhotonLoggingUtils.pipelineResultsFromLog(table);
+            camera_matrix_opt = PhotonLoggingUtils.cameraMatrixOptFromLog(table);
+            dist_coeffs_opt = PhotonLoggingUtils.distCoeffsOptFromLog(table);
+        }
     }
 
     public default void updateInputs(final VisionIOInputs inputs) {}
-
-    public default Pose3d getCameraPose() {
-        return new Pose3d();
-    }
 }

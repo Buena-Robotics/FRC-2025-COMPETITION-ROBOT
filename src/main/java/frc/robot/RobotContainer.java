@@ -4,7 +4,13 @@
 
 package frc.robot;
 
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+
 import com.pathplanner.lib.auto.AutoBuilder;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -14,14 +20,17 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.controller.*;
 import frc.robot.Config.RobotMode;
 import frc.robot.Config.RobotType;
 import frc.robot.commands.ClimbCommands;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
 import frc.robot.commands.MailboxCommands;
+import frc.robot.controller.CommandControllerIO;
+import frc.robot.controller.SaitekControllerIO;
+import frc.robot.controller.XboxControllerIO;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOReal;
@@ -34,25 +43,20 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
 import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.Elevator.ElevatorSetpoint;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOReal;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
-import frc.robot.subsystems.elevator.Elevator.ElevatorSetpoint;
 import frc.robot.subsystems.mailbox.Mailbox;
 import frc.robot.subsystems.mailbox.MailboxIO;
 import frc.robot.subsystems.mailbox.MailboxIOReal;
 import frc.robot.subsystems.mailbox.MailboxIOSim;
+import frc.robot.subsystems.vision.Cameras;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhoton;
 import frc.robot.subsystems.vision.VisionIOPhotonSim;
 import frc.robot.util.ArenaSchool2025Reefscape;
-import frc.robot.subsystems.vision.Cameras;
-
-import org.ironmaple.simulation.SimulatedArena;
-import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
     // Subsystems
@@ -65,6 +69,7 @@ public class RobotContainer {
     private final Elevator elevator;
     private final Climb climb;
     private final Mailbox mailbox;
+    private final Trigger coral_waiting_trigger;
 
     // Controller
     private final CommandControllerIO controller = Config.ROBOT_MODE == RobotMode.SIM ? new XboxControllerIO(0) : new SaitekControllerIO(0);
@@ -76,12 +81,6 @@ public class RobotContainer {
         switch (Config.ROBOT_MODE) {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
-                // this.drive = new Drive(
-                // new GyroIO() {},
-                // new ModuleIO() {},
-                // new ModuleIO() {},
-                // new ModuleIO() {},
-                // new ModuleIO() {});
                 this.drive = new Drive(
                     new GyroIOPigeon2() {},
                     new ModuleIOSpark(0),
@@ -90,11 +89,10 @@ public class RobotContainer {
                     new ModuleIOSpark(3));
 
                 this.vision = new Vision(
-                    drive::addVisionMeasurement,
-                    drive::getPose,
-                    new VisionIOPhoton(Cameras.cameras[0], drive::getPose),
-                    new VisionIOPhoton(Cameras.cameras[1], drive::getPose),
-                    new VisionIOPhoton(Cameras.cameras[2], drive::getPose));
+                    drive::addVisionMeasurement, drive::getPose,
+                    new VisionIOPhoton(Cameras.cameras[0]),
+                    new VisionIOPhoton(Cameras.cameras[1]),
+                    new VisionIOPhoton(Cameras.cameras[2]));
 
                 this.elevator = new Elevator(new ElevatorIOReal() {}, drive::getPose);
                 this.climb = new Climb(new ClimbIOReal() {});
@@ -117,8 +115,7 @@ public class RobotContainer {
                     new ModuleIOSim(drive_simulation.getModules()[3]));
                 // new VisionIOPhotonSim(Cameras.cameras[0]), new
                 // VisionIOPhotonSim(Cameras.cameras[1])
-                this.vision = new Vision(drive::addVisionMeasurement,
-                    drive::getPose,
+                this.vision = new Vision(drive::addVisionMeasurement, drive::getPose,
                     new VisionIOPhotonSim(Cameras.cameras[0], drive_simulation::getSimulatedDriveTrainPose),
                     new VisionIOPhotonSim(Cameras.cameras[1], drive_simulation::getSimulatedDriveTrainPose),
                     new VisionIOPhotonSim(Cameras.cameras[2], drive_simulation::getSimulatedDriveTrainPose));
@@ -137,6 +134,8 @@ public class RobotContainer {
                 break;
         }
 
+        coral_waiting_trigger = new Trigger(mailbox::coralWaiting);
+
         // Set up auto routines
         auto_chooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -149,10 +148,16 @@ public class RobotContainer {
             auto_chooser.addOption("Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
             auto_chooser.addOption("Elevator Simple FF Characterization", ElevatorCommands.feedforwardCharacterization(elevator));
-            auto_chooser.addOption("Elevator SysId (Quasistatic Forward)", elevator.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-            auto_chooser.addOption("Elevator SysId (Quasistatic Reverse)", elevator.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-            auto_chooser.addOption("Elevator SysId (Dynamic Forward)", elevator.sysIdDynamic(SysIdRoutine.Direction.kForward));
-            auto_chooser.addOption("Elevator SysId (Dynamic Reverse)", elevator.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+            auto_chooser.addOption("Elevator SysId (Quasistatic Forward)", elevator.liftSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+            auto_chooser.addOption("Elevator SysId (Quasistatic Reverse)", elevator.liftSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+            auto_chooser.addOption("Elevator SysId (Dynamic Forward)", elevator.liftSysIdDynamic(SysIdRoutine.Direction.kForward));
+            auto_chooser.addOption("Elevator SysId (Dynamic Reverse)", elevator.liftSysIdDynamic(SysIdRoutine.Direction.kReverse));
+
+            auto_chooser.addOption("Mailbox Simple FF Characterization", MailboxCommands.feedforwardCharacterization(mailbox));
+            auto_chooser.addOption("Mailbox SysId (Quasistatic Forward)", mailbox.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+            auto_chooser.addOption("Mailbox SysId (Quasistatic Reverse)", mailbox.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+            auto_chooser.addOption("Mailbox SysId (Dynamic Forward)", mailbox.sysIdDynamic(SysIdRoutine.Direction.kForward));
+            auto_chooser.addOption("Mailbox SysId (Dynamic Reverse)", mailbox.sysIdDynamic(SysIdRoutine.Direction.kReverse));
         }
         // Set up SysId routines
 
@@ -176,8 +181,8 @@ public class RobotContainer {
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getTurnAxis() : () -> -controller.getTurnAxis(),
-            () -> Config.ROBOT_MODE == RobotMode.SIM ? controller.fieldOrientedBtn().getAsBoolean() : !controller.fieldOrientedBtn().getAsBoolean()));
-        controller.driveAssistBtn().whileTrue(DriveCommands.driveAssistJoystickDrive(
+            () -> Config.ROBOT_MODE == RobotMode.SIM ? controller.fieldOrientedBtn().getAsBoolean() : controller.fieldOrientedBtn().getAsBoolean()));
+        controller.driveAssistBtn().whileTrue(DriveCommands.driveSuperAssistJoystickDrive(
             drive,
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis(),
@@ -232,7 +237,7 @@ public class RobotContainer {
         controller.elevatorSetpointModeBtn().onTrue(Commands.runOnce(() -> {
             elevator_setpoint_mode = !elevator_setpoint_mode;
         }));
-        controller.mailboxFeedBtn().onTrue(MailboxCommands.latchOntoCoral(mailbox));
+        coral_waiting_trigger.debounce(0.1).onTrue(MailboxCommands.feedCoral(mailbox));
     }
 
     public Command getAutonomousCommand() {

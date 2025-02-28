@@ -9,6 +9,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearAcceleration;
+
 import java.util.Queue;
 
 public class GyroIOPigeon2 implements GyroIO {
@@ -16,6 +18,8 @@ public class GyroIOPigeon2 implements GyroIO {
 
     private final Pigeon2 pigeon = new Pigeon2(PIGEON_CAN_ID);
     private final StatusSignal<Angle> yaw = pigeon.getYaw();
+    private final StatusSignal<LinearAcceleration> acceleration_x = pigeon.getAccelerationX();
+    private final StatusSignal<LinearAcceleration> acceleration_y = pigeon.getAccelerationY();
     private final Queue<Double> yaw_position_queue;
     private final Queue<Double> yaw_timestamp_queue;
     private final StatusSignal<AngularVelocity> yaw_velocity = pigeon.getAngularVelocityZWorld();
@@ -25,18 +29,20 @@ public class GyroIOPigeon2 implements GyroIO {
         pigeon.getConfigurator().setYaw(0.0);
         yaw.setUpdateFrequency(Drive.ODOMETRY_FREQUENCY_HERTZ);
         yaw_velocity.setUpdateFrequency(50.0);
+        acceleration_y.setUpdateFrequency(20.0);
+        acceleration_x.setUpdateFrequency(20.0);
         pigeon.optimizeBusUtilization();
         yaw_timestamp_queue = SparkOdometryThread.getInstance().makeTimestampQueue();
         yaw_position_queue = SparkOdometryThread.getInstance().registerSignal(yaw::getValueAsDouble);
     }
 
     @Override public void updateInputs(final GyroIOInputs inputs) {
-        inputs.connected = BaseStatusSignal.refreshAll(yaw, yaw_velocity).equals(StatusCode.OK);
+        inputs.connected = BaseStatusSignal.refreshAll(yaw, yaw_velocity, acceleration_x, acceleration_y).equals(StatusCode.OK);
         inputs.yaw_position = Rotation2d.fromDegrees(yaw.getValueAsDouble());
         inputs.yaw_velocity_radians_per_second = Units.degreesToRadians(yaw_velocity.getValueAsDouble());
 
-        inputs.world_linear_acceleration_x = pigeon.getAccelerationX().getValueAsDouble();
-        inputs.world_linear_acceleration_y = pigeon.getAccelerationY().getValueAsDouble();
+        inputs.world_linear_acceleration_x = acceleration_x.getValueAsDouble();
+        inputs.world_linear_acceleration_y = acceleration_y.getValueAsDouble();
 
         inputs.odometry_yaw_timestamps = yaw_timestamp_queue.stream()
             .mapToDouble((Double value) -> value)

@@ -13,21 +13,21 @@ public class Cameras {
                 new Transform3d(
                     Units.inchesToMeters(-7), 0.0, Units.inchesToMeters(21),
                     new Rotation3d(0.0, Units.degreesToRadians(5), 0.0)),
-                2.5,
+                0.8,
                 SimCameraProperties.LL2_640_480()),
             new Camera(
                 "USB_Camera",
                 new Transform3d(
                     Units.inchesToMeters(-12), Units.inchesToMeters(-2), Units.inchesToMeters(21),
                     new Rotation3d(0.0, 0.0, Units.degreesToRadians(225))),
-                4,
+                2.8,
                 SimCameraProperties.LL2_960_720()),
             new Camera(
                 "NEXIGO_HD_Webcam",
                 new Transform3d(
                     Units.inchesToMeters(-12), Units.inchesToMeters(2), Units.inchesToMeters(21),
                     new Rotation3d(0.0, 0.0, Units.degreesToRadians(135))),
-                4,
+                1.06,
                 SimCameraProperties.LL2_960_720()),
     };
 

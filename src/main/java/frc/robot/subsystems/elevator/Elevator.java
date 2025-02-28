@@ -58,10 +58,10 @@ public class Elevator extends SubsystemBase {
 
         this.sys_id = new SysIdRoutine(
             new SysIdRoutine.Config(Volts.of(0.01).per(Second), Volts.of(0.01), Seconds.of(60), (state) -> Logger.recordOutput("Elevator/SysIdState", state.toString())),
-            new SysIdRoutine.Mechanism((voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+            new SysIdRoutine.Mechanism((voltage) -> runLiftCharacterization(voltage.in(Volts)), null, this));
     }
 
-    private final Transform3d robot_to_elevator() {
+    private final Transform3d robotToElevator() {
         return new Transform3d(
             new Translation3d(Units.inchesToMeters(13), Units.inchesToMeters(-8.5), Units.inchesToMeters(29 + inputs.lift_position_inches)),
             new Rotation3d());
@@ -79,36 +79,49 @@ public class Elevator extends SubsystemBase {
         lift_disconnect_alert.set(!inputs.lift_connected);
         Logger.recordOutput("Elevator/Error", Math.abs(inputs.lift_position_inches - inputs.lift_setpoint_position_inches));
 
-        final Pose3d virtual_cam_position = new Pose3d(robot_pose_supplier.get()).transformBy(robot_to_elevator());
+        final Pose3d virtual_cam_position = new Pose3d(robot_pose_supplier.get()).transformBy(robotToElevator());
         Logger.recordOutput("Elevator/VirtualCam", virtual_cam_position);
     }
 
-    public void runCharacterization(final double output) {
+    public void runLiftCharacterization(final double output) {
         io.setLiftOpenLoop(output);
     }
 
-    public Command sysIdQuasistatic(final SysIdRoutine.Direction direction) {
-        return run(() -> runCharacterization(0.0)).withTimeout(1.0).andThen(sys_id.quasistatic(direction));
+    public void runHingeCharacterization(final double output) {
+        io.setLiftOpenLoop(output);
     }
 
-    public Command sysIdDynamic(final SysIdRoutine.Direction direction) {
-        return run(() -> runCharacterization(0.0)).withTimeout(1.0).andThen(sys_id.dynamic(direction));
+    public Command liftSysIdQuasistatic(final SysIdRoutine.Direction direction) {
+        return run(() -> runLiftCharacterization(0.0)).withTimeout(1.0).andThen(sys_id.quasistatic(direction));
     }
 
-    public double getFFCharacterizationVelocity() {
+    public Command liftSysIdDynamic(final SysIdRoutine.Direction direction) {
+        return run(() -> runLiftCharacterization(0.0)).withTimeout(1.0).andThen(sys_id.dynamic(direction));
+    }
+
+    public double getLiftFFCharacterizationVelocity() {
         return inputs.lift_velocity_inches_per_second;
     }
 
-    public double getPositionInches() {
+    public double getHingeFFCharacterizationVelocity() {
+        return inputs.hinge_velocity_radians_per_second;
+    }
+
+    public double getLiftPositionInches() {
         return inputs.lift_position_inches;
     }
 
-    public void runSetpoint(final double lift_position_inches) {
+    public void runLiftSetpoint(final double lift_position_inches) {
         io.setLiftPosition(lift_position_inches);
     }
 
+
+    public void runHingeSetpoint(final double hinge_position_radians) {
+        io.setHingeAngle(hinge_position_radians);
+    }
+
     public static enum ElevatorSetpoint {
-        BOTTOM(0.0), CORAL_STATION(2.36), L2(4.195), BARGE(5.505), L3(Elevator.ELEVATOR_MAX_HEIGHT_INCHES), TOP(Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
+        BOTTOM(0.0), CORAL_STATION(2.36), ALGAE(0.0), L2(4.195), BARGE(5.505), L3(Elevator.ELEVATOR_MAX_HEIGHT_INCHES), TOP(Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
 
         private double setpoint_inches = 0.0;
 
@@ -118,6 +131,20 @@ public class Elevator extends SubsystemBase {
 
         public double getValue() {
             return setpoint_inches;
+        }
+    }
+
+    public static enum HingeSetpoint {
+        TOP(0.0), ALGAE(0.0), RELEASE_ALGAE(0.0);
+
+        private double setpoint_radians = 0.0;
+
+        private HingeSetpoint(final double setpoint_radians) {
+            this.setpoint_radians = setpoint_radians;
+        }
+
+        public double getValue() {
+            return setpoint_radians;
         }
     }
 }

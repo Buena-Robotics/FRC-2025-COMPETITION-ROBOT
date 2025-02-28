@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.Elevator.ElevatorSetpoint;
+import frc.robot.util.Utils;
 
 public class ElevatorCommands {
     private static final double SHAKE_DELAY_SECONDS = 0.3;
@@ -48,10 +49,10 @@ public class ElevatorCommands {
             () -> {
                 if(setpoint_mode_supplier.getAsBoolean()){
                     final ElevatorSetpoint closest = closestSetpoint(setpoint_estimate_supplier.getAsDouble());
-                    elevator.runSetpoint(closest.getValue());
+                    elevator.runLiftSetpoint(closest.getValue());
                 }
                 else {
-                    elevator.runSetpoint(height_supplier.getAsDouble() * Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
+                    elevator.runLiftSetpoint(height_supplier.getAsDouble() * Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
                 }
             }, elevator);
     }
@@ -59,22 +60,31 @@ public class ElevatorCommands {
     public static Command triggerElevatorHeight(final Elevator elevator, final DoubleSupplier height_supplier) {
         return Commands.run(
             () -> {
-                elevator.runSetpoint(height_supplier.getAsDouble() * Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
+                elevator.runLiftSetpoint(height_supplier.getAsDouble() * Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
             }, elevator);
     }
 
     public static Command triggerElevatorSetpoint(final Elevator elevator, final ElevatorSetpoint setpoint) {
         return Commands.runOnce(
             () -> {
-                elevator.runSetpoint(setpoint.getValue());
+                elevator.runLiftSetpoint(setpoint.getValue());
             }, elevator);
+    }
+
+    public static Command snatchAlgae(final Elevator elevator){
+        return Commands.run(() -> {
+            // elevator.
+        }, elevator).until(() -> Utils.epsilonOf(ElevatorSetpoint.ALGAE.getValue(),elevator.getLiftPositionInches()));
+    }
+    public static Command releaseAlgae(final Elevator elevator){
+        return Commands.run(() -> {}, elevator);
     }
 
     public static Command shakeElevator(final Elevator elevator){
         return Commands.sequence(
-            new InstantCommand(()-> { elevator.runSetpoint(Elevator.ELEVATOR_MAX_HEIGHT_INCHES); }, elevator),
+            new InstantCommand(()-> { elevator.runLiftSetpoint(Elevator.ELEVATOR_MAX_HEIGHT_INCHES); }, elevator),
             new WaitCommand(SHAKE_DELAY_SECONDS),
-            new InstantCommand(() -> {elevator.runSetpoint(0.0);})
+            new InstantCommand(() -> {elevator.runLiftSetpoint(0.0);})
         );
     }
 
@@ -93,7 +103,7 @@ public class ElevatorCommands {
             // Allow modules to orient
             Commands.run(
                 () -> {
-                    elevator.runCharacterization(0.0);
+                    elevator.runLiftCharacterization(0.0);
                 },
                 elevator)
                 .withTimeout(FF_START_DELAY),
@@ -105,8 +115,8 @@ public class ElevatorCommands {
             Commands.run(
                 () -> {
                     double voltage = timer.get() * FF_RAMP_RATE;
-                    elevator.runCharacterization(voltage);
-                    velocity_samples.add(elevator.getFFCharacterizationVelocity());
+                    elevator.runLiftCharacterization(voltage);
+                    velocity_samples.add(elevator.getLiftFFCharacterizationVelocity());
                     voltage_samples.add(voltage);
                 },
                 elevator)

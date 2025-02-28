@@ -7,10 +7,10 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 
 public final class Config {
-    public static final RobotMode SIM_MODE = RobotMode.REPLAY;
+    public static final RobotMode SIM_MODE = RobotMode.SIM;
     public static final RobotMode ROBOT_MODE = RobotBase.isReal() ? RobotMode.REAL : SIM_MODE;
 
-    public static final RobotType ROBOT_TYPE = RobotType.ROBOT_2025_COMPETION;
+    public static final RobotType ROBOT_TYPE = RobotType.ROBOT_2025_SCHOOL;
 
     public static final String DEFAULT_LOG_FOLDER = "/media/sda1/";
     public static final Map<RobotType, String> log_folders_map = Map.of(

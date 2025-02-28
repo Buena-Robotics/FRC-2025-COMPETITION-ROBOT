@@ -41,6 +41,13 @@ public class ElevatorIOSim implements ElevatorIO {
         inputs.lift_applied_volts = lift_applied_volts;
         inputs.lift_current_amps = lift_sim.getCurrentDrawAmps();
         inputs.lift_connected = true;
+
+        inputs.hinge_position_radians = Math.PI / 2.0;
+        inputs.hinge_absolute_position_radians = Math.PI / 2.0;
+        inputs.hinge_velocity_radians_per_second = 0.0;
+        inputs.hinge_applied_volts = 0.0;
+        inputs.hinge_current_amps = 0.0;
+        inputs.hinge_connected = true;
     }
 
     @Override public void setLiftOpenLoop(final double output) {
@@ -63,5 +70,13 @@ public class ElevatorIOSim implements ElevatorIO {
 
     @Override public void zeroLiftPosition() {
         lift_sim.setState(0.0, 0.0);
+    }
+
+    @Override public void setHingeAngle(final double radians) {
+
+    }
+
+    @Override public void setHingeOpenLoop(final double output) {
+
     }
 }

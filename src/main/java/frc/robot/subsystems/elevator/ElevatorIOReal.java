@@ -15,22 +15,26 @@ import frc.robot.util.SparkUtil;
 
 public class ElevatorIOReal implements ElevatorIO {
     private static final int LIFT_MOTOR_CAN_ID = 9;
+    private static final int HINGE_MOTOR_CAN_ID = 14;
 
     // Constants when lift is empty
-    private static final double LIFT_EMPTY_P = 0.25;
-    private static final double LIFT_EMPTY_I = 0.0;
+    private static final double LIFT_EMPTY_P = 0.3;
     private static final double LIFT_EMPTY_D = 0.025;
+    private static final double HINGE_P = 0.3;
+    private static final double HINGE_D = 0.025;
 
     private static final double LIFT_CLAMP_MIN_POSITION = 0.25;
-
-    // Constants when lift is carrying a coral
-    // private static final double LIFT_CARRY_P = 0.1;
-    // private static final double LIFT_CARRY_I = 0.1;
-    // private static final double LIFT_CARRY_D = 0.2;
 
     private static final int LIFT_MOTOR_CURRENT_LIMIT = 10;
     private static final double LIFT_ENCODER_POSITION_FACTOR = 1.0 / 2.7643; // Math.PI * 2 * (1.0/Elevator.LIFT_MOTOR_REDUCTION);
     private static final double LIFT_ENCODER_VELOCITY_FACTOR = LIFT_ENCODER_POSITION_FACTOR / 60.0;
+    private static final int HINGE_MOTOR_CURRENT_LIMIT = 18;
+    private static final double HINGE_ENCODER_POSITION_FACTOR = 1.0;
+    private static final double HINGE_ENCODER_VELOCITY_FACTOR = HINGE_ENCODER_POSITION_FACTOR / 60.0;
+
+    // private static final double HINGE_ABSOLUTE_ENCODER_ZERO_POSITION = 0.0;
+
+    // private static final int
 
     private static final SparkMaxConfig DEFAULT_LIFT_SPARK_CONFIG = defaultLiftSparkConfig();
 
@@ -38,6 +42,11 @@ public class ElevatorIOReal implements ElevatorIO {
     private final RelativeEncoder lift_encoder;
     private final SparkClosedLoopController lift_controller;
     private final Debouncer lift_connected_debounce = new Debouncer(0.5);
+
+    private final SparkMax hinge_motor;
+    private final RelativeEncoder hinge_encoder;
+    private final SparkClosedLoopController hinge_controller;
+    private final Debouncer hinge_connected_debounce = new Debouncer(0.5);
 
     private double lift_setpoint_position_inches = 0.0;
     private boolean lift_brake_mode = true;
@@ -47,8 +56,25 @@ public class ElevatorIOReal implements ElevatorIO {
         this.lift_encoder = this.lift_motor.getEncoder();
         this.lift_controller = this.lift_motor.getClosedLoopController();
 
+        this.hinge_motor = new SparkMax(HINGE_MOTOR_CAN_ID, MotorType.kBrushless);
+        this.hinge_encoder = this.hinge_motor.getAlternateEncoder();
+        this.hinge_controller = this.hinge_motor.getClosedLoopController();
+
         SparkUtil.configureSparkMax(this.lift_motor, DEFAULT_LIFT_SPARK_CONFIG);
         SparkUtil.setPosition(this.lift_motor, this.lift_encoder, 0.0);
+
+        final SparkMaxConfig hinge_config = new SparkMaxConfig();
+        SparkUtil.setSparkBaseConfig(hinge_config, HINGE_MOTOR_CURRENT_LIMIT);
+
+        SparkUtil.setSparkEncoderConfig(hinge_config.encoder, HINGE_ENCODER_POSITION_FACTOR, HINGE_ENCODER_VELOCITY_FACTOR);
+
+        hinge_config.alternateEncoder.countsPerRevolution(8192);
+
+        hinge_config.closedLoop
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+            .pidf(HINGE_P, 0.0, HINGE_D, 0.0);
+        SparkUtil.configureSparkMax(this.hinge_motor, hinge_config);
+        SparkUtil.setPosition(this.hinge_motor, this.hinge_encoder, 0.0);
     }
 
     @Override public void updateInputs(final ElevatorIOInputs inputs) {
@@ -60,6 +86,13 @@ public class ElevatorIOReal implements ElevatorIO {
         SparkUtil.ifOk(lift_motor, new DoubleSupplier[] { lift_motor::getAppliedOutput, lift_motor::getBusVoltage }, (values) -> inputs.lift_applied_volts = values[0] * values[1]);
         SparkUtil.ifOk(lift_motor, lift_motor::getOutputCurrent, (value) -> inputs.lift_current_amps = value);
         inputs.lift_connected = lift_connected_debounce.calculate(!SparkUtil.spark_sticky_fault);
+
+        SparkUtil.spark_sticky_fault = false;
+        SparkUtil.ifOk(hinge_motor, hinge_encoder::getPosition, (value) -> inputs.hinge_position_radians = value);
+        SparkUtil.ifOk(hinge_motor, hinge_encoder::getVelocity, (value) -> inputs.hinge_velocity_radians_per_second = value);
+        SparkUtil.ifOk(hinge_motor, new DoubleSupplier[] { hinge_motor::getAppliedOutput, hinge_motor::getBusVoltage }, (values) -> inputs.hinge_applied_volts = values[0] * values[1]);
+        SparkUtil.ifOk(hinge_motor, hinge_motor::getOutputCurrent, (value) -> inputs.hinge_current_amps = value);
+        inputs.hinge_connected = hinge_connected_debounce.calculate(!SparkUtil.spark_sticky_fault);
     }
 
     @Override public void setLiftOpenLoop(final double output){
@@ -87,6 +120,14 @@ public class ElevatorIOReal implements ElevatorIO {
         SparkUtil.setPosition(lift_motor, lift_encoder, 0.0);
     }
 
+    @Override public void setHingeAngle(final double radians) {
+        hinge_controller.setReference(radians, ControlType.kPosition);
+    }
+
+    @Override public void setHingeOpenLoop(final double output) {
+        hinge_motor.setVoltage(output);
+    }
+
     private static SparkMaxConfig defaultLiftSparkConfig() {
         final SparkMaxConfig lift_config = new SparkMaxConfig();
         lift_config.softLimit
@@ -99,7 +140,7 @@ public class ElevatorIOReal implements ElevatorIO {
         SparkUtil.setSparkSignalsConfig(lift_config.signals, 20);
         lift_config.closedLoop
             .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-            .pidf(LIFT_EMPTY_P, LIFT_EMPTY_I, LIFT_EMPTY_D, 0.0);
+            .pidf(LIFT_EMPTY_P, 0.0, LIFT_EMPTY_D, 0.0);
         return lift_config;
     }
 }
