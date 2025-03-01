@@ -33,9 +33,8 @@ public class Vision extends SubsystemBase {
 
     // Standard deviation baselines, for 1 meter distance and 1 tag
     // (Adjusted automatically based on distance and # of tags)
-    public static double linear_std_dev_baseline_meters = 0.9; // Meters
-    public static double angular_std_dev_baseline_radians_disabled = 0.001; // Radians
-    public static double angular_std_dev_baseline_radians = 4.5; // Radians
+    public static double linear_std_dev_baseline_meters = 0.5; // Meters
+    public static double angular_std_dev_baseline_radians = Math.PI / 6.0; // Radians
 
     // Multipliers to apply for MegaTag 2 observations
     public static double linear_std_dev_megatag_2_factor = 0.5; // More stable than full 3D solve
@@ -67,10 +66,13 @@ public class Vision extends SubsystemBase {
         }
     }
 
-    public static record foo(double bar) {}
-
     private Optional<EstimatedRobotPose> estimate(final SharedPhotonPoseEstimator estimator, final PhotonPipelineResult result) {
-        return estimator.update(result);
+        if(result.multitagResult.isPresent())
+            return estimator.update(result, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
+        if(DriverStation.isDisabled()){
+            return estimator.update(result, PoseStrategy.AVERAGE_BEST_TARGETS);
+        }
+        return estimator.update(result, PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
     }
 
     @Override public void periodic() {
@@ -146,12 +148,12 @@ public class Vision extends SubsystemBase {
                     .stream()
                     .map((PhotonTrackedTarget target) -> target.bestCameraToTarget.getTranslation().getNorm())
                     .reduce(0.0, Double::sum)
-                        / observation.targetsUsed.size();
+                        / tag_count;
 
                 // Calculate standard deviations
                 double std_dev_factor = Math.pow(average_tag_distance, 2.0) / tag_count;
-                double linear_std_dev = DriverStation.isDisabled() ? 0.001 : linear_std_dev_baseline_meters * std_dev_factor;
-                double angular_std_dev = (DriverStation.isDisabled() ? angular_std_dev_baseline_radians_disabled : angular_std_dev_baseline_radians) * std_dev_factor;
+                double linear_std_dev =linear_std_dev_baseline_meters * std_dev_factor;
+                double angular_std_dev = angular_std_dev_baseline_radians * std_dev_factor * (DriverStation.isEnabled() ? 30 : 1);
                 if (observation.strategy == PoseStrategy.PNP_DISTANCE_TRIG_SOLVE || observation.strategy == PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR || observation.strategy == PoseStrategy.CONSTRAINED_SOLVEPNP) {
                     linear_std_dev *= linear_std_dev_megatag_2_factor;
                     angular_std_dev *= angular_std_dev_megatag_2_factor;

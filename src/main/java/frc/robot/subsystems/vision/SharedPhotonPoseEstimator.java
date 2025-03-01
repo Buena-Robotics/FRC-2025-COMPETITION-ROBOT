@@ -496,7 +496,7 @@ public class SharedPhotonPoseEstimator {
      *         targets used to
      *         create the estimate.
      */
-    private Optional<EstimatedRobotPose> update(
+    public Optional<EstimatedRobotPose> update(
         PhotonPipelineResult cameraResult, PoseStrategy strategy) {
         return update(cameraResult, Optional.empty(), Optional.empty(), Optional.empty(), strategy);
     }

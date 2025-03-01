@@ -191,7 +191,8 @@ public class RobotContainer {
         elevator.setDefaultCommand(ElevatorCommands.triggerElevatorHeightAndSetpoint(elevator,
             () -> elevator_setpoint_mode,
             () -> controller.getElevatorAxis(),
-            () -> controller.getElevatorAxis()));
+            () -> controller.getElevatorAxis(),
+            () -> controller.getHingeAxis()));
         climb.setDefaultCommand(ClimbCommands.triggerClimbSpeed(climb, () -> controller.getClimbAxis()));
         mailbox.setDefaultCommand(MailboxCommands.triggerMailboxSpeed(mailbox, () -> controller.getMailboxAxis()));
 

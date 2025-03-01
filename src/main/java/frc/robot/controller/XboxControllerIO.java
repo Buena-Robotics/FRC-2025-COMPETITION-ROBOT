@@ -34,6 +34,10 @@ public class XboxControllerIO implements CommandControllerIO {
         return controller.povDown().getAsBoolean() ? -0.25 : controller.povUp().getAsBoolean() ? 0.25 : 0.0;
     }
 
+    @Override public double getHingeAxis() {
+        return 0;
+    }
+
     @Override public Trigger resetGyroBtn() {
         return new Trigger(() -> false);
     }

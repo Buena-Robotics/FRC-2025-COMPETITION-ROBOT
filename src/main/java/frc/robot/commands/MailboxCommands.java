@@ -14,7 +14,7 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.mailbox.Mailbox;
 
 public class MailboxCommands {
-    private static final double FEED_CORAL_EPSILON = 0.22;
+    private static final double FEED_CORAL_EPSILON = 0.5;
     private static final double TIME_TO_LAUNCH_SECONDS = 0.4;
     private static final double FF_START_DELAY = 2.0; // Secs
     private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
@@ -29,10 +29,10 @@ public class MailboxCommands {
 
     public static Command feedCoral(final Mailbox mailbox) {
         return Commands.runOnce(() -> mailbox.resetPosition(), mailbox).andThen(
-            Commands.run(() -> mailbox.runPositionSetpoint(Mailbox.FEED_CORAL_POSITION), mailbox)
+            Commands.deadline(new WaitCommand(2.2), Commands.run(() -> mailbox.runPositionSetpoint(Mailbox.FEED_CORAL_POSITION), mailbox)
                 .until(() -> {
                     return Math.abs(Mailbox.FEED_CORAL_POSITION - mailbox.getPosition()) < FEED_CORAL_EPSILON;
-                }));
+                })));
     }
 
     public static Command lockDriveAndLaunchCoral(final Mailbox mailbox, final Drive drive) {

@@ -5,13 +5,13 @@ import org.littletonrobotics.junction.AutoLog;
 public interface ElevatorIO {
     @AutoLog public static class ElevatorIOInputs {
         public boolean lift_connected = true;
-        public double lift_setpoint_position_inches = 0.0;
         public double lift_position_inches = 0.0;
         public double lift_velocity_inches_per_second = 0.0;
         public double lift_applied_volts = 0.0;
         public double lift_current_amps = 0.0;
 
         public boolean hinge_connected = true;
+        public boolean hinge_absolute_encoder_connected = true;
         public double hinge_position_radians = 0.0;
         public double hinge_absolute_position_radians = 0.0;
         public double hinge_velocity_radians_per_second = 0.0;

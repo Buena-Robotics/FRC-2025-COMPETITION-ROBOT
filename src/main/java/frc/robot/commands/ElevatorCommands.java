@@ -44,9 +44,10 @@ public class ElevatorCommands {
         return estimate_setpoint_pairs.get(closest_index).getSecond();
     }
 
-    public static Command triggerElevatorHeightAndSetpoint(final Elevator elevator, final BooleanSupplier setpoint_mode_supplier, final DoubleSupplier height_supplier, final DoubleSupplier setpoint_estimate_supplier) {
+    public static Command triggerElevatorHeightAndSetpoint(final Elevator elevator, final BooleanSupplier setpoint_mode_supplier, final DoubleSupplier height_supplier, final DoubleSupplier setpoint_estimate_supplier, final DoubleSupplier hinge_angle_supplier) {
         return Commands.run(
             () -> {
+                elevator.runHingeSetpoint(hinge_angle_supplier.getAsDouble() * 2.63);
                 if(setpoint_mode_supplier.getAsBoolean()){
                     final ElevatorSetpoint closest = closestSetpoint(setpoint_estimate_supplier.getAsDouble());
                     elevator.runLiftSetpoint(closest.getValue());
@@ -57,10 +58,11 @@ public class ElevatorCommands {
             }, elevator);
     }
 
-    public static Command triggerElevatorHeight(final Elevator elevator, final DoubleSupplier height_supplier) {
+    public static Command triggerElevatorHeight(final Elevator elevator, final DoubleSupplier height_supplier, final DoubleSupplier hinge_angle_supplier) {
         return Commands.run(
             () -> {
                 elevator.runLiftSetpoint(height_supplier.getAsDouble() * Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
+                elevator.runHingeSetpoint(hinge_angle_supplier.getAsDouble() * 2.63);
             }, elevator);
     }
 

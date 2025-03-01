@@ -32,6 +32,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Config;
 import frc.robot.Config.RobotMode;
+import frc.robot.util.Derivitave;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.Printf;
 import frc.robot.util.sim.COTS;
@@ -135,11 +136,11 @@ public class Drive extends SubsystemBase {
     private final SwerveDrivePoseEstimator pose_estimator = new SwerveDrivePoseEstimator(
         kinematics, raw_gyro_rotation, last_module_positions, new Pose2d(3, 3, new Rotation2d()));
 
+    private final Derivitave world_linear_jerk_x = new Derivitave(0.0);
+    private final Derivitave world_linear_jerk_y = new Derivitave(0.0);
+    
     @AutoLogOutput(key = "Drive/BrakeModeEnabled")
     private boolean brake_mode_enabled = true;
-
-    double last_world_linear_accel_x;
-    double last_world_linear_accel_y;
 
     public Drive(final GyroIO gyro_io, final ModuleIO fl_module, final ModuleIO fr_module, final ModuleIO bl_module, final ModuleIO br_module) {
         this.gryo_io = gyro_io;
@@ -235,15 +236,8 @@ public class Drive extends SubsystemBase {
         gyro_disconnect_alert.set(!gyro_inputs.connected && Config.ROBOT_MODE != RobotMode.SIM);
 
         // Good to know when pathfinding
-        double curr_world_linear_accel_x = gyro_inputs.world_linear_acceleration_x;
-        double current_jerk_x = curr_world_linear_accel_x - last_world_linear_accel_x;
-        last_world_linear_accel_x = curr_world_linear_accel_x;
-        double curr_world_linear_accel_y = gyro_inputs.world_linear_acceleration_y;
-        double current_jerk_y = curr_world_linear_accel_y - last_world_linear_accel_y;
-        last_world_linear_accel_y = curr_world_linear_accel_y;
-
-        boolean collision_detected = (Math.abs(current_jerk_x) > COLLISION_THRESHOLD_DELTAG) ||
-            (Math.abs(current_jerk_y) > COLLISION_THRESHOLD_DELTAG);
+        boolean collision_detected = (Math.abs(world_linear_jerk_x.update(gyro_inputs.world_linear_acceleration_x)) > COLLISION_THRESHOLD_DELTAG) ||
+            (Math.abs(world_linear_jerk_y.update(gyro_inputs.world_linear_acceleration_y)) > COLLISION_THRESHOLD_DELTAG);
         Logger.recordOutput("Drive/CollisionDetected", collision_detected);
     }
 

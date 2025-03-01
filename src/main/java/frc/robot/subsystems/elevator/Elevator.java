@@ -77,8 +77,6 @@ public class Elevator extends SubsystemBase {
 
         // Update alerts
         lift_disconnect_alert.set(!inputs.lift_connected);
-        Logger.recordOutput("Elevator/Error", Math.abs(inputs.lift_position_inches - inputs.lift_setpoint_position_inches));
-
         final Pose3d virtual_cam_position = new Pose3d(robot_pose_supplier.get()).transformBy(robotToElevator());
         Logger.recordOutput("Elevator/VirtualCam", virtual_cam_position);
     }

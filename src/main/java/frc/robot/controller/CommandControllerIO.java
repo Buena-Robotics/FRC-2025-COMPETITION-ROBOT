@@ -15,6 +15,8 @@ public interface CommandControllerIO {
 
     public double getClimbAxis();
 
+    public double getHingeAxis();
+
     public Trigger fieldOrientedBtn();
 
     public Trigger driveAssistBtn();

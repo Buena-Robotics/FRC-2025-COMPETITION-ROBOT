@@ -35,7 +35,6 @@ public class ElevatorIOSim implements ElevatorIO {
         }
         lift_sim.update(0.02);
 
-        inputs.lift_setpoint_position_inches = lift_controller.getGoal().position;
         inputs.lift_position_inches = Units.metersToInches(lift_sim.getPositionMeters());
         inputs.lift_velocity_inches_per_second = Units.metersToInches(lift_sim.getVelocityMetersPerSecond());
         inputs.lift_applied_volts = lift_applied_volts;
@@ -48,6 +47,7 @@ public class ElevatorIOSim implements ElevatorIO {
         inputs.hinge_applied_volts = 0.0;
         inputs.hinge_current_amps = 0.0;
         inputs.hinge_connected = true;
+        inputs.hinge_absolute_encoder_connected = true;
     }
 
     @Override public void setLiftOpenLoop(final double output) {

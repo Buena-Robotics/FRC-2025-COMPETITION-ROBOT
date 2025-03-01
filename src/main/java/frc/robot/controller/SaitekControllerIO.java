@@ -34,6 +34,11 @@ public class SaitekControllerIO implements CommandControllerIO {
         return controller.povDown().getAsBoolean() ? -0.25 : controller.povUp().getAsBoolean() ? 0.25 : 0.0;
     }
 
+    @Override public double getHingeAxis() {
+        return (controller.throttleSliderAxis() + 1.0) / 2.0;
+
+    }
+
     @Override public Trigger resetGyroBtn() {
         return controller.getTrigger(Button.DOUBLE_TRIGGER_1);
     }

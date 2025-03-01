@@ -120,11 +120,17 @@ public class Robot extends LoggedRobot {
         robot_container = new RobotContainer();
         // PathfindingCommand.warmupCommand().schedule();
     }
-
+    // Rs232
+    // SerialPort ultrasonic = new SerialPort(9600, Port.kOnboard, 8, Parity.kNone, StopBits.kOne);
     @Override public void robotPeriodic() {
         // Switch thread to high priority to improve loop timing
         Threads.setCurrentThreadPriority(true, 99);
 
+        // Logger.recordOutput("Ultrasonic/string"
+        // , ultrasonic.read(4));
+        // Logger.recordOutput("Ultrasonic/recieved", ultrasonic.getBytesReceived());
+        // Logger.recordOutput("Ultrasonic/string", ultrasonic);
+        // Logger.recordOutput("Ultrasonic/recieved", ultrasonic.());
         CommandScheduler.getInstance().run();
 
         // Check logging fault

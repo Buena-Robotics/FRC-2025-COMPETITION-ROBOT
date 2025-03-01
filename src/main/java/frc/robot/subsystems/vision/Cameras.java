@@ -27,7 +27,7 @@ public class Cameras {
                 new Transform3d(
                     Units.inchesToMeters(-12), Units.inchesToMeters(2), Units.inchesToMeters(21),
                     new Rotation3d(0.0, 0.0, Units.degreesToRadians(135))),
-                1.06,
+                0.5,
                 SimCameraProperties.LL2_960_720()),
     };
 
