@@ -5,9 +5,28 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "StartLineToReef0"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "AutoToReef3r"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "elevator_L3"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "mailbox_shoot"
           }
         },
         {
@@ -17,9 +36,9 @@
           }
         },
         {
-          "type": "deadline",
+          "type": "named",
           "data": {
-            "commands": []
+            "name": "waitfor_coral"
           }
         }
       ]

@@ -8,6 +8,13 @@ import edu.wpi.first.math.util.Units;
 
 public class Cameras {
     public static final Camera[] cameras = {
+            // new Camera(
+            //     "Microsoft_LifeCam_HD-3000", // ORANGE PI
+            //     new Transform3d(
+            //         Units.inchesToMeters(-7), 0.0, Units.inchesToMeters(21),
+            //         new Rotation3d(0.0, Units.degreesToRadians(5), 0.0)),
+            //     0.8,
+            //     SimCameraProperties.LL2_640_480()),
             new Camera(
                 "Microsoft_LifeCam_HD-3000",
                 new Transform3d(

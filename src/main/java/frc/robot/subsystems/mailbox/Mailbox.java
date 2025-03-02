@@ -66,14 +66,17 @@ public class Mailbox extends SubsystemBase {
     }
 
     public void runSpeedSetpoint(final double shooter_speed) {
+        Logger.recordOutput("Mailbox/Speedsetpoint", shooter_speed);
         io.setShooterSpeed(shooter_speed);
     }
 
     public void runPositionSetpoint(final double shooter_position_radians){
+        Logger.recordOutput("Mailbox/PositionSetpoint", shooter_position_radians);
         io.setShooterPosition(shooter_position_radians);
     }
 
     public void runVelocitySetpoint(final double shooter_velocity_radians_per_second) {
+        Logger.recordOutput("Mailbox/VelocitySetpoint", shooter_velocity_radians_per_second);
         io.setShooterVelocity(shooter_velocity_radians_per_second);
     }
 }

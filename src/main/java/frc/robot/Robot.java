@@ -56,6 +56,7 @@ public class Robot extends LoggedRobot {
     private final Alert low_battery_alert = new Alert("Battery voltage is very low, consider turning off the robot or replacing the battery.", AlertType.kWarning);
     private final Alert low_memory_alert = new Alert("Running out of memory, java program may crash soon", AlertType.kWarning);
 
+    // SerialPort ultrasonic = new SerialPort(9600, Port.kOnboard, 8, Parity.kNone, StopBits.kOne);
     public Robot() {
         DriverStation.silenceJoystickConnectionWarning(true);
         // Record metadata
@@ -119,19 +120,16 @@ public class Robot extends LoggedRobot {
 
         robot_container = new RobotContainer();
         // PathfindingCommand.warmupCommand().schedule();
+        // ultrasonic.enableTermination();
+        // ultrasonic.reset();
     }
     // Rs232
-    // SerialPort ultrasonic = new SerialPort(9600, Port.kOnboard, 8, Parity.kNone, StopBits.kOne);
     @Override public void robotPeriodic() {
         // Switch thread to high priority to improve loop timing
         Threads.setCurrentThreadPriority(true, 99);
 
-        // Logger.recordOutput("Ultrasonic/string"
-        // , ultrasonic.read(4));
-        // Logger.recordOutput("Ultrasonic/recieved", ultrasonic.getBytesReceived());
-        // Logger.recordOutput("Ultrasonic/string", ultrasonic);
-        // Logger.recordOutput("Ultrasonic/recieved", ultrasonic.());
         CommandScheduler.getInstance().run();
+        // System.out.println(ultrasonic.readString());
 
         // Check logging fault
         log_reciever_queue_alert.set(Logger.getReceiverQueueFault());

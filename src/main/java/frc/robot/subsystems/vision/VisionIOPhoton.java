@@ -3,6 +3,8 @@ package frc.robot.subsystems.vision;
 import edu.wpi.first.math.geometry.Transform3d;
 import frc.robot.subsystems.vision.Cameras.Camera;
 
+import java.util.List;
+
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 
@@ -35,7 +37,7 @@ public class VisionIOPhoton implements VisionIO {
             inputs.camera_matrix_opt = camera.getCameraMatrix();
         if(camera.getDistCoeffs().isEmpty())
             inputs.dist_coeffs_opt = camera.getDistCoeffs();
-        var unread_results = camera.getAllUnreadResults();
+        List<PhotonPipelineResult> unread_results = camera.getAllUnreadResults();
         inputs.photon_results = new PhotonPipelineResult[unread_results.size()];
         for(int i = 0; i < unread_results.size(); i++){
             inputs.photon_results[i] = unread_results.get(i);

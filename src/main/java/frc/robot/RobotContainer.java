@@ -10,12 +10,11 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -136,6 +135,8 @@ public class RobotContainer {
 
         coral_waiting_trigger = new Trigger(mailbox::coralWaiting);
 
+        intializePathplannerAutoCommands();
+
         // Set up auto routines
         auto_chooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -218,12 +219,12 @@ public class RobotContainer {
             Commands.parallel(
                 DriveCommands.pathfindToPose(drive, FieldConstants.BLUE_CORAL_STATION_1_POSE),
                 ElevatorCommands.triggerElevatorSetpoint(elevator, ElevatorSetpoint.CORAL_STATION)));
-        controller.FlyToClosestReefSide1().onTrue(
-            DriveCommands.pathfindToPoseSupplier(drive, () -> getClosestReefPose().plus(
-                new Transform2d(0, Units.inchesToMeters(-8.5), new Rotation2d()).inverse()).transformBy(FieldConstants.REEF_TRANSFORM_LEFT)));
-        controller.FlyToClosestReefSide2().onTrue(
-            DriveCommands.pathfindToPoseSupplier(drive, () -> getClosestReefPose().plus(
-                new Transform2d(0, Units.inchesToMeters(-8.5), new Rotation2d()).inverse()).transformBy(FieldConstants.REEF_TRANSFORM_RIGHT)));
+        // controller.FlyToClosestReefSide1().onTrue(
+            // DriveCommands.pathfindToPoseSupplier(drive, () -> getClosestReefPose().plus(
+                // new Transform2d(0, Units.inchesToMeters(-8.5), new Rotation2d()).inverse()).transformBy(FieldConstants.REEF_TRANSFORM_LEFT)));
+        // controller.FlyToClosestReefSide2().onTrue(
+            // DriveCommands.pathfindToPoseSupplier(drive, () -> getClosestReefPose().plus(
+                // new Transform2d(0, Units.inchesToMeters(-8.5), new Rotation2d()).inverse()).transformBy(FieldConstants.REEF_TRANSFORM_RIGHT)));
         // Switch to X pattern when X button is pressed
         // controller.stopXBtn().onTrue(Commands.runOnce(drive::stopWithX, drive));
         controller.stopXBtn().whileTrue(DriveCommands.pathfindToPose(drive, FieldConstants.RED_REEF_SIDE_2_POSE));
@@ -241,6 +242,11 @@ public class RobotContainer {
         coral_waiting_trigger.debounce(0.1).onTrue(MailboxCommands.feedCoral(mailbox));
     }
 
+    public void intializePathplannerAutoCommands(){
+        NamedCommands.registerCommand("waitfor_coral", Commands.waitUntil(mailbox::coralWaiting));
+        // NamedCommands.registerCommand("", null);
+    }
+
     public Command getAutonomousCommand() {
         return auto_chooser.get();
     }
@@ -250,20 +256,6 @@ public class RobotContainer {
             return;
         drive_simulation.setSimulationWorldPose(new Pose2d(2, 2, new Rotation2d()));
         SimulatedArena.getInstance().resetFieldForAuto();
-    }
-
-    public Pose2d getClosestReefPose() {
-        int closest_index = 0;
-        double closest_distance = Double.MAX_VALUE;
-        Pose2d[] pose_list = FieldConstants.REEF_SIDE_POSES();
-        for (int i = 0; i < pose_list.length; i++) {
-            double distance = drive.getPose().getTranslation().getDistance(pose_list[i].getTranslation());
-            if (distance < closest_distance) {
-                closest_distance = distance;
-                closest_index = i;
-            }
-        }
-        return pose_list[closest_index];
     }
 
     public void displaySimFieldToAdvantageScope() {

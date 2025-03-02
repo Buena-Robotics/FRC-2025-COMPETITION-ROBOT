@@ -72,4 +72,15 @@ public class FieldConstants {
                 BLUE_REEF_SIDE_6_POSE,
         };
     }
+
+    public static enum ReefBranchHeight {
+        L1,
+        L2,
+        L3,
+        L4
+    }
+    public static enum ReefBranchSide {
+        Left,
+        Right
+    }
 }

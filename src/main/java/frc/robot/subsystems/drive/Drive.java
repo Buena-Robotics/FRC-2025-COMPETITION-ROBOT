@@ -138,7 +138,7 @@ public class Drive extends SubsystemBase {
 
     private final Derivitave world_linear_jerk_x = new Derivitave(0.0);
     private final Derivitave world_linear_jerk_y = new Derivitave(0.0);
-    
+
     @AutoLogOutput(key = "Drive/BrakeModeEnabled")
     private boolean brake_mode_enabled = true;
 
@@ -381,12 +381,12 @@ public class Drive extends SubsystemBase {
     }
 
     /** Returns the maximum linear speed in meters per sec. */
-    public double getMaxLinearSpeedMetersPerSec() {
+    public static double getMaxLinearSpeedMetersPerSec() {
         return MAX_SPEED_METERS_PER_SECOND;
     }
 
     /** Returns the maximum angular speed in radians per sec. */
-    public double getMaxAngularSpeedRadPerSec() {
+    public static double getMaxAngularSpeedRadPerSec() {
         return MAX_SPEED_METERS_PER_SECOND / DRIVE_BASE_RADIUS;
     }
 
