@@ -16,10 +16,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Config;
 import frc.robot.FieldConstants;
+import frc.robot.Config.RobotMode;
 import frc.robot.FieldConstants.ReefBranchHeight;
 import frc.robot.FieldConstants.ReefBranchSide;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.Printf;
+import frc.robot.util.TunablePIDController;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -48,9 +50,15 @@ public class DriveCommands {
     private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
     private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
 
-    private final static PIDController x_controller = new PIDController(DRIVE_KP, DRIVE_KI, DRIVE_KD);
-    private final static PIDController y_controller = new PIDController(DRIVE_KP, DRIVE_KI, DRIVE_KD);
-    private final static PIDController angle_controller = new PIDController(ANGLE_KP, ANGLE_KI, ANGLE_KD);
+    private final static PIDController x_controller = Config.TUNING_PID_LOOPS ?
+        new TunablePIDController("DriveX", DRIVE_KP, DRIVE_KI, DRIVE_KD) :
+        new PIDController(DRIVE_KP, DRIVE_KI, DRIVE_KD);
+    private final static PIDController y_controller = Config.TUNING_PID_LOOPS ?
+        new TunablePIDController("DriveY", DRIVE_KP, DRIVE_KI, DRIVE_KD) :
+        new PIDController(DRIVE_KP, DRIVE_KI, DRIVE_KD);
+    private final static PIDController angle_controller = Config.TUNING_PID_LOOPS ?
+        new TunablePIDController("DriveAngle", ANGLE_KP, ANGLE_KI, ANGLE_KD) :
+        new PIDController(ANGLE_KP, ANGLE_KI, ANGLE_KD);
 
     static {
         x_controller.setIZone(Units.inchesToMeters(12));
@@ -92,6 +100,14 @@ public class DriveCommands {
         x_controller.reset();
         y_controller.reset();
         angle_controller.reset();
+    }
+
+    private static double calculatePID(final PIDController controller, final double measurement) {
+        return Config.ROBOT_MODE != RobotMode.SIM ? -controller.calculate(measurement) : controller.calculate(measurement);
+    }
+
+    private static double calculatePID(final PIDController controller, final double measurement, final double setpoint) {
+        return Config.ROBOT_MODE != RobotMode.SIM ? -controller.calculate(measurement, setpoint) : controller.calculate(measurement, setpoint);
     }
 
     public static double closestReefRotationSnapPoint(Rotation2d estimate_radians) {
@@ -188,7 +204,7 @@ public class DriveCommands {
             Logger.recordOutput("Automation/AssistRotation", new Pose2d(drive.getPose().getTranslation(), setpoint));
         }, drive).andThen(Commands.run(() -> {
             // Calculate angular speed
-            final double omega = angle_controller.calculate(drive.getRotation().getRadians());
+            final double omega = calculatePID(angle_controller, drive.getRotation().getRadians());
             System.out.printf("[%.2f : %.2f]\n", angle_controller.getSetpoint(), drive.getRotation().getRadians());
 
             runSpeeds(drive, x_supplier.getAsDouble(), y_supplier.getAsDouble(), omega, true);
@@ -198,7 +214,7 @@ public class DriveCommands {
     public static Command driveAssistJoystickDrive(final Drive drive, final DoubleSupplier x_supplier, final DoubleSupplier y_supplier) {
         return Commands.run(() -> {
             // Calculate angular speed
-            final double omega = angle_controller.calculate(drive.getRotation().getRadians());
+            final double omega = calculatePID(angle_controller, drive.getRotation().getRadians());
 
             runSpeeds(drive, x_supplier.getAsDouble(), y_supplier.getAsDouble(), omega, true);
         }, drive).until(() -> angle_controller.atSetpoint())
@@ -222,9 +238,8 @@ public class DriveCommands {
                     Math.atan2(relative_y, relative_x)));
 
             // Calculate angular speed
-            final double omega = angle_controller.calculate(
-                drive.getRotation().minus(new Rotation2d(
-                    Math.PI)).getRadians(),
+            final double omega = calculatePID(angle_controller,
+                drive.getRotation().minus(new Rotation2d(Math.PI)).getRadians(),
                 super_assist_robot_rotation);
 
             runSpeeds(drive, x_supplier.getAsDouble(), y_supplier.getAsDouble(), omega, true);
@@ -247,9 +262,9 @@ public class DriveCommands {
                 final Pose2d robot_pose = drive.getPose();
                 runSpeeds(
                     drive,
-                    x_controller.calculate(robot_pose.getX()),
-                    y_controller.calculate(robot_pose.getY()),
-                    angle_controller.calculate(robot_pose.getRotation().getRadians()),
+                    calculatePID(x_controller, robot_pose.getX()),
+                    calculatePID(y_controller, robot_pose.getY()),
+                    calculatePID(angle_controller, robot_pose.getRotation().getRadians()),
                     true);
             },
             drive)
@@ -283,7 +298,7 @@ public class DriveCommands {
         return Commands.run(
             () -> {
                 // Calculate angular speed
-                double omega = angle_controller.calculate(
+                double omega = calculatePID(angle_controller, 
                     drive.getRotation().getRadians(),
                     rotation_supplier.get().getRadians());
 

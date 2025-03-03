@@ -11,13 +11,14 @@ public final class Config {
     public static final RobotMode ROBOT_MODE = RobotBase.isReal() ? RobotMode.REAL : SIM_MODE;
 
     public static final RobotType ROBOT_TYPE = RobotType.ROBOT_2025_COMPETION;
+    public static final boolean TUNING_PID_LOOPS = false;
 
     public static final String DEFAULT_LOG_FOLDER = "/media/sda1/";
     public static final Map<RobotType, String> log_folders_map = Map.of(
         RobotType.ROBOT_2025_COMPETION, DEFAULT_LOG_FOLDER,
         RobotType.ROBOT_2025_PRACTICE, DEFAULT_LOG_FOLDER,
         RobotType.ROBOT_2025_SCHOOL, DEFAULT_LOG_FOLDER,
-        RobotType.SETUP_TUNING, DEFAULT_LOG_FOLDER);
+        RobotType.SETUP_SWERVE_TUNING, DEFAULT_LOG_FOLDER);
 
     public static final Alliance getRobotAlliance() {
         return DriverStation.getAlliance().orElse(Alliance.Blue);
@@ -28,6 +29,6 @@ public final class Config {
     }
 
     public static enum RobotType {
-        ROBOT_2025_COMPETION, ROBOT_2025_PRACTICE, ROBOT_2025_SCHOOL, SETUP_TUNING
+        ROBOT_2025_COMPETION, ROBOT_2025_PRACTICE, ROBOT_2025_SCHOOL, SETUP_SWERVE_TUNING
     }
 }

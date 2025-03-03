@@ -175,7 +175,7 @@ public class RobotContainer {
     private boolean elevator_setpoint_mode = false;
 
     private void configureBindings() {
-        if (Config.ROBOT_TYPE == RobotType.SETUP_TUNING) {
+        if (Config.ROBOT_TYPE == RobotType.SETUP_SWERVE_TUNING) {
             // drive.setDefaultCommand(DriveCommands.viewWheelForwardCharacterization(drive,
             // controller::getElevatorAxis));
             drive.setDefaultCommand(DriveCommands.viewWheelForwardDirection(drive, controller::getElevatorAxis));
