@@ -298,7 +298,7 @@ public class DriveCommands {
         return Commands.run(
             () -> {
                 // Calculate angular speed
-                double omega = calculatePID(angle_controller, 
+                double omega = calculatePID(angle_controller,
                     drive.getRotation().getRadians(),
                     rotation_supplier.get().getRadians());
 
