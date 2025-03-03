@@ -27,7 +27,7 @@ public class XboxControllerIO implements CommandControllerIO {
     }
 
     @Override public double getMailboxAxis() {
-        return controller.rightBumper().getAsBoolean() ? -0.5 : 0.0;
+        return 0.0;
     }
 
     @Override public double getClimbAxis() {
@@ -63,11 +63,11 @@ public class XboxControllerIO implements CommandControllerIO {
     }
 
     @Override public Trigger flipRobotBtn() {
-        return new Trigger(() -> false);
+        return controller.leftBumper();
     }
 
     @Override public Trigger flyToCoralStation1() {
-        return new Trigger(() -> false);
+        return controller.rightBumper();
     }
 
     @Override public Trigger flyToCoralStation2() {

@@ -23,6 +23,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Config.RobotMode;
 import frc.robot.Config.RobotType;
+import frc.robot.FieldConstants.ReefBranchHeight;
+import frc.robot.FieldConstants.ReefBranchSide;
 import frc.robot.commands.ClimbCommands;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
@@ -42,7 +44,6 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
 import frc.robot.subsystems.elevator.Elevator;
-import frc.robot.subsystems.elevator.Elevator.ElevatorSetpoint;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOReal;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
@@ -91,7 +92,8 @@ public class RobotContainer {
                     drive::addVisionMeasurement, drive::getPose,
                     new VisionIOPhoton(Cameras.cameras[0]),
                     new VisionIOPhoton(Cameras.cameras[1]),
-                    new VisionIOPhoton(Cameras.cameras[2]));
+                    new VisionIOPhoton(Cameras.cameras[2]),
+                    new VisionIOPhoton(Cameras.cameras[3]));
 
                 this.elevator = new Elevator(new ElevatorIOReal() {}, drive::getPose);
                 this.climb = new Climb(new ClimbIOReal() {});
@@ -115,9 +117,14 @@ public class RobotContainer {
                 // new VisionIOPhotonSim(Cameras.cameras[0]), new
                 // VisionIOPhotonSim(Cameras.cameras[1])
                 this.vision = new Vision(drive::addVisionMeasurement, drive::getPose,
-                    new VisionIOPhotonSim(Cameras.cameras[0], drive_simulation::getSimulatedDriveTrainPose),
-                    new VisionIOPhotonSim(Cameras.cameras[1], drive_simulation::getSimulatedDriveTrainPose),
-                    new VisionIOPhotonSim(Cameras.cameras[2], drive_simulation::getSimulatedDriveTrainPose));
+                    new VisionIOPhotonSim(Cameras.cameras[0],
+                        drive_simulation::getSimulatedDriveTrainPose),
+                    new VisionIOPhotonSim(Cameras.cameras[1],
+                        drive_simulation::getSimulatedDriveTrainPose),
+                    new VisionIOPhotonSim(Cameras.cameras[2],
+                        drive_simulation::getSimulatedDriveTrainPose),
+                    new VisionIOPhotonSim(Cameras.cameras[3],
+                        drive_simulation::getSimulatedDriveTrainPose));
 
                 this.elevator = new Elevator(new ElevatorIOSim(), drive::getPose);
                 this.climb = new Climb(new ClimbIOSim());
@@ -186,8 +193,7 @@ public class RobotContainer {
         controller.driveAssistBtn().whileTrue(DriveCommands.driveSuperAssistJoystickDrive(
             drive,
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
-            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis(),
-            () -> Config.ROBOT_MODE == RobotMode.SIM ? controller.fieldOrientedBtn().getAsBoolean() : !controller.fieldOrientedBtn().getAsBoolean()));
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis()));
 
         elevator.setDefaultCommand(ElevatorCommands.triggerElevatorHeightAndSetpoint(elevator,
             () -> elevator_setpoint_mode,
@@ -209,22 +215,22 @@ public class RobotContainer {
         controller.flipRobotBtn().onTrue(DriveCommands.flipRobot(
             drive,
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
-            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis(),
-            () -> !controller.fieldOrientedBtn().getAsBoolean()));
-        controller.flyToCoralStation1().onTrue(
-            Commands.parallel(
-                DriveCommands.pathfindToPose(drive, FieldConstants.BLUE_CORAL_STATION_2_POSE),
-                ElevatorCommands.triggerElevatorSetpoint(elevator, ElevatorSetpoint.CORAL_STATION)));
-        controller.flyToCoralStation2().onTrue(
-            Commands.parallel(
-                DriveCommands.pathfindToPose(drive, FieldConstants.BLUE_CORAL_STATION_1_POSE),
-                ElevatorCommands.triggerElevatorSetpoint(elevator, ElevatorSetpoint.CORAL_STATION)));
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis()));
+        controller.flyToCoralStation1().onTrue(DriveCommands.alignToClosestBranch(drive, () -> ReefBranchSide.Right, () -> ReefBranchHeight.L3));
+        // controller.flyToCoralStation2().onTrue(
+        // Commands.parallel(
+        // DriveCommands.pathfindToPose(drive,
+        // FieldConstants.BLUE_CORAL_STATION_1_POSE),
+        // ElevatorCommands.triggerElevatorSetpoint(elevator,
+        // ElevatorSetpoint.CORAL_STATION)));
         // controller.FlyToClosestReefSide1().onTrue(
-            // DriveCommands.pathfindToPoseSupplier(drive, () -> getClosestReefPose().plus(
-                // new Transform2d(0, Units.inchesToMeters(-8.5), new Rotation2d()).inverse()).transformBy(FieldConstants.REEF_TRANSFORM_LEFT)));
+        // DriveCommands.pathfindToPoseSupplier(drive, () -> getClosestReefPose().plus(
+        // new Transform2d(0, Units.inchesToMeters(-8.5), new
+        // Rotation2d()).inverse()).transformBy(FieldConstants.REEF_TRANSFORM_LEFT)));
         // controller.FlyToClosestReefSide2().onTrue(
-            // DriveCommands.pathfindToPoseSupplier(drive, () -> getClosestReefPose().plus(
-                // new Transform2d(0, Units.inchesToMeters(-8.5), new Rotation2d()).inverse()).transformBy(FieldConstants.REEF_TRANSFORM_RIGHT)));
+        // DriveCommands.pathfindToPoseSupplier(drive, () -> getClosestReefPose().plus(
+        // new Transform2d(0, Units.inchesToMeters(-8.5), new
+        // Rotation2d()).inverse()).transformBy(FieldConstants.REEF_TRANSFORM_RIGHT)));
         // Switch to X pattern when X button is pressed
         // controller.stopXBtn().onTrue(Commands.runOnce(drive::stopWithX, drive));
         controller.stopXBtn().whileTrue(DriveCommands.pathfindToPose(drive, FieldConstants.RED_REEF_SIDE_2_POSE));
@@ -242,7 +248,7 @@ public class RobotContainer {
         coral_waiting_trigger.debounce(0.1).onTrue(MailboxCommands.feedCoral(mailbox));
     }
 
-    public void intializePathplannerAutoCommands(){
+    public void intializePathplannerAutoCommands() {
         NamedCommands.registerCommand("waitfor_coral", Commands.waitUntil(mailbox::coralWaiting));
         // NamedCommands.registerCommand("", null);
     }

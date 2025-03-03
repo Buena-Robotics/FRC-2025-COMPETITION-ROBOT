@@ -1,21 +1,19 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Config;
 import frc.robot.FieldConstants;
 import frc.robot.FieldConstants.ReefBranchHeight;
@@ -32,42 +30,39 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 
 public class DriveCommands {
     private static final double DEADBAND = 0.10;
     private static final double DRIVE_KP = 1.0;
-    private static final double DRIVE_KI = 0.008;
-    private static final double DRIVE_KD = 0.2;
-    private static final double ANGLE_KP = 3.5;
-    private static final double ANGLE_KI = 0.01;
-    private static final double ANGLE_KD = 0.3;
-    private static final double DRIVE_MAX_ACCELERATION = 1.5;
-    private static final double ANGLE_MAX_ACCELERATION = 20.0;
+    private static final double DRIVE_KI = 2.0;
+    private static final double DRIVE_KD = 0.0;
+    private static final double ANGLE_KP = 0.8;
+    private static final double ANGLE_KI = 0.25;
+    private static final double ANGLE_KD = 0.02;
     private static final double FF_START_DELAY = 2.0; // Secs
     private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
     private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
     private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
 
-    private final static ProfiledPIDController x_controller = new ProfiledPIDController(
-        DRIVE_KP, DRIVE_KI, DRIVE_KD, new TrapezoidProfile.Constraints(Drive.getMaxLinearSpeedMetersPerSec(), DRIVE_MAX_ACCELERATION));
-    private final static ProfiledPIDController y_controller = new ProfiledPIDController(
-        DRIVE_KP, DRIVE_KI, DRIVE_KD, new TrapezoidProfile.Constraints(Drive.getMaxLinearSpeedMetersPerSec(), DRIVE_MAX_ACCELERATION));
-    private final static ProfiledPIDController angle_controller = new ProfiledPIDController(
-        ANGLE_KP, ANGLE_KI, ANGLE_KD, new TrapezoidProfile.Constraints(Drive.getMaxAngularSpeedRadPerSec(), ANGLE_MAX_ACCELERATION));
+    private final static PIDController x_controller = new PIDController(DRIVE_KP, DRIVE_KI, DRIVE_KD);
+    private final static PIDController y_controller = new PIDController(DRIVE_KP, DRIVE_KI, DRIVE_KD);
+    private final static PIDController angle_controller = new PIDController(ANGLE_KP, ANGLE_KI, ANGLE_KD);
 
     static {
-        x_controller.setIZone(Units.inchesToMeters(2));
-        x_controller.setIntegratorRange(0, Units.inchesToMeters(2));
-        x_controller.setTolerance(Units.inchesToMeters(0.25));
-        y_controller.setIZone(Units.inchesToMeters(2));
-        y_controller.setIntegratorRange(0, Units.inchesToMeters(2));
-        y_controller.setTolerance(Units.inchesToMeters(0.25));
+        x_controller.setIZone(Units.inchesToMeters(12));
+        x_controller.setIntegratorRange(0, Units.inchesToMeters(24));
+        x_controller.setTolerance(Units.inchesToMeters(1));
+        y_controller.setIZone(Units.inchesToMeters(12));
+        y_controller.setIntegratorRange(0, Units.inchesToMeters(24));
+        y_controller.setTolerance(Units.inchesToMeters(1));
 
         angle_controller.enableContinuousInput(-Math.PI, Math.PI);
-        angle_controller.setIZone(0.25);
-        angle_controller.setIntegratorRange(0, 0.25);
+        angle_controller.setIZone(Math.PI / 22.5);
+        angle_controller.setIntegratorRange(0, 0.1);
         angle_controller.setTolerance(Math.PI / 180.0);
     }
 
@@ -94,9 +89,9 @@ public class DriveCommands {
     };
 
     private static void resetControllers(final Drive drive) {
-        x_controller.reset(drive.getPose().getX());
-        y_controller.reset(drive.getPose().getY());
-        angle_controller.reset(drive.getRotation().getRadians(), drive.yawRate());
+        x_controller.reset();
+        y_controller.reset();
+        angle_controller.reset();
     }
 
     public static double closestReefRotationSnapPoint(Rotation2d estimate_radians) {
@@ -184,34 +179,38 @@ public class DriveCommands {
             }, drive);
     }
 
-    public static Command flipRobot(final Drive drive, final DoubleSupplier x_supplier, final DoubleSupplier y_supplier, final BooleanSupplier field_oriented_supplier) {
-        return Commands.deadline(new WaitCommand(1.5),
-            Commands.run(() -> {
-                // Calculate angular speed
-                final double omega = angle_controller.calculate(drive.getRotation().getRadians());
+    public static Command flipRobot(final Drive drive, final DoubleSupplier x_supplier, final DoubleSupplier y_supplier) {
+        return Commands.runOnce(() -> {
+            resetControllers(drive);
+            Rotation2d setpoint = drive.getRotation().minus(new Rotation2d(Math.PI));
+            System.out.println("UPDATED GOAL------------------------------------------------");
+            angle_controller.setSetpoint(setpoint.getRadians() % Math.PI);
+            Logger.recordOutput("Automation/AssistRotation", new Pose2d(drive.getPose().getTranslation(), setpoint));
+        }, drive).andThen(Commands.run(() -> {
+            // Calculate angular speed
+            final double omega = angle_controller.calculate(drive.getRotation().getRadians());
+            System.out.printf("[%.2f : %.2f]\n", angle_controller.getSetpoint(), drive.getRotation().getRadians());
 
-                runSpeeds(drive, x_supplier.getAsDouble(), y_supplier.getAsDouble(), omega, field_oriented_supplier.getAsBoolean());
-            }, drive).until(() -> angle_controller.atGoal()))
-            .beforeStarting(() -> {
-                resetControllers(drive);
-                angle_controller.setGoal(drive.getRotation().minus(new Rotation2d(Math.PI)).getRadians());
-            });
+            runSpeeds(drive, x_supplier.getAsDouble(), y_supplier.getAsDouble(), omega, true);
+        }, drive).until(() -> angle_controller.atSetpoint()));
     }
 
-    public static Command driveAssistJoystickDrive(final Drive drive, final DoubleSupplier x_supplier, final DoubleSupplier y_supplier, final BooleanSupplier field_oriented_supplier) {
+    public static Command driveAssistJoystickDrive(final Drive drive, final DoubleSupplier x_supplier, final DoubleSupplier y_supplier) {
         return Commands.run(() -> {
-                // Calculate angular speed
-                final double omega = angle_controller.calculate(drive.getRotation().getRadians());
+            // Calculate angular speed
+            final double omega = angle_controller.calculate(drive.getRotation().getRadians());
 
-                runSpeeds(drive, x_supplier.getAsDouble(), y_supplier.getAsDouble(), omega, field_oriented_supplier.getAsBoolean());
-            }, drive).until(() -> angle_controller.atGoal())
+            runSpeeds(drive, x_supplier.getAsDouble(), y_supplier.getAsDouble(), omega, true);
+        }, drive).until(() -> angle_controller.atSetpoint())
             .beforeStarting(() -> {
                 resetControllers(drive);
-                angle_controller.setGoal(new Rotation2d(closestRotationSnapPoint(drive.getRotation())).getRadians());
+                Rotation2d setpoint = new Rotation2d(closestRotationSnapPoint(drive.getRotation()));
+                angle_controller.setSetpoint(setpoint.getRadians() % (Math.PI));
+                Logger.recordOutput("Automation/AssistRotation", new Pose2d(drive.getPose().getTranslation(), setpoint));
             });
     }
 
-    public static Command driveSuperAssistJoystickDrive(final Drive drive, final DoubleSupplier x_supplier, final DoubleSupplier y_supplier, final BooleanSupplier field_oriented_supplier) {
+    public static Command driveSuperAssistJoystickDrive(final Drive drive, final DoubleSupplier x_supplier, final DoubleSupplier y_supplier) {
         return Commands.run(() -> {
             // Get linear velocity
             final Pose2d robot_pose = drive.getPose();
@@ -228,34 +227,33 @@ public class DriveCommands {
                     Math.PI)).getRadians(),
                 super_assist_robot_rotation);
 
-            runSpeeds(drive, x_supplier.getAsDouble(), y_supplier.getAsDouble(), omega, field_oriented_supplier.getAsBoolean());
+            runSpeeds(drive, x_supplier.getAsDouble(), y_supplier.getAsDouble(), omega, true);
         }, drive)
-        .beforeStarting(() -> {
-            resetControllers(drive);
-        });
+            .beforeStarting(() -> {
+                resetControllers(drive);
+            });
     }
 
     public static Command alignToClosestBranch(final Drive drive, final Supplier<ReefBranchSide> branch_side, final Supplier<ReefBranchHeight> branch_height) {
-        return Commands.run(
+        return Commands.runOnce(() -> {
+            final Pose2d closest_reef_pose = getClosestReefPose(drive);
+            Logger.recordOutput("Automation/ClosetReefPose", closest_reef_pose);
+            resetControllers(drive);
+            x_controller.setSetpoint(closest_reef_pose.getX());
+            y_controller.setSetpoint(closest_reef_pose.getY());
+            angle_controller.setSetpoint(closest_reef_pose.getRotation().getRadians());
+        }, drive).andThen(Commands.run(
             () -> {
                 final Pose2d robot_pose = drive.getPose();
-                final Pose2d closest_reef_pose = getClosestReefPose(drive);
                 runSpeeds(
                     drive,
-                    x_controller.calculate(robot_pose.getX(), closest_reef_pose.getX()),
-                    y_controller.calculate(robot_pose.getY(), closest_reef_pose.getY()),
-                    angle_controller.calculate(robot_pose.getRotation().getRadians(), closest_reef_pose.getRotation().getRadians()),
+                    x_controller.calculate(robot_pose.getX()),
+                    y_controller.calculate(robot_pose.getY()),
+                    angle_controller.calculate(robot_pose.getRotation().getRadians()),
                     true);
             },
             drive)
-            .until(() -> x_controller.atGoal() && y_controller.atGoal() && angle_controller.atGoal())
-            .beforeStarting(() -> {
-                final Pose2d closest_reef_pose = getClosestReefPose(drive);
-                resetControllers(drive);
-                x_controller.setGoal(closest_reef_pose.getX());
-                y_controller.setGoal(closest_reef_pose.getY());
-                angle_controller.setGoal(closest_reef_pose.getRotation().getRadians());
-            });
+            .until(() -> x_controller.atSetpoint() && y_controller.atSetpoint() && angle_controller.atSetpoint()));
     }
 
     /**
@@ -293,7 +291,7 @@ public class DriveCommands {
             },
             drive)
             // Reset PID controller when command starts
-            .beforeStarting(() -> angle_controller.reset(drive.getRotation().getRadians()));
+            .beforeStarting(() -> angle_controller.reset());
     }
 
     /**

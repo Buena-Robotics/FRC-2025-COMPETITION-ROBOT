@@ -134,7 +134,7 @@ public class Drive extends SubsystemBase {
                 new SwerveModulePosition()
         };
     private final SwerveDrivePoseEstimator pose_estimator = new SwerveDrivePoseEstimator(
-        kinematics, raw_gyro_rotation, last_module_positions, new Pose2d(3, 3, new Rotation2d()));
+        kinematics, raw_gyro_rotation, last_module_positions, new Pose2d(2, 2, new Rotation2d()));
 
     private final Derivitave world_linear_jerk_x = new Derivitave(0.0);
     private final Derivitave world_linear_jerk_y = new Derivitave(0.0);
@@ -284,7 +284,7 @@ public class Drive extends SubsystemBase {
         runVelocity(new ChassisSpeeds());
     }
 
-    public double yawRate(){
+    public double yawRate() {
         return gyro_inputs.yaw_velocity_radians_per_second;
     }
 
