@@ -15,6 +15,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -89,7 +90,7 @@ public class RobotContainer {
                     new ModuleIOSpark(3));
 
                 this.vision = new Vision(
-                    drive::addVisionMeasurement, drive::getPose,
+                    drive::addVisionMeasurement, drive,
                     new VisionIOPhoton(Cameras.cameras[0]),
                     new VisionIOPhoton(Cameras.cameras[1]),
                     new VisionIOPhoton(Cameras.cameras[2]),
@@ -116,7 +117,7 @@ public class RobotContainer {
                     new ModuleIOSim(drive_simulation.getModules()[3]));
                 // new VisionIOPhotonSim(Cameras.cameras[0]), new
                 // VisionIOPhotonSim(Cameras.cameras[1])
-                this.vision = new Vision(drive::addVisionMeasurement, drive::getPose,
+                this.vision = new Vision(drive::addVisionMeasurement, drive,
                     new VisionIOPhotonSim(Cameras.cameras[0],
                         drive_simulation::getSimulatedDriveTrainPose),
                     new VisionIOPhotonSim(Cameras.cameras[1],
@@ -133,7 +134,7 @@ public class RobotContainer {
             default:
                 // Replayed robot, disable IO implementations
                 this.drive = new Drive(new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
-                this.vision = new Vision(drive::addVisionMeasurement, drive::getPose, new VisionIO() {}, new VisionIO() {});
+                this.vision = new Vision(drive::addVisionMeasurement, drive, new VisionIO() {}, new VisionIO() {});
                 this.elevator = new Elevator(new ElevatorIO() {}, drive::getPose);
                 this.climb = new Climb(new ClimbIO() {});
                 this.mailbox = new Mailbox(new MailboxIO() {});
@@ -280,5 +281,14 @@ public class RobotContainer {
                 drive_simulation.getSimulatedDriveTrainPose().getTranslation(),
                 new Rotation2d(DriveCommands.closestRotationSnapPoint(drive_simulation.getSimulatedDriveTrainPose()
                     .getRotation()))));
+        Logger.recordOutput("FieldSimulation/OdometryToSimulatedTranslationError",
+            Units.metersToInches(drive
+                .getPose()
+                .getTranslation()
+                .getDistance(drive_simulation
+                    .getSimulatedDriveTrainPose()
+                    .getTranslation())));
+        Logger.recordOutput("FieldSimulation/OdometryToSimulatedRotationError", Math.abs(drive.getRotation().minus(drive_simulation.getSimulatedDriveTrainPose().getRotation()).getDegrees()));
+
     }
 }

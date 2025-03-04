@@ -9,7 +9,7 @@ import edu.wpi.first.math.util.Units;
 public class Cameras {
     public static final Camera[] cameras = {
             new Camera(
-                "Microsoft_LifeCam_HD-3000", // ORANGE PI
+                "Microsoft_LifeCam_HD-3000_0", // ORANGE PI
                 new Transform3d(
                     Units.inchesToMeters(-7), 0.0, Units.inchesToMeters(21),
                     new Rotation3d(0.0, 0.0, Units.degreesToRadians(180))),

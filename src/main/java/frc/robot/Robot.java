@@ -39,7 +39,6 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
-
 public class Robot extends LoggedRobot {
     private static final Map<Integer, String> GIT_DIRTY_MSG_MAP = Map.of(0, "All changes committed", 1, "Uncomitted changes");
 
@@ -57,7 +56,8 @@ public class Robot extends LoggedRobot {
     private final Alert low_battery_alert = new Alert("Battery voltage is very low, consider turning off the robot or replacing the battery.", AlertType.kWarning);
     private final Alert low_memory_alert = new Alert("Running out of memory, java program may crash soon", AlertType.kWarning);
 
-    // SerialPort ultrasonic = new SerialPort(9600, Port.kOnboard, 8, Parity.kNone, StopBits.kOne);
+    // SerialPort ultrasonic = new SerialPort(9600, Port.kOnboard, 8, Parity.kNone,
+    // StopBits.kOne);
     public Robot() {
         DriverStation.silenceJoystickConnectionWarning(true);
         // Record metadata
@@ -124,8 +124,10 @@ public class Robot extends LoggedRobot {
         // ultrasonic.enableTermination();
         // ultrasonic.reset();
     }
+
     // Rs232
     private RS232DistanceSensor distance_sensor = new RS232DistanceSensor();
+
     @Override public void robotPeriodic() {
         // Switch thread to high priority to improve loop timing
         Threads.setCurrentThreadPriority(true, 99);
@@ -166,7 +168,7 @@ public class Robot extends LoggedRobot {
     }
 
     @Override public void disabledInit() {
-        robot_container.resetSimulationField();
+        // robot_container.resetSimulationField();
     }
 
     @Override public void disabledPeriodic() {}

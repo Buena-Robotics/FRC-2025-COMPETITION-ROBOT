@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.FieldConstants;
+import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.SharedPhotonPoseEstimator.EstimatedRobotPose;
 import frc.robot.subsystems.vision.SharedPhotonPoseEstimator.PoseStrategy;
 import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
@@ -19,7 +20,6 @@ import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -33,23 +33,23 @@ public class Vision extends SubsystemBase {
 
     // Standard deviation baselines, for 1 meter distance and 1 tag
     // (Adjusted automatically based on distance and # of tags)
-    public static double linear_std_dev_baseline_meters = 0.5; // Meters
+    public static double linear_std_dev_baseline_meters = 0.25; // Meters
     public static double angular_std_dev_baseline_radians = Math.PI / 6.0; // Radians
 
     // Multipliers to apply for MegaTag 2 observations
     public static double linear_std_dev_megatag_2_factor = 0.5; // More stable than full 3D solve
     public static double angular_std_dev_megatag_2_factor = Double.POSITIVE_INFINITY; // No rotation data available
 
-    private final Supplier<Pose2d> robot_pose_supplier;
+    private final Drive drive;
     private final VisionConsumer consumer;
     private final VisionIO[] io;
     private final VisionIOInputs[] inputs;
     private final SharedPhotonPoseEstimator[] estimators;
     private final Alert[] disconnected_alerts;
 
-    public Vision(VisionConsumer consumer, Supplier<Pose2d> robot_pose_supplier, VisionIO... io) {
+    public Vision(VisionConsumer consumer, Drive drive, VisionIO... io) {
         this.consumer = consumer;
-        this.robot_pose_supplier = robot_pose_supplier;
+        this.drive = drive;
         this.io = io;
 
         // Initialize inputs
@@ -67,23 +67,23 @@ public class Vision extends SubsystemBase {
     }
 
     private Optional<EstimatedRobotPose> estimate(final SharedPhotonPoseEstimator estimator, final PhotonPipelineResult result) {
-        if(result.multitagResult.isPresent())
+        if (result.multitagResult.isPresent())
             return estimator.update(result, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
-        if(DriverStation.isDisabled()){
-            return estimator.update(result, PoseStrategy.AVERAGE_BEST_TARGETS);
+        if (!DriverStation.isEnabled() || Math.abs(drive.yawRate()) >= 0.04) {
+            return estimator.update(result, PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT);
         }
         return estimator.update(result, PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
     }
 
     @Override public void periodic() {
-        SharedPhotonPoseEstimator.addHeadingData(Timer.getTimestamp(), robot_pose_supplier.get().getRotation());
+        SharedPhotonPoseEstimator.addHeadingData(Timer.getTimestamp(), drive.getPose().getRotation());
         List<EstimatedRobotPose> estimated_robot_poses = new LinkedList<>();
         for (int i = 0; i < io.length; i++) {
             io[i].updateInputs(inputs[i]);
             Logger.processInputs(cameraToKey(i), inputs[i]);
-            for(PhotonPipelineResult photon_result: inputs[i].photon_results){
+            for (PhotonPipelineResult photon_result : inputs[i].photon_results) {
                 Optional<EstimatedRobotPose> potential_estimate = estimate(estimators[i], photon_result);
-                if(potential_estimate.isPresent())
+                if (potential_estimate.isPresent())
                     estimated_robot_poses.add(potential_estimate.get());
             }
         }
@@ -106,15 +106,14 @@ public class Vision extends SubsystemBase {
             List<Pose3d> robot_poses_rejected = new LinkedList<>();
 
             // Add tag poses
-            for (PhotonPipelineResult photon_result: inputs[i].photon_results) {
+            for (PhotonPipelineResult photon_result : inputs[i].photon_results) {
                 tag_poses.addAll(
                     photon_result
-                    .getTargets()
-                    .stream()
-                    .map((PhotonTrackedTarget target) -> {
-                        return FieldConstants.APRILTAG_LAYOUT.getTagPose(target.fiducialId).orElseGet(() -> new Pose3d());
-                    }).toList()
-                );
+                        .getTargets()
+                        .stream()
+                        .map((PhotonTrackedTarget target) -> {
+                            return FieldConstants.APRILTAG_LAYOUT.getTagPose(target.fiducialId).orElseGet(() -> new Pose3d());
+                        }).toList());
             }
 
             // Loop over pose observations
@@ -126,8 +125,9 @@ public class Vision extends SubsystemBase {
                     || Math.abs(observation.estimatedPose.getZ()) > max_z_error // Must have realistic Z coordinate
 
                     // Must be within the field boundaries
-                    || observation.estimatedPose.getX() < 0.0 || observation.estimatedPose.getX() > FieldConstants.APRILTAG_LAYOUT.getFieldLength() || observation.estimatedPose.getY() < 0.0 || observation.estimatedPose.getY() > FieldConstants.APRILTAG_LAYOUT
-                        .getFieldWidth()
+                    || observation.estimatedPose.getX() < 0.0 || observation.estimatedPose.getX() > FieldConstants.APRILTAG_LAYOUT.getFieldLength() || observation.estimatedPose.getY() < 0.0 || observation.estimatedPose
+                        .getY() > FieldConstants.APRILTAG_LAYOUT
+                            .getFieldWidth()
 
                     || Math.abs(observation.estimatedPose.getRotation().getX()) > max_pitch_roll_error_radians || Math.abs(observation.estimatedPose.getRotation().getY()) > max_pitch_roll_error_radians;
 
@@ -147,13 +147,13 @@ public class Vision extends SubsystemBase {
                 var average_tag_distance = observation.targetsUsed
                     .stream()
                     .map((PhotonTrackedTarget target) -> target.bestCameraToTarget.getTranslation().getNorm())
-                    .reduce(0.0, Double::sum)
-                        / tag_count;
+                    .reduce(0.0, Double::sum) / tag_count;
 
                 // Calculate standard deviations
                 double std_dev_factor = Math.pow(average_tag_distance, 2.0) / tag_count;
-                double linear_std_dev =linear_std_dev_baseline_meters * std_dev_factor;
-                double angular_std_dev = angular_std_dev_baseline_radians * std_dev_factor * (DriverStation.isEnabled() ? 30 : 1);
+                double linear_std_dev = linear_std_dev_baseline_meters * std_dev_factor;
+                double angular_std_dev = angular_std_dev_baseline_radians * std_dev_factor * (DriverStation.isEnabled() ? 10 : 1);
+
                 if (observation.strategy == PoseStrategy.PNP_DISTANCE_TRIG_SOLVE || observation.strategy == PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR || observation.strategy == PoseStrategy.CONSTRAINED_SOLVEPNP) {
                     linear_std_dev *= linear_std_dev_megatag_2_factor;
                     angular_std_dev *= angular_std_dev_megatag_2_factor;
@@ -196,12 +196,12 @@ public class Vision extends SubsystemBase {
             all_robot_poses_rejected.toArray(new Pose3d[all_robot_poses_rejected.size()]));
     }
 
-    private String cameraToKey(int camera_index){
+    private String cameraToKey(int camera_index) {
         return "Vision/Camera" + Integer.toString(camera_index);
     }
 
     public Pose3d getCameraWorldPose(int camera_index) {
-        return new Pose3d(robot_pose_supplier.get()).transformBy(Cameras.cameras[camera_index].robot_to_camera());
+        return new Pose3d(drive.getPose()).transformBy(Cameras.cameras[camera_index].robot_to_camera());
     }
 
     @FunctionalInterface public static interface VisionConsumer {
