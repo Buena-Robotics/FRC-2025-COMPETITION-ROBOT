@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -16,6 +17,8 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.SharedPhotonPoseEstimator.EstimatedRobotPose;
 import frc.robot.subsystems.vision.SharedPhotonPoseEstimator.PoseStrategy;
 import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
+
+import static edu.wpi.first.units.Units.*;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -39,6 +42,9 @@ public class Vision extends SubsystemBase {
     // Multipliers to apply for MegaTag 2 observations
     public static double linear_std_dev_megatag_2_factor = 0.5; // More stable than full 3D solve
     public static double angular_std_dev_megatag_2_factor = Double.POSITIVE_INFINITY; // No rotation data available
+
+    private final Distance SINGLE_TO_MULTI_TAG_POSE_DELTA = Meters.of(0.5);
+    private final Distance MAX_TAG_DISTANCE = Meters.of(5.0);
 
     private final Drive drive;
     private final VisionConsumer consumer;
@@ -66,11 +72,44 @@ public class Vision extends SubsystemBase {
         }
     }
 
+    private Optional<EstimatedRobotPose> singleTagEstimate(final SharedPhotonPoseEstimator estimator, final Optional<EstimatedRobotPose> opt_estimate_pose) {
+        if (opt_estimate_pose.isEmpty())
+            return Optional.empty();
+        // Make sure the measurement is valid
+        EstimatedRobotPose estimate_pose = opt_estimate_pose.get();
+
+        // Get distance to closest tag
+        var closestTagDistance = Meters.of(100.0);
+        // Loop through all targets used for this estimate
+        for (var target : estimate_pose.targetsUsed) {
+            // Get tag
+            var tag = FieldConstants.APRILTAG_LAYOUT.getTagPose(target.getFiducialId());
+            // Get distance to tag
+            var tagDistance = Meters.of(target.getBestCameraToTarget().getTranslation().getNorm());
+            // Get pose estimate based on just this tag
+            var singleTargetPose = tag.get()
+                .transformBy(target.getBestCameraToTarget().inverse())
+                .transformBy(estimator.getRobotToCameraTransform().inverse());
+            // Ignore if single tag pose estimate is too far from multi-tag estimate
+            if (estimate_pose.estimatedPose.relativeTo(singleTargetPose).getTranslation().getNorm() > SINGLE_TO_MULTI_TAG_POSE_DELTA.in(Meters))
+                return Optional.empty();
+            // Check if tag distance is closest yet
+            if (tagDistance.lte(closestTagDistance))
+                closestTagDistance = tagDistance;
+        }
+
+        // Ignore if tags are too far
+        if (closestTagDistance.gte(MAX_TAG_DISTANCE))
+            return Optional.empty();
+
+        return opt_estimate_pose;
+    }
+
     private Optional<EstimatedRobotPose> estimate(final SharedPhotonPoseEstimator estimator, final PhotonPipelineResult result) {
         if (result.multitagResult.isPresent())
             return estimator.update(result, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
         if (!DriverStation.isEnabled() || Math.abs(drive.yawRate()) >= 0.04) {
-            return estimator.update(result, PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT);
+            return singleTagEstimate(estimator, estimator.update(result, PoseStrategy.AVERAGE_BEST_TARGETS));
         }
         return estimator.update(result, PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
     }
@@ -154,7 +193,7 @@ public class Vision extends SubsystemBase {
                 double linear_std_dev = linear_std_dev_baseline_meters * std_dev_factor;
                 double angular_std_dev = angular_std_dev_baseline_radians * std_dev_factor * (DriverStation.isEnabled() ? 10 : 1);
 
-                if (observation.strategy == PoseStrategy.PNP_DISTANCE_TRIG_SOLVE || observation.strategy == PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR || observation.strategy == PoseStrategy.CONSTRAINED_SOLVEPNP) {
+                if (observation.strategy == PoseStrategy.PNP_DISTANCE_TRIG_SOLVE || observation.strategy == PoseStrategy.CONSTRAINED_SOLVEPNP) {
                     linear_std_dev *= linear_std_dev_megatag_2_factor;
                     angular_std_dev *= angular_std_dev_megatag_2_factor;
                 }
