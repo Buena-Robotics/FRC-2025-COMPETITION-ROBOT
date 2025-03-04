@@ -47,7 +47,6 @@ public class ElevatorIOSim implements ElevatorIO {
         inputs.hinge_applied_volts = 0.0;
         inputs.hinge_current_amps = 0.0;
         inputs.hinge_connected = true;
-        inputs.hinge_absolute_encoder_connected = true;
     }
 
     @Override public void setLiftOpenLoop(final double output) {

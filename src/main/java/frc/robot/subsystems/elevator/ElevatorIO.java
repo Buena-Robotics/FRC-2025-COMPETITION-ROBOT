@@ -11,7 +11,6 @@ public interface ElevatorIO {
         public double lift_current_amps = 0.0;
 
         public boolean hinge_connected = true;
-        public boolean hinge_absolute_encoder_connected = true;
         public double hinge_position_radians = 0.0;
         public double hinge_absolute_position_radians = 0.0;
         public double hinge_velocity_radians_per_second = 0.0;

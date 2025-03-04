@@ -23,8 +23,8 @@ public class ElevatorIOReal implements ElevatorIO {
     // Constants when lift is empty
     private static final double LIFT_EMPTY_P = 0.4;
     private static final double LIFT_EMPTY_D = 0.025;
-    private static final double HINGE_P = 0.08;
-    private static final double HINGE_D = 0.05;
+    private static final double HINGE_P = 0.1;
+    private static final double HINGE_D = 0.005;
 
     private static final double LIFT_CLAMP_MIN_POSITION = 0.25;
 
@@ -80,7 +80,9 @@ public class ElevatorIOReal implements ElevatorIO {
             .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
             .positionWrappingEnabled(true)
             .positionWrappingInputRange(0.0, Math.PI * 2.0)
-            .pidf(HINGE_P, 0.0, HINGE_D, 0.0);
+            .pidf(HINGE_P, 0.005, HINGE_D, 0.0)
+            .iMaxAccum(0.008)
+            .iZone(0.22);
         SparkUtil.configureSparkMax(this.hinge_motor, hinge_config);
         SparkUtil.setPosition(this.hinge_motor, this.hinge_encoder, 0.0);
     }
@@ -129,7 +131,7 @@ public class ElevatorIOReal implements ElevatorIO {
     }
 
     @Override public void setHingeAngle(final double radians) {
-        final double updated_radians = radians <= 0.05 ? 0.05 : radians;
+        final double updated_radians = radians <= 0.02 ? 0.02 : radians;
         Logger.recordOutput("Elevator/HingeSetpoint", updated_radians);
         hinge_controller.setReference(updated_radians, ControlType.kPosition);
     }
