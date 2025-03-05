@@ -81,4 +81,16 @@ public class XboxControllerIO implements CommandControllerIO {
     @Override public Trigger FlyToClosestReefSide2() {
         return controller.start();
     }
+
+    @Override public Trigger algaeRelease() {
+        throw new UnsupportedOperationException("Unimplemented method 'algaeRelease'");
+    }
+
+    @Override public Trigger algaeHigh() {
+        throw new UnsupportedOperationException("Unimplemented method 'algaeHigh'");
+    }
+
+    @Override public Trigger algaeLow() {
+        throw new UnsupportedOperationException("Unimplemented method 'algaeLow'");
+    }
 }

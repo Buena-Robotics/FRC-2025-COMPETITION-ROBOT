@@ -20,6 +20,8 @@ import frc.robot.Config.RobotMode;
 import frc.robot.FieldConstants.ReefBranchHeight;
 import frc.robot.FieldConstants.ReefBranchSide;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.Elevator.ElevatorSetpoint;
 import frc.robot.util.Printf;
 import frc.robot.util.TunablePIDController;
 
@@ -39,12 +41,12 @@ import com.pathplanner.lib.path.PathConstraints;
 
 public class DriveCommands {
     private static final double DEADBAND = 0.10;
-    private static final double DRIVE_KP = 1.0;
-    private static final double DRIVE_KI = 2.0;
-    private static final double DRIVE_KD = 0.0;
-    private static final double ANGLE_KP = 0.8;
-    private static final double ANGLE_KI = 0.25;
-    private static final double ANGLE_KD = 0.02;
+    private static final double DRIVE_KP = 0.32;
+    private static final double DRIVE_KI = 0.0;
+    private static final double DRIVE_KD = 0.05;
+    private static final double ANGLE_KP = 0.3;
+    private static final double ANGLE_KI = 0.02;
+    private static final double ANGLE_KD = 0.04;
     private static final double FF_START_DELAY = 2.0; // Secs
     private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
     private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
@@ -61,11 +63,11 @@ public class DriveCommands {
         new PIDController(ANGLE_KP, ANGLE_KI, ANGLE_KD);
 
     static {
-        x_controller.setIZone(Units.inchesToMeters(12));
-        x_controller.setIntegratorRange(0, Units.inchesToMeters(24));
-        x_controller.setTolerance(Units.inchesToMeters(1));
-        y_controller.setIZone(Units.inchesToMeters(12));
-        y_controller.setIntegratorRange(0, Units.inchesToMeters(24));
+        // x_controller.setIZone(Units.inchesToMeters(12));
+        // x_controller.setIntegratorRange(0, Units.inchesToMeters(24));
+        // x_controller.setTolerance(Units.inchesToMeters(1));
+        // y_controller.setIZone(Units.inchesToMeters(12));
+        // y_controller.setIntegratorRange(0, Units.inchesToMeters(24));
         y_controller.setTolerance(Units.inchesToMeters(1));
 
         angle_controller.enableContinuousInput(-Math.PI, Math.PI);
@@ -166,6 +168,22 @@ public class DriveCommands {
             .getTranslation();
     }
 
+    private static void runSpeedsRaw(final Drive drive, final double x_in, final double y_in, final double omega_in, final boolean field_oriented) {
+        // Convert to field relative speeds & send command
+        final ChassisSpeeds speeds = new ChassisSpeeds(
+            x_in,
+            y_in,
+            omega_in * Drive.getMaxAngularSpeedRadPerSec());
+
+        if (field_oriented) {
+            final boolean is_flipped = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
+            drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
+                speeds,
+                is_flipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
+        } else {
+            drive.runVelocity(speeds);
+        }
+    }
     private static void runSpeeds(final Drive drive, final double x_in, final double y_in, final double omega_in, final boolean field_oriented) {
         // Get linear velocity
         final Translation2d linear_velocity = getLinearVelocityFromJoysticks(x_in, y_in);
@@ -247,9 +265,10 @@ public class DriveCommands {
             });
     }
 
-    public static Command alignToClosestBranch(final Drive drive, final Supplier<ReefBranchSide> branch_side, final Supplier<ReefBranchHeight> branch_height) {
+    public static Command alignToClosestBranch(final Drive drive, final Elevator elevator, ReefBranchSide branch_side, final Supplier<ReefBranchHeight> branch_height) {
         return Commands.runOnce(() -> {
-            final Pose2d closest_reef_pose = getClosestReefPose(drive);
+            Pose2d closest_reef_pose = getClosestReefPose(drive);
+            closest_reef_pose = closest_reef_pose.plus(new Transform2d(0, Units.inchesToMeters((branch_side == ReefBranchSide.Right ? -6.5 : 6.5) + 6.5), new Rotation2d()));
             Logger.recordOutput("Automation/ClosetReefPose", closest_reef_pose);
             resetControllers(drive);
             x_controller.setSetpoint(closest_reef_pose.getX());
@@ -258,14 +277,15 @@ public class DriveCommands {
         }, drive).andThen(Commands.run(
             () -> {
                 final Pose2d robot_pose = drive.getPose();
-                runSpeeds(
+                runSpeedsRaw(
                     drive,
                     calculatePID(x_controller, robot_pose.getX()),
                     calculatePID(y_controller, robot_pose.getY()),
                     calculatePID(angle_controller, robot_pose.getRotation().getRadians()),
                     true);
+                elevator.runLiftSetpoint(branch_height.get() == ReefBranchHeight.L2 ? ElevatorSetpoint.L2.getValue() : ElevatorSetpoint.L3.getValue());
             },
-            drive)
+            drive, elevator)
             .until(() -> x_controller.atSetpoint() && y_controller.atSetpoint() && angle_controller.atSetpoint()));
     }
 
@@ -283,6 +303,12 @@ public class DriveCommands {
                 runSpeeds(drive, x_supplier.getAsDouble(), y_supplier.getAsDouble(), omega, field_oriented_supplier.getAsBoolean());
             },
             drive);
+    }
+
+    public static Command driveDirection(final Drive drive, final Rotation2d direction){
+        return Commands.run(() -> {
+            runSpeeds(drive, direction.getCos() / 3.0, direction.getSin() / 3.0, 0.0, false);
+        }, drive);
     }
 
     /**

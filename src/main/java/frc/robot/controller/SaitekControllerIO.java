@@ -82,4 +82,16 @@ public class SaitekControllerIO implements CommandControllerIO {
     @Override public Trigger FlyToClosestReefSide2() {
         return controller.getTrigger(Button.T4);
     }
+
+    @Override public Trigger algaeRelease() {
+        return new Trigger(() -> false);
+    }
+
+    @Override public Trigger algaeHigh() {
+        return controller.getTrigger(Button.RESET);
+    }
+
+    @Override public Trigger algaeLow() {
+        return controller.getTrigger(Button.START_STOP);
+    }
 }

@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.wpilibj.Timer;
@@ -15,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.Elevator.ElevatorSetpoint;
+import frc.robot.subsystems.elevator.Elevator.HingeSetpoint;
 import frc.robot.util.Utils;
 
 public class ElevatorCommands {
@@ -73,11 +75,31 @@ public class ElevatorCommands {
             }, elevator);
     }
 
-    public static Command snatchAlgae(final Elevator elevator){
-        return Commands.run(() -> {
-            // elevator.
-        }, elevator).until(() -> Utils.epsilonOf(ElevatorSetpoint.ALGAE.getValue(),elevator.getLiftPositionInches()));
+    private static boolean isLiftAtSetpoint(final Elevator elevator, final ElevatorSetpoint setpoint){
+        return Utils.epsilonOf(elevator.getLiftPositionInches(), setpoint.getValue(), 0.5);
     }
+    private static boolean isHingeAtSetpoint(final Elevator elevator, final HingeSetpoint setpoint){
+        return Utils.epsilonOf(elevator.getHingePositionRadians(), setpoint.getValue(), 0.08);
+    }
+    public static Command grabAlgae(final Elevator elevator, final Supplier<ElevatorSetpoint> algae_height){
+        return Commands.run(() -> {
+            elevator.runLiftSetpoint(ElevatorSetpoint.BOTTOM.getValue());
+            elevator.runHingeSetpoint(HingeSetpoint.ALGAE.getValue());
+        }, elevator)
+            .until(() -> isLiftAtSetpoint(elevator, ElevatorSetpoint.BOTTOM) && isHingeAtSetpoint(elevator, HingeSetpoint.ALGAE))
+        .andThen(new WaitCommand(1.0))
+        .andThen(Commands.run(() -> {
+            elevator.runLiftSetpoint(algae_height.get().getValue());
+        }, elevator)
+            .until(() -> isLiftAtSetpoint(elevator, algae_height.get()))
+        ).andThen(new WaitCommand(5.0))
+        .andThen(Commands.run(() -> {
+            elevator.runLiftSetpoint(ElevatorSetpoint.BOTTOM.getValue());
+        }, elevator)
+            .until(() -> isLiftAtSetpoint(elevator, ElevatorSetpoint.BOTTOM))
+        );
+    }
+
     public static Command releaseAlgae(final Elevator elevator){
         return Commands.run(() -> {}, elevator);
     }

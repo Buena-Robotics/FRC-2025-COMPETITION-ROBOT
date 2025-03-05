@@ -16,7 +16,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -26,6 +25,7 @@ import frc.robot.Config.RobotMode;
 import frc.robot.Config.RobotType;
 import frc.robot.FieldConstants.ReefBranchHeight;
 import frc.robot.FieldConstants.ReefBranchSide;
+import frc.robot.commands.AutoCommands;
 import frc.robot.commands.ClimbCommands;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
@@ -48,6 +48,7 @@ import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOReal;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
+import frc.robot.subsystems.elevator.Elevator.ElevatorSetpoint;
 import frc.robot.subsystems.mailbox.Mailbox;
 import frc.robot.subsystems.mailbox.MailboxIO;
 import frc.robot.subsystems.mailbox.MailboxIOReal;
@@ -93,8 +94,7 @@ public class RobotContainer {
                     drive::addVisionMeasurement, drive,
                     new VisionIOPhoton(Cameras.cameras[0]),
                     new VisionIOPhoton(Cameras.cameras[1]),
-                    new VisionIOPhoton(Cameras.cameras[2]),
-                    new VisionIOPhoton(Cameras.cameras[3]));
+                    new VisionIOPhoton(Cameras.cameras[2]));
 
                 this.elevator = new Elevator(new ElevatorIOReal() {}, drive::getPose);
                 this.climb = new Climb(new ClimbIOReal() {});
@@ -123,9 +123,8 @@ public class RobotContainer {
                     new VisionIOPhotonSim(Cameras.cameras[1],
                         drive_simulation::getSimulatedDriveTrainPose),
                     new VisionIOPhotonSim(Cameras.cameras[2],
-                        drive_simulation::getSimulatedDriveTrainPose),
-                    new VisionIOPhotonSim(Cameras.cameras[3],
-                        drive_simulation::getSimulatedDriveTrainPose));
+                        drive_simulation::getSimulatedDriveTrainPose)
+                        );
 
                 this.elevator = new Elevator(new ElevatorIOSim(), drive::getPose);
                 this.climb = new Climb(new ClimbIOSim());
@@ -134,7 +133,7 @@ public class RobotContainer {
             default:
                 // Replayed robot, disable IO implementations
                 this.drive = new Drive(new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
-                this.vision = new Vision(drive::addVisionMeasurement, drive, new VisionIO() {}, new VisionIO() {});
+                this.vision = new Vision(drive::addVisionMeasurement, drive, new VisionIO() {}, new VisionIO() {}, new VisionIO() {});
                 this.elevator = new Elevator(new ElevatorIO() {}, drive::getPose);
                 this.climb = new Climb(new ClimbIO() {});
                 this.mailbox = new Mailbox(new MailboxIO() {});
@@ -147,8 +146,9 @@ public class RobotContainer {
 
         // Set up auto routines
         auto_chooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+        auto_chooser.addOption("Leave Community", AutoCommands.leaveCommunity(drive));
 
-        if (!DriverStation.isFMSAttached()) {
+        if (Config.TUNING_PID_LOOPS) {
             auto_chooser.addOption("Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
             auto_chooser.addOption("Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
             auto_chooser.addOption("Drive SysId (Quasistatic Forward)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
@@ -204,6 +204,12 @@ public class RobotContainer {
         climb.setDefaultCommand(ClimbCommands.triggerClimbSpeed(climb, () -> controller.getClimbAxis()));
         mailbox.setDefaultCommand(MailboxCommands.triggerMailboxSpeed(mailbox, () -> controller.getMailboxAxis()));
 
+        controller.algaeLow().onTrue(ElevatorCommands.grabAlgae(elevator, () -> ElevatorSetpoint.ALGAE_LOW));
+        controller.algaeHigh().onTrue(ElevatorCommands.grabAlgae(elevator, () -> ElevatorSetpoint.TOP));
+        // controller.algaeRelease().onTrue(ElevatorCommands.grabAlgae(elevator, () -> ElevatorSetpoint.ALGAE_LOW));
+
+
+
         // Lock to 0° when A button is held
         // controller
         // .lockGyroBtn()
@@ -217,7 +223,8 @@ public class RobotContainer {
             drive,
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis()));
-        controller.flyToCoralStation1().onTrue(DriveCommands.alignToClosestBranch(drive, () -> ReefBranchSide.Right, () -> ReefBranchHeight.L3));
+        controller.flyToCoralStation1().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L2));
+        controller.flyToCoralStation2().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Left, () -> ReefBranchHeight.L2));
         // controller.flyToCoralStation2().onTrue(
         // Commands.parallel(
         // DriveCommands.pathfindToPose(drive,

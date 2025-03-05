@@ -17,6 +17,12 @@ public interface CommandControllerIO {
 
     public double getHingeAxis();
 
+    public Trigger algaeRelease();
+
+    public Trigger algaeHigh();
+
+    public Trigger algaeLow();
+
     public Trigger fieldOrientedBtn();
 
     public Trigger driveAssistBtn();

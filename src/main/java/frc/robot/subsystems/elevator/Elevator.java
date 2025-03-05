@@ -105,6 +105,9 @@ public class Elevator extends SubsystemBase {
     public double getLiftPositionInches() {
         return inputs.lift_position_inches;
     }
+    public double getHingePositionRadians() {
+        return inputs.hinge_absolute_position_radians;
+    }
 
     public void runLiftSetpoint(final double lift_position_inches) {
         io.setLiftPosition(lift_position_inches);
@@ -116,7 +119,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public static enum ElevatorSetpoint {
-        BOTTOM(0.0), CORAL_STATION(2.36), ALGAE(0.0), L2(4.195), BARGE(5.505), L3(Elevator.ELEVATOR_MAX_HEIGHT_INCHES), TOP(Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
+        BOTTOM(0.0), CORAL_STATION(2.36), ALGAE_LOW(9.7), L2(4.195), BARGE(5.505), L3(Elevator.ELEVATOR_MAX_HEIGHT_INCHES), TOP(Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
 
         private double setpoint_inches = 0.0;
 
@@ -130,7 +133,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public static enum HingeSetpoint {
-        TOP(0.0), ALGAE(0.0), RELEASE_ALGAE(0.0);
+        TOP(0.0), ALGAE(1.45), RELEASE_ALGAE(2.63);
 
         private double setpoint_radians = 0.0;
 

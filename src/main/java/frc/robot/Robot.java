@@ -21,7 +21,6 @@ import frc.robot.Config.RobotType;
 import frc.robot.util.BatteryTracker;
 import frc.robot.util.CanTracker;
 import frc.robot.util.MemTracker;
-import frc.robot.util.RS232DistanceSensor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -125,17 +124,12 @@ public class Robot extends LoggedRobot {
         // ultrasonic.reset();
     }
 
-    // Rs232
-    private RS232DistanceSensor distance_sensor = new RS232DistanceSensor();
-
     @Override public void robotPeriodic() {
         // Switch thread to high priority to improve loop timing
         Threads.setCurrentThreadPriority(true, 99);
 
         CommandScheduler.getInstance().run();
         // System.out.println(ultrasonic.readString());
-        distance_sensor.periodic();
-        Logger.recordOutput("Ultrasonic", distance_sensor.getDistance());
 
         // Check logging fault
         log_reciever_queue_alert.set(Logger.getReceiverQueueFault());
