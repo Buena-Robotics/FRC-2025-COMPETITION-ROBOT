@@ -106,6 +106,8 @@ public class Vision extends SubsystemBase {
     }
 
     private Optional<EstimatedRobotPose> estimate(final SharedPhotonPoseEstimator estimator, final PhotonPipelineResult result) {
+        if (!result.hasTargets())
+            return Optional.empty();
         if (result.multitagResult.isPresent())
             return estimator.update(result, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
         if (!DriverStation.isEnabled() || Math.abs(drive.yawRate()) >= 0.04) {

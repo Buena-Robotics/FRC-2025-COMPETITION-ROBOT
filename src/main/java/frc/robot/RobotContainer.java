@@ -98,7 +98,7 @@ public class RobotContainer {
 
                 this.elevator = new Elevator(new ElevatorIOReal() {}, drive::getPose);
                 this.climb = new Climb(new ClimbIOReal() {});
-                this.mailbox = new Mailbox(new MailboxIOReal() {});
+                this.mailbox = new Mailbox(new MailboxIOReal() {}, elevator);
                 break;
             case SIM:
                 // create a maple-sim swerve drive simulation instance
@@ -123,12 +123,11 @@ public class RobotContainer {
                     new VisionIOPhotonSim(Cameras.cameras[1],
                         drive_simulation::getSimulatedDriveTrainPose),
                     new VisionIOPhotonSim(Cameras.cameras[2],
-                        drive_simulation::getSimulatedDriveTrainPose)
-                        );
+                        drive_simulation::getSimulatedDriveTrainPose));
 
                 this.elevator = new Elevator(new ElevatorIOSim(), drive::getPose);
                 this.climb = new Climb(new ClimbIOSim());
-                this.mailbox = new Mailbox(new MailboxIOSim());
+                this.mailbox = new Mailbox(new MailboxIOSim(), elevator);
                 break;
             default:
                 // Replayed robot, disable IO implementations
@@ -136,7 +135,7 @@ public class RobotContainer {
                 this.vision = new Vision(drive::addVisionMeasurement, drive, new VisionIO() {}, new VisionIO() {}, new VisionIO() {});
                 this.elevator = new Elevator(new ElevatorIO() {}, drive::getPose);
                 this.climb = new Climb(new ClimbIO() {});
-                this.mailbox = new Mailbox(new MailboxIO() {});
+                this.mailbox = new Mailbox(new MailboxIO() {}, elevator);
                 break;
         }
 
@@ -206,9 +205,8 @@ public class RobotContainer {
 
         controller.algaeLow().onTrue(ElevatorCommands.grabAlgae(elevator, () -> ElevatorSetpoint.ALGAE_LOW));
         controller.algaeHigh().onTrue(ElevatorCommands.grabAlgae(elevator, () -> ElevatorSetpoint.TOP));
-        // controller.algaeRelease().onTrue(ElevatorCommands.grabAlgae(elevator, () -> ElevatorSetpoint.ALGAE_LOW));
-
-
+        // controller.algaeRelease().onTrue(ElevatorCommands.grabAlgae(elevator, () ->
+        // ElevatorSetpoint.ALGAE_LOW));
 
         // Lock to 0° when A button is held
         // controller
@@ -275,6 +273,7 @@ public class RobotContainer {
     public void displaySimFieldToAdvantageScope() {
         if (Config.ROBOT_MODE != RobotMode.SIM)
             return;
+        Logger.recordOutput("FieldSimulation/ReefBranchesPoses", FieldConstants.REEF_BRANCHES_POSES());
         Logger.recordOutput("FieldSimulation/RobotPosition", drive_simulation.getSimulatedDriveTrainPose());
         Logger.recordOutput(
             "FieldSimulation/Coral",

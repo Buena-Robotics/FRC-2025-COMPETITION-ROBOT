@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.Elevator.ElevatorSetpoint;
 import frc.robot.subsystems.elevator.Elevator.HingeSetpoint;
-import frc.robot.util.Utils;
 
 public class ElevatorCommands {
     private static final double SHAKE_DELAY_SECONDS = 0.3;
@@ -30,15 +29,15 @@ public class ElevatorCommands {
         new Pair<>(0.00, ElevatorSetpoint.CORAL_STATION),
         new Pair<>(0.33, ElevatorSetpoint.L2),
         new Pair<>(0.66, ElevatorSetpoint.BARGE),
-        new Pair<>(1.00, ElevatorSetpoint.L3)
-    );
+        new Pair<>(1.00, ElevatorSetpoint.L3));
+
     // estimate is between 0-1
-    private static ElevatorSetpoint closestSetpoint(final double estimate){
+    private static ElevatorSetpoint closestSetpoint(final double estimate) {
         int closest_index = 0;
         double closest_distance = Double.MAX_VALUE;
-        for(int i = 0; i < estimate_setpoint_pairs.size(); i++){
+        for (int i = 0; i < estimate_setpoint_pairs.size(); i++) {
             double distance = Math.abs(estimate - estimate_setpoint_pairs.get(i).getFirst());
-            if(distance < closest_distance) {
+            if (distance < closest_distance) {
                 closest_distance = distance;
                 closest_index = i;
             }
@@ -46,15 +45,15 @@ public class ElevatorCommands {
         return estimate_setpoint_pairs.get(closest_index).getSecond();
     }
 
-    public static Command triggerElevatorHeightAndSetpoint(final Elevator elevator, final BooleanSupplier setpoint_mode_supplier, final DoubleSupplier height_supplier, final DoubleSupplier setpoint_estimate_supplier, final DoubleSupplier hinge_angle_supplier) {
+    public static Command triggerElevatorHeightAndSetpoint(final Elevator elevator, final BooleanSupplier setpoint_mode_supplier, final DoubleSupplier height_supplier, final DoubleSupplier setpoint_estimate_supplier,
+        final DoubleSupplier hinge_angle_supplier) {
         return Commands.run(
             () -> {
                 elevator.runHingeSetpoint(hinge_angle_supplier.getAsDouble() * 2.63);
-                if(setpoint_mode_supplier.getAsBoolean()){
+                if (setpoint_mode_supplier.getAsBoolean()) {
                     final ElevatorSetpoint closest = closestSetpoint(setpoint_estimate_supplier.getAsDouble());
                     elevator.runLiftSetpoint(closest.getValue());
-                }
-                else {
+                } else {
                     elevator.runLiftSetpoint(height_supplier.getAsDouble() * Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
                 }
             }, elevator);
@@ -75,41 +74,36 @@ public class ElevatorCommands {
             }, elevator);
     }
 
-    private static boolean isLiftAtSetpoint(final Elevator elevator, final ElevatorSetpoint setpoint){
-        return Utils.epsilonOf(elevator.getLiftPositionInches(), setpoint.getValue(), 0.5);
-    }
-    private static boolean isHingeAtSetpoint(final Elevator elevator, final HingeSetpoint setpoint){
-        return Utils.epsilonOf(elevator.getHingePositionRadians(), setpoint.getValue(), 0.08);
-    }
-    public static Command grabAlgae(final Elevator elevator, final Supplier<ElevatorSetpoint> algae_height){
+    public static Command grabAlgae(final Elevator elevator, final Supplier<ElevatorSetpoint> algae_height) {
         return Commands.run(() -> {
             elevator.runLiftSetpoint(ElevatorSetpoint.BOTTOM.getValue());
             elevator.runHingeSetpoint(HingeSetpoint.ALGAE.getValue());
         }, elevator)
-            .until(() -> isLiftAtSetpoint(elevator, ElevatorSetpoint.BOTTOM) && isHingeAtSetpoint(elevator, HingeSetpoint.ALGAE))
-        .andThen(new WaitCommand(1.0))
-        .andThen(Commands.run(() -> {
-            elevator.runLiftSetpoint(algae_height.get().getValue());
-        }, elevator)
-            .until(() -> isLiftAtSetpoint(elevator, algae_height.get()))
-        ).andThen(new WaitCommand(5.0))
-        .andThen(Commands.run(() -> {
-            elevator.runLiftSetpoint(ElevatorSetpoint.BOTTOM.getValue());
-        }, elevator)
-            .until(() -> isLiftAtSetpoint(elevator, ElevatorSetpoint.BOTTOM))
-        );
+            .until(() -> elevator.isLiftAtSetpoint(ElevatorSetpoint.BOTTOM) && elevator.isHingeAtSetpoint(HingeSetpoint.ALGAE))
+            .andThen(new WaitCommand(1.0))
+            .andThen(Commands.run(() -> {
+                elevator.runLiftSetpoint(algae_height.get().getValue());
+            }, elevator)
+                .until(() -> elevator.isLiftAtSetpoint(algae_height.get()))).andThen(new WaitCommand(5.0))
+            .andThen(Commands.run(() -> {
+                elevator.runLiftSetpoint(ElevatorSetpoint.BOTTOM.getValue());
+            }, elevator)
+                .until(() -> elevator.isLiftAtSetpoint(ElevatorSetpoint.BOTTOM)));
     }
 
-    public static Command releaseAlgae(final Elevator elevator){
+    public static Command releaseAlgae(final Elevator elevator) {
         return Commands.run(() -> {}, elevator);
     }
 
-    public static Command shakeElevator(final Elevator elevator){
+    public static Command shakeElevator(final Elevator elevator) {
         return Commands.sequence(
-            new InstantCommand(()-> { elevator.runLiftSetpoint(Elevator.ELEVATOR_MAX_HEIGHT_INCHES); }, elevator),
+            new InstantCommand(() -> {
+                elevator.runLiftSetpoint(Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
+            }, elevator),
             new WaitCommand(SHAKE_DELAY_SECONDS),
-            new InstantCommand(() -> {elevator.runLiftSetpoint(0.0);})
-        );
+            new InstantCommand(() -> {
+                elevator.runLiftSetpoint(0.0);
+            }));
     }
 
     public static Command feedforwardCharacterization(final Elevator elevator) {

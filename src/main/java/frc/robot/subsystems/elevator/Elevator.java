@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.util.Utils;
 
 public class Elevator extends SubsystemBase {
     public static final double ELEVATOR_MAX_HEIGHT_INCHES = 19.3; // 20
@@ -62,7 +63,7 @@ public class Elevator extends SubsystemBase {
 
     private final Transform3d robotToElevator() {
         return new Transform3d(
-            new Translation3d(Units.inchesToMeters(13), Units.inchesToMeters(-8.5), Units.inchesToMeters(29 + inputs.lift_position_inches)),
+            new Translation3d(Units.inchesToMeters(13), Units.inchesToMeters(-6.5), Units.inchesToMeters(29 + inputs.lift_position_inches)),
             new Rotation3d());
     }
 
@@ -74,8 +75,11 @@ public class Elevator extends SubsystemBase {
 
         // Update alerts
         lift_disconnect_alert.set(!inputs.lift_connected);
-        final Pose3d virtual_cam_position = new Pose3d(robot_pose_supplier.get()).transformBy(robotToElevator());
-        Logger.recordOutput("Elevator/VirtualCam", virtual_cam_position);
+        Logger.recordOutput("Elevator/VirtualCam", virtualCameraPosition());
+    }
+
+    public Pose3d virtualCameraPosition() {
+        return new Pose3d(robot_pose_supplier.get()).transformBy(robotToElevator());
     }
 
     public void runLiftCharacterization(final double output) {
@@ -105,6 +109,7 @@ public class Elevator extends SubsystemBase {
     public double getLiftPositionInches() {
         return inputs.lift_position_inches;
     }
+
     public double getHingePositionRadians() {
         return inputs.hinge_absolute_position_radians;
     }
@@ -113,9 +118,16 @@ public class Elevator extends SubsystemBase {
         io.setLiftPosition(lift_position_inches);
     }
 
-
     public void runHingeSetpoint(final double hinge_position_radians) {
         io.setHingeAngle(hinge_position_radians);
+    }
+
+    public boolean isLiftAtSetpoint(final ElevatorSetpoint setpoint) {
+        return Utils.epsilonOf(getLiftPositionInches(), setpoint.getValue(), 0.5);
+    }
+
+    public boolean isHingeAtSetpoint(final HingeSetpoint setpoint) {
+        return Utils.epsilonOf(getHingePositionRadians(), setpoint.getValue(), 0.08);
     }
 
     public static enum ElevatorSetpoint {
