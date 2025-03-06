@@ -4,10 +4,14 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.function.Supplier;
+
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -16,21 +20,23 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.FieldConstants;
 import frc.robot.subsystems.elevator.Elevator;
-import frc.robot.subsystems.elevator.Elevator.ElevatorSetpoint;
 
 public class Mailbox extends SubsystemBase {
+    public static final double CORAL_END_POSITION = -32.0;
     public static final double FEED_CORAL_POSITION = -25.0;
 
     private final MailboxIO io;
     private final Alert shooter_disconnect_alert = new Alert("Disconnected shooter motor", AlertType.kError);
     private final Alert coral_beambreak_disconnect_alert = new Alert("Disconnected coral beambreak sensor", AlertType.kWarning);
     private final SysIdRoutine sys_id;
+    private final Supplier<Pose2d> robot_pose_supplier;
 
     private final MailboxIOInputsAutoLogged inputs = new MailboxIOInputsAutoLogged();
 
     private final Elevator elevator;
 
-    public Mailbox(final MailboxIO io, final Elevator elevator) {
+    public Mailbox(final MailboxIO io, final Elevator elevator, final Supplier<Pose2d> robot_pose_supplier) {
+        this.robot_pose_supplier = robot_pose_supplier;
         this.elevator = elevator;
         this.io = io;
         this.sys_id = new SysIdRoutine(
@@ -42,6 +48,11 @@ public class Mailbox extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Mailbox", inputs);
 
+        if (likelyHasCoral()) {
+            Logger.recordOutput("Mailbox/Coral", new Pose3d(robot_pose_supplier.get()).plus(robotToCoral()));
+        } else {
+            Logger.recordOutput("Mailbox/Coral", new Pose3d());
+        }
         Logger.recordOutput("Mailbox/ClosetReefBranchStats", getClosestReefBranchStats());
         Logger.recordOutput("Mailbox/GoodShot", goodShot());
 
@@ -65,6 +76,22 @@ public class Mailbox extends SubsystemBase {
         return inputs.coral_beam_broken;
     }
 
+    public boolean likelyHasCoral() {
+        return inputs.coral_beam_broken || (inputs.shooter_position_radians < -5 && inputs.shooter_position_radians > CORAL_END_POSITION);
+    }
+
+    public double coralPositionPercent() {
+        return inputs.shooter_position_radians / CORAL_END_POSITION;
+    }
+
+    public Transform3d robotToCoral() {
+        final double coral_length_inches = 11.875;
+        final double coral_travel_distance = 13 + coral_length_inches;
+        final Transform3d robot_to_elevator = elevator.robotToElevator();
+        final double coral_forward_inches = (coral_travel_distance * coralPositionPercent()) - 13;
+        return new Transform3d(Units.inchesToMeters(coral_forward_inches), robot_to_elevator.getY(), robot_to_elevator.getZ(), robot_to_elevator.getRotation());
+    }
+
     private BranchCloseStats getClosestReefBranchStats() {
         int closest_index = 0;
         double closest_distance = Double.MAX_VALUE;
@@ -76,12 +103,18 @@ public class Mailbox extends SubsystemBase {
                 closest_index = i;
             }
         }
-        return new BranchCloseStats(pose_list[closest_index], Units.metersToInches(closest_distance), pose_list[closest_index].getRotation().minus(new Rotation3d(0, 0, Math.PI)).rotateBy(elevator.virtualCameraPosition().getRotation()));
+        return new BranchCloseStats(
+            pose_list[closest_index],
+            Units.metersToInches(closest_distance),
+            Units.radiansToDegrees(pose_list[closest_index].getRotation().minus(new Rotation3d(0, 0, Math.PI)).minus(elevator.virtualCameraPosition().getRotation()).getZ()));
     }
 
     private boolean goodShot() {
         final BranchCloseStats stats = getClosestReefBranchStats();
-        return Math.abs(stats.distance_inches) < 5.0 && Units.radiansToDegrees(Math.abs(stats.rotation.getZ())) < 2.0 && (elevator.isLiftAtSetpoint(ElevatorSetpoint.L2) || elevator.isLiftAtSetpoint(ElevatorSetpoint.L3));
+        return Math.abs(stats.distance_inches()) < 1.8 &&
+            Math.abs(stats.rotation_yaw_degrees()) < 2.0;
+        // (elevator.isLiftAtSetpoint(ElevatorSetpoint.L2) ||
+        // elevator.isLiftAtSetpoint(ElevatorSetpoint.L3));
     }
 
     public double getPosition() {
@@ -97,6 +130,11 @@ public class Mailbox extends SubsystemBase {
     }
 
     public void runSpeedSetpoint(final double shooter_speed) {
+        // if (goodShot()) {
+        // Logger.recordOutput("Mailbox/Speedsetpoint", -1.0);
+        // io.setShooterSpeed(-1.0);
+        // return;
+        // }
         Logger.recordOutput("Mailbox/Speedsetpoint", shooter_speed);
         io.setShooterSpeed(shooter_speed);
     }
@@ -111,5 +149,5 @@ public class Mailbox extends SubsystemBase {
         io.setShooterVelocity(shooter_velocity_radians_per_second);
     }
 
-    public static record BranchCloseStats(Pose3d pose, double distance_inches, Rotation3d rotation) {}
+    public static record BranchCloseStats(Pose3d pose, double distance_inches, double rotation_yaw_degrees) {}
 }

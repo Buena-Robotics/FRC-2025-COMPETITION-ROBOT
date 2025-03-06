@@ -4,8 +4,11 @@
 
 package frc.robot;
 
+import java.util.Optional;
+
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeReefSimulation;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -98,7 +101,7 @@ public class RobotContainer {
 
                 this.elevator = new Elevator(new ElevatorIOReal() {}, drive::getPose);
                 this.climb = new Climb(new ClimbIOReal() {});
-                this.mailbox = new Mailbox(new MailboxIOReal() {}, elevator);
+                this.mailbox = new Mailbox(new MailboxIOReal() {}, elevator, drive::getPose);
                 break;
             case SIM:
                 // create a maple-sim swerve drive simulation instance
@@ -127,7 +130,7 @@ public class RobotContainer {
 
                 this.elevator = new Elevator(new ElevatorIOSim(), drive::getPose);
                 this.climb = new Climb(new ClimbIOSim());
-                this.mailbox = new Mailbox(new MailboxIOSim(), elevator);
+                this.mailbox = new Mailbox(new MailboxIOSim(drive_simulation, elevator), elevator, drive::getPose);
                 break;
             default:
                 // Replayed robot, disable IO implementations
@@ -135,7 +138,7 @@ public class RobotContainer {
                 this.vision = new Vision(drive::addVisionMeasurement, drive, new VisionIO() {}, new VisionIO() {}, new VisionIO() {});
                 this.elevator = new Elevator(new ElevatorIO() {}, drive::getPose);
                 this.climb = new Climb(new ClimbIO() {});
-                this.mailbox = new Mailbox(new MailboxIO() {}, elevator);
+                this.mailbox = new Mailbox(new MailboxIO() {}, elevator, drive::getPose);
                 break;
         }
 
@@ -176,8 +179,6 @@ public class RobotContainer {
 
     private void configureBindings() {
         if (Config.ROBOT_TYPE == RobotType.SETUP_SWERVE_TUNING) {
-            // drive.setDefaultCommand(DriveCommands.viewWheelForwardCharacterization(drive,
-            // controller::getElevatorAxis));
             drive.setDefaultCommand(DriveCommands.viewWheelForwardDirection(drive, controller::getElevatorAxis));
             controller.stopXBtn().onTrue(new InstantCommand(drive::logModuleOffsets));
             return;
@@ -205,17 +206,6 @@ public class RobotContainer {
 
         controller.algaeLow().onTrue(ElevatorCommands.grabAlgae(elevator, () -> ElevatorSetpoint.ALGAE_LOW));
         controller.algaeHigh().onTrue(ElevatorCommands.grabAlgae(elevator, () -> ElevatorSetpoint.TOP));
-        // controller.algaeRelease().onTrue(ElevatorCommands.grabAlgae(elevator, () ->
-        // ElevatorSetpoint.ALGAE_LOW));
-
-        // Lock to 0° when A button is held
-        // controller
-        // .lockGyroBtn()
-        // .toggleOnTrue(DriveCommands.joystickDriveAtAngle(
-        // drive,
-        // () -> controller.getDriveYAxis(),
-        // () -> controller.getDriveXAxis(),
-        // () -> new Rotation2d()));
 
         controller.flipRobotBtn().onTrue(DriveCommands.flipRobot(
             drive,
@@ -223,22 +213,7 @@ public class RobotContainer {
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis()));
         controller.flyToCoralStation1().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L2));
         controller.flyToCoralStation2().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Left, () -> ReefBranchHeight.L2));
-        // controller.flyToCoralStation2().onTrue(
-        // Commands.parallel(
-        // DriveCommands.pathfindToPose(drive,
-        // FieldConstants.BLUE_CORAL_STATION_1_POSE),
-        // ElevatorCommands.triggerElevatorSetpoint(elevator,
-        // ElevatorSetpoint.CORAL_STATION)));
-        // controller.FlyToClosestReefSide1().onTrue(
-        // DriveCommands.pathfindToPoseSupplier(drive, () -> getClosestReefPose().plus(
-        // new Transform2d(0, Units.inchesToMeters(-8.5), new
-        // Rotation2d()).inverse()).transformBy(FieldConstants.REEF_TRANSFORM_LEFT)));
-        // controller.FlyToClosestReefSide2().onTrue(
-        // DriveCommands.pathfindToPoseSupplier(drive, () -> getClosestReefPose().plus(
-        // new Transform2d(0, Units.inchesToMeters(-8.5), new
-        // Rotation2d()).inverse()).transformBy(FieldConstants.REEF_TRANSFORM_RIGHT)));
-        // Switch to X pattern when X button is pressed
-        // controller.stopXBtn().onTrue(Commands.runOnce(drive::stopWithX, drive));
+
         controller.stopXBtn().whileTrue(DriveCommands.pathfindToPose(drive, FieldConstants.RED_REEF_SIDE_2_POSE));
 
         // Reset gyro / odometry
@@ -296,5 +271,20 @@ public class RobotContainer {
                     .getTranslation())));
         Logger.recordOutput("FieldSimulation/OdometryToSimulatedRotationError", Math.abs(drive.getRotation().minus(drive_simulation.getSimulatedDriveTrainPose().getRotation()).getDegrees()));
 
+        Optional<ReefscapeReefSimulation> reefscape_reef_simulation = ReefscapeReefSimulation.getInstance();
+        if (reefscape_reef_simulation.isPresent()) {
+            int corals_l2 = 0;
+            int corals_l3 = 0;
+            for (int i = 0; i < 12; i++) {
+                corals_l2 += reefscape_reef_simulation.get().getBranches(Config.getRobotAlliance())[i][1];
+                corals_l3 += reefscape_reef_simulation.get().getBranches(Config.getRobotAlliance())[i][2];
+            }
+            Logger.recordOutput("FieldSimulation/L2CoralScored", corals_l2);
+            Logger.recordOutput("FieldSimulation/L3CoralScored", corals_l3);
+            Logger.recordOutput("FieldSimulation/L2CoralScoredPoints", corals_l2 * 3);
+            Logger.recordOutput("FieldSimulation/L3CoralScoredPoints", corals_l3 * 4);
+            Logger.recordOutput("FieldSimulation/CoralTotalScoredPoints", (corals_l2 * 3) + (corals_l3 * 4));
+
+        }
     }
 }

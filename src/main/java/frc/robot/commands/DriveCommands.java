@@ -41,10 +41,10 @@ import com.pathplanner.lib.path.PathConstraints;
 
 public class DriveCommands {
     private static final double DEADBAND = 0.10;
-    private static final double DRIVE_KP = 0.32;
-    private static final double DRIVE_KI = 0.0;
+    private static final double DRIVE_KP = 3.0;
+    private static final double DRIVE_KI = 0.02;
     private static final double DRIVE_KD = 0.05;
-    private static final double ANGLE_KP = 0.3;
+    private static final double ANGLE_KP = 0.36;
     private static final double ANGLE_KI = 0.02;
     private static final double ANGLE_KD = 0.04;
     private static final double FF_START_DELAY = 2.0; // Secs
@@ -63,11 +63,11 @@ public class DriveCommands {
         new PIDController(ANGLE_KP, ANGLE_KI, ANGLE_KD);
 
     static {
-        // x_controller.setIZone(Units.inchesToMeters(12));
-        // x_controller.setIntegratorRange(0, Units.inchesToMeters(24));
-        // x_controller.setTolerance(Units.inchesToMeters(1));
-        // y_controller.setIZone(Units.inchesToMeters(12));
-        // y_controller.setIntegratorRange(0, Units.inchesToMeters(24));
+        x_controller.setIZone(Units.inchesToMeters(6));
+        x_controller.setIntegratorRange(0, Units.inchesToMeters(12));
+        x_controller.setTolerance(Units.inchesToMeters(1));
+        y_controller.setIZone(Units.inchesToMeters(6));
+        y_controller.setIntegratorRange(0, Units.inchesToMeters(12));
         y_controller.setTolerance(Units.inchesToMeters(1));
 
         angle_controller.enableContinuousInput(-Math.PI, Math.PI);
@@ -184,6 +184,7 @@ public class DriveCommands {
             drive.runVelocity(speeds);
         }
     }
+
     private static void runSpeeds(final Drive drive, final double x_in, final double y_in, final double omega_in, final boolean field_oriented) {
         // Get linear velocity
         final Translation2d linear_velocity = getLinearVelocityFromJoysticks(x_in, y_in);
@@ -305,7 +306,7 @@ public class DriveCommands {
             drive);
     }
 
-    public static Command driveDirection(final Drive drive, final Rotation2d direction){
+    public static Command driveDirection(final Drive drive, final Rotation2d direction) {
         return Commands.run(() -> {
             runSpeeds(drive, direction.getCos() / 3.0, direction.getSin() / 3.0, 0.0, false);
         }, drive);

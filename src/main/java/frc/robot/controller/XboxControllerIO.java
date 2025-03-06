@@ -27,7 +27,7 @@ public class XboxControllerIO implements CommandControllerIO {
     }
 
     @Override public double getMailboxAxis() {
-        return 0.0;
+        return -controller.getLeftTriggerAxis();
     }
 
     @Override public double getClimbAxis() {

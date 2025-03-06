@@ -61,7 +61,7 @@ public class Elevator extends SubsystemBase {
             new SysIdRoutine.Mechanism((voltage) -> runLiftCharacterization(voltage.in(Volts)), null, this));
     }
 
-    private final Transform3d robotToElevator() {
+    public final Transform3d robotToElevator() {
         return new Transform3d(
             new Translation3d(Units.inchesToMeters(13), Units.inchesToMeters(-6.5), Units.inchesToMeters(29 + inputs.lift_position_inches)),
             new Rotation3d());
