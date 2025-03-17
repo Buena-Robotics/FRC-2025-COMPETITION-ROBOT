@@ -53,6 +53,7 @@ public class Mailbox extends SubsystemBase {
         } else {
             Logger.recordOutput("Mailbox/Coral", new Pose3d());
         }
+        Logger.recordOutput("Mailbox/LikelyHasCoral", likelyHasCoral());
         Logger.recordOutput("Mailbox/ClosetReefBranchStats", getClosestReefBranchStats());
         Logger.recordOutput("Mailbox/GoodShot", goodShot());
 
@@ -130,11 +131,11 @@ public class Mailbox extends SubsystemBase {
     }
 
     public void runSpeedSetpoint(final double shooter_speed) {
-        // if (goodShot()) {
-        // Logger.recordOutput("Mailbox/Speedsetpoint", -1.0);
-        // io.setShooterSpeed(-1.0);
-        // return;
-        // }
+        if (goodShot()) {
+            Logger.recordOutput("Mailbox/Speedsetpoint", -1.0);
+            io.setShooterSpeed(-1.0);
+            return;
+        }
         Logger.recordOutput("Mailbox/Speedsetpoint", shooter_speed);
         io.setShooterSpeed(shooter_speed);
     }

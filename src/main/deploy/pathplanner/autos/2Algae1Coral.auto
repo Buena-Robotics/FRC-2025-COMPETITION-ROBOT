@@ -1,0 +1,73 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "AutoToReef3ALow"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "algae_low"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ReefALowToProc"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "algae_release"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ProcToReef5A"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "algae_high"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Reef5AToProc"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "algae_release"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ProcToReef3r"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "coral_3r"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": false,
+  "folder": null,
+  "choreoAuto": false
+}

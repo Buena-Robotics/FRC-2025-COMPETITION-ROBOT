@@ -22,6 +22,7 @@ import frc.robot.FieldConstants.ReefBranchSide;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.Elevator.ElevatorSetpoint;
+import frc.robot.subsystems.mailbox.Mailbox;
 import frc.robot.util.Printf;
 import frc.robot.util.TunablePIDController;
 
@@ -44,7 +45,7 @@ public class DriveCommands {
     private static final double DRIVE_KP = 3.0;
     private static final double DRIVE_KI = 0.02;
     private static final double DRIVE_KD = 0.05;
-    private static final double ANGLE_KP = 0.36;
+    private static final double ANGLE_KP = 0.7;
     private static final double ANGLE_KI = 0.02;
     private static final double ANGLE_KD = 0.04;
     private static final double FF_START_DELAY = 2.0; // Secs
@@ -87,6 +88,11 @@ public class DriveCommands {
             new Rotation2d(-2 * Math.PI / 3.0), // 120 degrees right
     };
 
+    private static Rotation2d[] coral_station_snap_points = {
+            Rotation2d.fromDegrees(126), // Left Coral Station
+            Rotation2d.fromDegrees(234), // Right Coral Station
+    };
+
     private static Rotation2d[] turn_assist_snap_points = {
             new Rotation2d(), // Forward
             new Rotation2d(Math.PI), // Backward
@@ -112,11 +118,17 @@ public class DriveCommands {
         return Config.ROBOT_MODE != RobotMode.SIM ? controller.calculate(measurement, setpoint) : controller.calculate(measurement, setpoint);
     }
 
+    private static boolean atCoralStationXLevel(Pose2d pose) {
+        if (Config.getRobotAlliance().equals(Alliance.Blue))
+            return pose.getX() <= 3.044;
+        return pose.getX() >= 14.46;
+    }
+
     public static double closestReefRotationSnapPoint(Rotation2d estimate_radians) {
         int closest_index = 0;
         double closest_distance = Double.MAX_VALUE;
         for (int i = 0; i < reef_assist_snap_points.length; i++) {
-            final Rotation2d snap_point = Config.getRobotAlliance().equals(Alliance.Blue) ? reef_assist_snap_points[i] : reef_assist_snap_points[i].plus(new Rotation2d(Math.PI));
+            final Rotation2d snap_point = reef_assist_snap_points[i];
             final double distance = Math.abs(estimate_radians.minus(snap_point).getRadians());
             if (distance < closest_distance) {
                 closest_distance = distance;
@@ -124,6 +136,12 @@ public class DriveCommands {
             }
         }
         return reef_assist_snap_points[closest_index].getRadians();
+    }
+
+    public static double closestCoralStationRotationSnapPoint(final double pose_y) {
+        if (pose_y >= 4.0259)
+            return Config.getRobotAlliance().equals(Alliance.Blue) ? coral_station_snap_points[0].getRadians() : coral_station_snap_points[1].getRadians();
+        return Config.getRobotAlliance().equals(Alliance.Blue) ? coral_station_snap_points[1].getRadians() : coral_station_snap_points[0].getRadians();
     }
 
     public static double closestRotationSnapPoint(Rotation2d estimate_radians) {
@@ -243,20 +261,24 @@ public class DriveCommands {
             });
     }
 
-    public static Command driveSuperAssistJoystickDrive(final Drive drive, final DoubleSupplier x_supplier, final DoubleSupplier y_supplier) {
+    public static Command driveSuperAssistJoystickDrive(final Drive drive, final Mailbox mailbox, final DoubleSupplier x_supplier, final DoubleSupplier y_supplier) {
         return Commands.run(() -> {
             // Get linear velocity
+            final boolean blue_alliance = Config.getRobotAlliance().equals(Alliance.Blue);
             final Pose2d robot_pose = drive.getPose();
-            final double relative_x = robot_pose.getX() - Units.inchesToMeters(144 + 32.75);
-            final double relative_y = robot_pose.getY() - Units.inchesToMeters(158.50);
 
-            final double super_assist_robot_rotation = closestReefRotationSnapPoint(
-                new Rotation2d(
-                    Math.atan2(relative_y, relative_x)));
+            final double relative_x = blue_alliance ? (robot_pose.getX() - Units.inchesToMeters(144 + 32.75)) : (Units.inchesToMeters(514.13) - robot_pose.getX());
+            final double relative_y = blue_alliance ? (robot_pose.getY() - Units.inchesToMeters(158.50)) : -(robot_pose.getY() - Units.inchesToMeters(158.50));
+
+            final double super_assist_robot_rotation = !mailbox.likelyHasCoral() && atCoralStationXLevel(robot_pose) ?
+                closestCoralStationRotationSnapPoint(robot_pose.getY()) :
+                closestReefRotationSnapPoint(
+                    new Rotation2d(
+                        Math.atan2(relative_y, relative_x)));
 
             // Calculate angular speed
             final double omega = calculatePID(angle_controller,
-                drive.getRotation().minus(new Rotation2d(Math.PI)).getRadians(),
+                drive.getRotation().minus(new Rotation2d(blue_alliance ? Math.PI : 0)).getRadians(),
                 super_assist_robot_rotation);
 
             runSpeeds(drive, x_supplier.getAsDouble(), y_supplier.getAsDouble(), omega, true);
@@ -277,11 +299,12 @@ public class DriveCommands {
             angle_controller.setSetpoint(closest_reef_pose.getRotation().getRadians());
         }, drive).andThen(Commands.run(
             () -> {
+                final double blue_alliance = Config.getRobotAlliance().equals(Alliance.Blue) ? 1 : -1;
                 final Pose2d robot_pose = drive.getPose();
                 runSpeedsRaw(
                     drive,
-                    calculatePID(x_controller, robot_pose.getX()),
-                    calculatePID(y_controller, robot_pose.getY()),
+                    blue_alliance * calculatePID(x_controller, robot_pose.getX()),
+                    blue_alliance * calculatePID(y_controller, robot_pose.getY()),
                     calculatePID(angle_controller, robot_pose.getRotation().getRadians()),
                     true);
                 elevator.runLiftSetpoint(branch_height.get() == ReefBranchHeight.L2 ? ElevatorSetpoint.L2.getValue() : ElevatorSetpoint.L3.getValue());

@@ -63,7 +63,7 @@ public class XboxControllerIO implements CommandControllerIO {
     }
 
     @Override public Trigger flipRobotBtn() {
-        return controller.leftBumper();
+        return new Trigger(() -> false);
     }
 
     @Override public Trigger flyToCoralStation1() {
@@ -71,7 +71,7 @@ public class XboxControllerIO implements CommandControllerIO {
     }
 
     @Override public Trigger flyToCoralStation2() {
-        return new Trigger(() -> false);
+        return controller.leftBumper();
     }
 
     @Override public Trigger FlyToClosestReefSide1() {

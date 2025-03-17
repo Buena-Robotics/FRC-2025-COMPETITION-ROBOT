@@ -22,6 +22,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Config.RobotMode;
@@ -190,11 +191,22 @@ public class RobotContainer {
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getTurnAxis() : () -> -controller.getTurnAxis(),
-            () -> Config.ROBOT_MODE == RobotMode.SIM ? controller.fieldOrientedBtn().getAsBoolean() : controller.fieldOrientedBtn().getAsBoolean()));
+            () -> Config.ROBOT_MODE == RobotMode.SIM ?
+                controller.fieldOrientedBtn().getAsBoolean() :
+                controller.fieldOrientedBtn().getAsBoolean()));
         controller.driveAssistBtn().whileTrue(DriveCommands.driveSuperAssistJoystickDrive(
             drive,
+            mailbox,
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis()));
+
+        // drive.setDefaultCommand(DriveCommands.driveSuperAssistJoystickDrive(
+        // drive,
+        // mailbox,
+        // Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : ()
+        // -> -controller.getDriveYAxis(),
+        // Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : ()
+        // -> -controller.getDriveXAxis()));
 
         elevator.setDefaultCommand(ElevatorCommands.triggerElevatorHeightAndSetpoint(elevator,
             () -> elevator_setpoint_mode,
@@ -211,8 +223,8 @@ public class RobotContainer {
             drive,
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis()));
-        controller.flyToCoralStation1().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L2));
-        controller.flyToCoralStation2().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Left, () -> ReefBranchHeight.L2));
+        controller.flyToCoralStation1().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L3));
+        controller.flyToCoralStation2().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Left, () -> ReefBranchHeight.L3));
 
         controller.stopXBtn().whileTrue(DriveCommands.pathfindToPose(drive, FieldConstants.RED_REEF_SIDE_2_POSE));
 
@@ -230,7 +242,20 @@ public class RobotContainer {
     }
 
     public void intializePathplannerAutoCommands() {
+        // NamedCommands.registerCommand("algae_low",
+        // ElevatorCommands.grabAlgae(elevator, () -> ElevatorSetpoint.ALGAE_LOW));
+        // NamedCommands.registerCommand("algae_high",
+        // ElevatorCommands.grabAlgae(elevator, () -> ElevatorSetpoint.TOP));
+        // NamedCommands.registerCommand("algae_release",
+        // ElevatorCommands.releaseAlgae(elevator));
+
+        NamedCommands.registerCommand("algae_low", new WaitCommand(1));
+        NamedCommands.registerCommand("algae_high", new WaitCommand(2));
+        NamedCommands.registerCommand("algae_release", new WaitCommand(1));
+        NamedCommands.registerCommand("coral_3r", DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L3));
         NamedCommands.registerCommand("waitfor_coral", Commands.waitUntil(mailbox::coralWaiting));
+
+        // ElevatorCommands.grabAlgae(elevator, () -> ElevatorSetpoint.ALGAE_LOW)
         // NamedCommands.registerCommand("", null);
     }
 
@@ -242,7 +267,7 @@ public class RobotContainer {
         if (Config.ROBOT_MODE != RobotMode.SIM)
             return;
         drive_simulation.setSimulationWorldPose(new Pose2d(2, 2, new Rotation2d()));
-        SimulatedArena.getInstance().resetFieldForAuto();
+        // SimulatedArena.getInstance().resetFieldForAuto();
     }
 
     public void displaySimFieldToAdvantageScope() {

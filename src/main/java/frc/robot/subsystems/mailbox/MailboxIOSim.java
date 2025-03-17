@@ -11,6 +11,7 @@ import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -30,6 +31,21 @@ public class MailboxIOSim implements MailboxIO {
     private final SwerveDriveSimulation drive_simulation;
     private final Elevator elevator;
     private final IntakeSimulation intake_simulation;
+
+    private final Translation2d coral_station_left_top = new Translation2d(1.697, 7.486);
+    private final Translation2d coral_station_left_bottom = new Translation2d(0.587, 6.513);
+
+    private final Translation2d coral_station_right_top = new Translation2d(1.697, 0.7);
+    private final Translation2d coral_station_right_bottom = new Translation2d(0.587, 1.5);
+
+    private final boolean inBox(Translation2d pose, Translation2d a, Translation2d b) {
+        double min_x = Math.min(a.getX(), b.getX());
+        double min_y = Math.min(a.getY(), b.getY());
+        double max_x = Math.max(a.getX(), b.getX());
+        double max_y = Math.max(a.getY(), b.getY());
+        return pose.getX() >= min_x && pose.getX() <= max_x &&
+            pose.getY() >= min_y && pose.getY() <= max_y;
+    }
 
     public MailboxIOSim(final SwerveDriveSimulation drive_simulation, final Elevator elevator) {
         this.drive_simulation = drive_simulation;
@@ -69,8 +85,9 @@ public class MailboxIOSim implements MailboxIO {
         inputs.shooter_connected = true;
 
         inputs.coral_beambreak_connected = true;
-        inputs.coral_beam_broken = intake_simulation.getGamePiecesAmount() == 1 && shooter_sim.getAngularPositionRad() >= -10;
 
+        inputs.coral_beam_broken = shooter_sim.getAngularPositionRad() >= -10 && (inBox(drive_simulation.getSimulatedDriveTrainPose().getTranslation(), coral_station_left_top, coral_station_left_bottom) || inBox(drive_simulation
+            .getSimulatedDriveTrainPose().getTranslation(), coral_station_right_top, coral_station_right_bottom));
         if (inputs.shooter_position_radians <= Mailbox.CORAL_END_POSITION) {
             resetPosition();
             intake_simulation.removeObtainedGamePieces(SimulatedArena.getInstance());
@@ -104,6 +121,11 @@ public class MailboxIOSim implements MailboxIO {
     }
 
     @Override public void setShooterSpeed(final double shooter_speed) {
+        if (shooter_sim.getAngularPositionRad() >= -20) {
+            open_loop = true;
+            shooter_applied_volts = 0;
+            return;
+        }
         open_loop = true;
         shooter_applied_volts = shooter_speed * 12.0;
     }
