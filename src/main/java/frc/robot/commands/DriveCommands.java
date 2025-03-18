@@ -45,7 +45,7 @@ public class DriveCommands {
     private static final double DRIVE_KP = 3.0;
     private static final double DRIVE_KI = 0.02;
     private static final double DRIVE_KD = 0.05;
-    private static final double ANGLE_KP = 0.7;
+    private static final double ANGLE_KP = 0.40;
     private static final double ANGLE_KI = 0.02;
     private static final double ANGLE_KD = 0.04;
     private static final double FF_START_DELAY = 2.0; // Secs

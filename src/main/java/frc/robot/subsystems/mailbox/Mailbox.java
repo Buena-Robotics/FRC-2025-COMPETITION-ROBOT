@@ -22,8 +22,8 @@ import frc.robot.FieldConstants;
 import frc.robot.subsystems.elevator.Elevator;
 
 public class Mailbox extends SubsystemBase {
-    public static final double CORAL_END_POSITION = -32.0;
-    public static final double FEED_CORAL_POSITION = -25.0;
+    public static final double CORAL_END_POSITION = -17.5;
+    public static final double FEED_CORAL_POSITION = -9.0;
 
     private final MailboxIO io;
     private final Alert shooter_disconnect_alert = new Alert("Disconnected shooter motor", AlertType.kError);
@@ -131,11 +131,11 @@ public class Mailbox extends SubsystemBase {
     }
 
     public void runSpeedSetpoint(final double shooter_speed) {
-        if (goodShot()) {
-            Logger.recordOutput("Mailbox/Speedsetpoint", -1.0);
-            io.setShooterSpeed(-1.0);
-            return;
-        }
+        // if (goodShot()) {
+        //     Logger.recordOutput("Mailbox/Speedsetpoint", -1.0);
+        //     io.setShooterSpeed(-1.0);
+        //     return;
+        // }
         Logger.recordOutput("Mailbox/Speedsetpoint", shooter_speed);
         io.setShooterSpeed(shooter_speed);
     }

@@ -66,22 +66,6 @@ public class XboxControllerIO implements CommandControllerIO {
         return new Trigger(() -> false);
     }
 
-    @Override public Trigger flyToCoralStation1() {
-        return controller.rightBumper();
-    }
-
-    @Override public Trigger flyToCoralStation2() {
-        return controller.leftBumper();
-    }
-
-    @Override public Trigger FlyToClosestReefSide1() {
-        return controller.back();
-    }
-
-    @Override public Trigger FlyToClosestReefSide2() {
-        return controller.start();
-    }
-
     @Override public Trigger algaeRelease() {
         return new Trigger(() -> false);
     }
@@ -91,6 +75,30 @@ public class XboxControllerIO implements CommandControllerIO {
     }
 
     @Override public Trigger algaeLow() {
+        return new Trigger(() -> false);
+    }
+
+    @Override public Trigger flyToCoralStationLeft() {
+        return new Trigger(() -> false);
+    }
+
+    @Override public Trigger flyToCoralStationRight() {
+        return new Trigger(() -> false);
+    }
+
+    @Override public Trigger flyToClosestReefLeftL2() {
+        return new Trigger(() -> false);
+    }
+
+    @Override public Trigger flyToClosestReefLeftL3() {
+        return new Trigger(() -> false);
+    }
+
+    @Override public Trigger flyToClosestReefRightL2() {
+        return new Trigger(() -> false);
+    }
+
+    @Override public Trigger flyToClosestReefRightL3() {
         return new Trigger(() -> false);
     }
 }
