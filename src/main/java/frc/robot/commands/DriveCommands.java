@@ -42,9 +42,9 @@ import com.pathplanner.lib.path.PathConstraints;
 
 public class DriveCommands {
     private static final double DEADBAND = 0.10;
-    private static final double DRIVE_KP = 3.0;
+    private static final double DRIVE_KP = 1.0;
     private static final double DRIVE_KI = 0.02;
-    private static final double DRIVE_KD = 0.05;
+    private static final double DRIVE_KD = 0.09;
     private static final double ANGLE_KP = 0.40;
     private static final double ANGLE_KI = 0.02;
     private static final double ANGLE_KD = 0.04;

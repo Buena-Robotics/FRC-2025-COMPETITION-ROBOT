@@ -31,7 +31,7 @@ public class SaitekControllerIO implements CommandControllerIO {
     }
 
     @Override public double getClimbAxis() {
-        return controller.povDown().getAsBoolean() ? -0.25 : controller.povUp().getAsBoolean() ? 0.25 : 0.0;
+        return controller.povDown().getAsBoolean() ? 0.5 : controller.povUp().getAsBoolean() ? -0.25 : 0.0;
     }
 
     @Override public double getHingeAxis() {

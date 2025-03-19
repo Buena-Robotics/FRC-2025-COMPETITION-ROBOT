@@ -98,7 +98,9 @@ public class RobotContainer {
                     drive::addVisionMeasurement, drive,
                     new VisionIOPhoton(Cameras.cameras[0]),
                     new VisionIOPhoton(Cameras.cameras[1]),
-                    new VisionIOPhoton(Cameras.cameras[2]));
+                    new VisionIOPhoton(Cameras.cameras[2]),
+                    new VisionIOPhoton(Cameras.cameras[3])
+                    );
 
                 this.elevator = new Elevator(new ElevatorIOReal() {}, drive::getPose);
                 this.climb = new Climb(new ClimbIOReal() {});

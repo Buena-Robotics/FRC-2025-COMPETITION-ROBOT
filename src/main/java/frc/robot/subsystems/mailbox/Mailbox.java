@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -104,16 +105,22 @@ public class Mailbox extends SubsystemBase {
                 closest_index = i;
             }
         }
+        Translation3d relative_translation = elevator.virtualCameraPosition().relativeTo(pose_list[closest_index]).getTranslation();
         return new BranchCloseStats(
             pose_list[closest_index],
             Units.metersToInches(closest_distance),
+            Units.metersToInches(relative_translation.getX()),
+            Units.metersToInches(relative_translation.getY()),
+            Units.metersToInches(relative_translation.getZ()),
             Units.radiansToDegrees(pose_list[closest_index].getRotation().minus(new Rotation3d(0, 0, Math.PI)).minus(elevator.virtualCameraPosition().getRotation()).getZ()));
     }
 
     private boolean goodShot() {
         final BranchCloseStats stats = getClosestReefBranchStats();
-        return Math.abs(stats.distance_inches()) < 1.8 &&
-            Math.abs(stats.rotation_yaw_degrees()) < 2.0;
+        return Math.abs(stats.distance_inches_left()) < 2.4 &&
+            Math.abs(stats.distance_inches_forward()) < 10 &&
+            Math.abs(stats.distance_inches_up()) < 2.0 &&
+            Math.abs(stats.rotation_yaw_degrees()) < 9.0;
         // (elevator.isLiftAtSetpoint(ElevatorSetpoint.L2) ||
         // elevator.isLiftAtSetpoint(ElevatorSetpoint.L3));
     }
@@ -131,11 +138,11 @@ public class Mailbox extends SubsystemBase {
     }
 
     public void runSpeedSetpoint(final double shooter_speed) {
-        // if (goodShot()) {
-        //     Logger.recordOutput("Mailbox/Speedsetpoint", -1.0);
-        //     io.setShooterSpeed(-1.0);
-        //     return;
-        // }
+        if (goodShot()) {
+            Logger.recordOutput("Mailbox/Speedsetpoint", -1.0);
+            io.setShooterSpeed(-1.0);
+            return;
+        }
         Logger.recordOutput("Mailbox/Speedsetpoint", shooter_speed);
         io.setShooterSpeed(shooter_speed);
     }
@@ -150,5 +157,5 @@ public class Mailbox extends SubsystemBase {
         io.setShooterVelocity(shooter_velocity_radians_per_second);
     }
 
-    public static record BranchCloseStats(Pose3d pose, double distance_inches, double rotation_yaw_degrees) {}
+    public static record BranchCloseStats(Pose3d pose, double distance_inches, double distance_inches_forward, double distance_inches_left, double distance_inches_up, double rotation_yaw_degrees) {}
 }
