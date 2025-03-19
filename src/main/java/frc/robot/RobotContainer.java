@@ -63,6 +63,7 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhoton;
 import frc.robot.subsystems.vision.VisionIOPhotonSim;
 import frc.robot.util.ArenaSchool2025Reefscape;
+import frc.robot.util.Utils;
 
 public class RobotContainer {
     // Subsystems
@@ -70,7 +71,7 @@ public class RobotContainer {
     private final Vision vision;
     private final Drive drive;
     private final SwerveDriveSimulation drive_simulation = Config.ROBOT_MODE == RobotMode.SIM ?
-        new SwerveDriveSimulation(Drive.MAPLE_SIM_CONFIG, new Pose2d(3, 3, new Rotation2d())) :
+        new SwerveDriveSimulation(Drive.MAPLE_SIM_CONFIG, Utils.initialRobotPose()) :
         null;
     private final Elevator elevator;
     private final Climb climb;
@@ -99,8 +100,7 @@ public class RobotContainer {
                     new VisionIOPhoton(Cameras.cameras[0]),
                     new VisionIOPhoton(Cameras.cameras[1]),
                     new VisionIOPhoton(Cameras.cameras[2]),
-                    new VisionIOPhoton(Cameras.cameras[3])
-                    );
+                    new VisionIOPhoton(Cameras.cameras[3]));
 
                 this.elevator = new Elevator(new ElevatorIOReal() {}, drive::getPose);
                 this.climb = new Climb(new ClimbIOReal() {});
@@ -129,6 +129,8 @@ public class RobotContainer {
                     new VisionIOPhotonSim(Cameras.cameras[1],
                         drive_simulation::getSimulatedDriveTrainPose),
                     new VisionIOPhotonSim(Cameras.cameras[2],
+                        drive_simulation::getSimulatedDriveTrainPose),
+                    new VisionIOPhotonSim(Cameras.cameras[3],
                         drive_simulation::getSimulatedDriveTrainPose));
 
                 this.elevator = new Elevator(new ElevatorIOSim(), drive::getPose);

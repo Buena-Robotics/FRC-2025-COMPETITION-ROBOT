@@ -35,6 +35,7 @@ import frc.robot.Config.RobotMode;
 import frc.robot.util.Derivitave;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.Printf;
+import frc.robot.util.Utils;
 import frc.robot.util.sim.COTS;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -77,7 +78,7 @@ public class Drive extends SubsystemBase {
             new Translation2d(-TRACK_WIDTH / 2.0, -WHEEL_BASE / 2.0)
     };
 
-    public static final double ROBOT_MASS_KG = 45.3592;
+    public static final double ROBOT_MASS_KG = 52.1631;
 
     // https://choreo.autos/usage/estimating-moi/
     // You can use SysId to measure by spinning the robot in place and by driving
@@ -134,7 +135,7 @@ public class Drive extends SubsystemBase {
                 new SwerveModulePosition()
         };
     private final SwerveDrivePoseEstimator pose_estimator = new SwerveDrivePoseEstimator(
-        kinematics, raw_gyro_rotation, last_module_positions, new Pose2d(2, 2, new Rotation2d()));
+        kinematics, raw_gyro_rotation, last_module_positions, Utils.initialRobotPose());
 
     private final Derivitave world_linear_jerk_x = new Derivitave(0.0);
     private final Derivitave world_linear_jerk_y = new Derivitave(0.0);
@@ -158,7 +159,7 @@ public class Drive extends SubsystemBase {
             this::setPose,
             this::getChassisSpeeds,
             this::runVelocity,
-            new PPHolonomicDriveController(new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+            new PPHolonomicDriveController(new PIDConstants(1.0, 0.02, 0.09), new PIDConstants(0.4, 0.02, 0.04)),
             PP_CONFIG,
             () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
             this);

@@ -110,7 +110,7 @@ public class Mailbox extends SubsystemBase {
             pose_list[closest_index],
             Units.metersToInches(closest_distance),
             Units.metersToInches(relative_translation.getX()),
-            Units.metersToInches(relative_translation.getY()),
+            Units.metersToInches(-relative_translation.getY()),
             Units.metersToInches(relative_translation.getZ()),
             Units.radiansToDegrees(pose_list[closest_index].getRotation().minus(new Rotation3d(0, 0, Math.PI)).minus(elevator.virtualCameraPosition().getRotation()).getZ()));
     }
