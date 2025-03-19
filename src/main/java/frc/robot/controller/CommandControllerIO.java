@@ -37,11 +37,12 @@ public interface CommandControllerIO {
 
     public Trigger mailboxFeedBtn();
 
-    public Trigger flyToCoralStation1();
+    public Trigger flyToCoralStationLeft();
 
-    public Trigger flyToCoralStation2();
+    public Trigger flyToCoralStationRight();
 
-    public Trigger FlyToClosestReefSide1();
-
-    public Trigger FlyToClosestReefSide2();
+    public Trigger flyToClosestReefLeftL2();
+    public Trigger flyToClosestReefLeftL3();
+    public Trigger flyToClosestReefRightL2();
+    public Trigger flyToClosestReefRightL3();
 }

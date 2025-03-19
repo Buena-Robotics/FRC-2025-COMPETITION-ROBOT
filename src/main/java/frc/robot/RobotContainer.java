@@ -98,7 +98,9 @@ public class RobotContainer {
                     drive::addVisionMeasurement, drive,
                     new VisionIOPhoton(Cameras.cameras[0]),
                     new VisionIOPhoton(Cameras.cameras[1]),
-                    new VisionIOPhoton(Cameras.cameras[2]));
+                    new VisionIOPhoton(Cameras.cameras[2]),
+                    new VisionIOPhoton(Cameras.cameras[3])
+                    );
 
                 this.elevator = new Elevator(new ElevatorIOReal() {}, drive::getPose);
                 this.climb = new Climb(new ClimbIOReal() {});
@@ -223,8 +225,11 @@ public class RobotContainer {
             drive,
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis()));
-        controller.flyToCoralStation1().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L3));
-        controller.flyToCoralStation2().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Left, () -> ReefBranchHeight.L3));
+
+        controller.flyToClosestReefLeftL2().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Left, () -> ReefBranchHeight.L2));
+        controller.flyToClosestReefLeftL3().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Left, () -> ReefBranchHeight.L3));
+        controller.flyToClosestReefRightL2().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L2));
+        controller.flyToClosestReefRightL3().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L3));
 
         controller.stopXBtn().whileTrue(DriveCommands.pathfindToPose(drive, FieldConstants.RED_REEF_SIDE_2_POSE));
 
@@ -238,7 +243,8 @@ public class RobotContainer {
         controller.elevatorSetpointModeBtn().onTrue(Commands.runOnce(() -> {
             elevator_setpoint_mode = !elevator_setpoint_mode;
         }));
-        coral_waiting_trigger.debounce(0.1).onTrue(MailboxCommands.feedCoral(mailbox));
+        coral_waiting_trigger.debounce(0.1).onTrue(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -0.2).until(() -> coral_waiting_trigger.getAsBoolean() == false));
+        coral_waiting_trigger.debounce(0.1).onFalse(MailboxCommands.feedCoral(mailbox));
     }
 
     public void intializePathplannerAutoCommands() {

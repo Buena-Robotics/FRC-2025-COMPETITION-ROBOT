@@ -29,7 +29,7 @@ public class MailboxCommands {
 
     public static Command feedCoral(final Mailbox mailbox) {
         return Commands.runOnce(() -> mailbox.resetPosition(), mailbox).andThen(
-            Commands.deadline(new WaitCommand(2.2), Commands.run(() -> mailbox.runPositionSetpoint(Mailbox.FEED_CORAL_POSITION), mailbox)
+            Commands.deadline(new WaitCommand(1.4), Commands.run(() -> mailbox.runPositionSetpoint(Mailbox.FEED_CORAL_POSITION), mailbox)
                 .until(() -> {
                     return Math.abs(Mailbox.FEED_CORAL_POSITION - mailbox.getPosition()) < FEED_CORAL_EPSILON;
                 })));

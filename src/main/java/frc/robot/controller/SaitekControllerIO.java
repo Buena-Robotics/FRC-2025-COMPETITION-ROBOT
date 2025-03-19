@@ -31,7 +31,7 @@ public class SaitekControllerIO implements CommandControllerIO {
     }
 
     @Override public double getClimbAxis() {
-        return controller.povDown().getAsBoolean() ? -0.25 : controller.povUp().getAsBoolean() ? 0.25 : 0.0;
+        return controller.povDown().getAsBoolean() ? 0.5 : controller.povUp().getAsBoolean() ? -0.25 : 0.0;
     }
 
     @Override public double getHingeAxis() {
@@ -67,22 +67,6 @@ public class SaitekControllerIO implements CommandControllerIO {
         return controller.getTrigger(Button.C);
     }
 
-    @Override public Trigger flyToCoralStation1() {
-        return controller.getTrigger(Button.T1);
-    }
-
-    @Override public Trigger flyToCoralStation2() {
-        return controller.getTrigger(Button.T2);
-    }
-
-    @Override public Trigger FlyToClosestReefSide1() {
-        return controller.getTrigger(Button.T3);
-    }
-
-    @Override public Trigger FlyToClosestReefSide2() {
-        return controller.getTrigger(Button.T4);
-    }
-
     @Override public Trigger algaeRelease() {
         return new Trigger(() -> false);
     }
@@ -93,5 +77,29 @@ public class SaitekControllerIO implements CommandControllerIO {
 
     @Override public Trigger algaeLow() {
         return controller.getTrigger(Button.START_STOP);
+    }
+
+    @Override public Trigger flyToCoralStationLeft() {
+        return new Trigger(() -> false);
+    }
+
+    @Override public Trigger flyToCoralStationRight() {
+        return new Trigger(() -> false);
+    }
+
+    @Override public Trigger flyToClosestReefLeftL2() {
+        return controller.getTrigger(Button.T2);
+    }
+
+    @Override public Trigger flyToClosestReefLeftL3() {
+        return controller.getTrigger(Button.T1);
+    }
+
+    @Override public Trigger flyToClosestReefRightL2() {
+        return controller.getTrigger(Button.T4);
+    }
+
+    @Override public Trigger flyToClosestReefRightL3() {
+        return controller.getTrigger(Button.T3);
     }
 }
