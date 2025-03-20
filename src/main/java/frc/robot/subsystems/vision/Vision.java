@@ -23,6 +23,7 @@ import static edu.wpi.first.units.Units.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -52,11 +53,13 @@ public class Vision extends SubsystemBase {
     private final VisionIOInputs[] inputs;
     private final SharedPhotonPoseEstimator[] estimators;
     private final Alert[] disconnected_alerts;
+    private final BooleanSupplier force_single_tag;
 
-    public Vision(VisionConsumer consumer, Drive drive, VisionIO... io) {
+    public Vision(VisionConsumer consumer, Drive drive, BooleanSupplier force_single_tag, VisionIO... io) {
         this.consumer = consumer;
         this.drive = drive;
         this.io = io;
+        this.force_single_tag = force_single_tag;
 
         // Initialize inputs
         this.inputs = new VisionIOInputs[io.length];
@@ -110,7 +113,7 @@ public class Vision extends SubsystemBase {
             return Optional.empty();
         if (result.multitagResult.isPresent())
             return estimator.update(result, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
-        if (!DriverStation.isEnabled() || Math.abs(drive.yawRate()) >= 0.04) {
+        if (!DriverStation.isEnabled() || Math.abs(drive.yawRate()) >= 0.04 || force_single_tag.getAsBoolean()) {
             return singleTagEstimate(estimator, estimator.update(result, PoseStrategy.AVERAGE_BEST_TARGETS));
         }
         return estimator.update(result, PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);

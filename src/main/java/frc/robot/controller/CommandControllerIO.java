@@ -48,4 +48,5 @@ public interface CommandControllerIO {
     public Trigger modeTeleop();
     public Trigger modeSemiAuto();
     public Trigger modeAuto();
+    public Trigger disableBologna();
 }

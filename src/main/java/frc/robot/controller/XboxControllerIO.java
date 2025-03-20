@@ -113,4 +113,8 @@ public class XboxControllerIO implements CommandControllerIO {
     @Override public Trigger fullClimb() {
         return new Trigger(() -> false);
     }
+
+    @Override public Trigger disableBologna() {
+        return new Trigger(() -> false);
+    }
 }

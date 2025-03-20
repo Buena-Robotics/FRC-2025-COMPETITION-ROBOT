@@ -80,7 +80,7 @@ public class SaitekControllerIO implements CommandControllerIO {
     }
 
     @Override public Trigger flyToCoralStationLeft() {
-        return new Trigger(() -> false);
+        return controller.getTrigger(Button.T5);
     }
 
     @Override public Trigger flyToCoralStationRight() {
@@ -113,5 +113,9 @@ public class SaitekControllerIO implements CommandControllerIO {
 
     @Override public Trigger modeAuto() {
         return controller.getTrigger(Button.MODE_DOWN);
+    }
+
+    @Override public Trigger disableBologna() {
+        return controller.getTrigger(Button.PINKY_TRIGGER);
     }
 }

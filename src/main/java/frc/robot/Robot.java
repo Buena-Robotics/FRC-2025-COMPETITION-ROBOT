@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.hal.AllianceStationID;
+import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.networktables.ConnectionInfo;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Alert;
@@ -118,6 +119,9 @@ public class Robot extends LoggedRobot {
         disabled_timer.reset();
         disabled_timer.start();
 
+        PortForwarder.add(5800, "photonvision.local", 5800);
+        PortForwarder.add(5801, "victini.local", 5800);
+
         robot_container = new RobotContainer();
         // PathfindingCommand.warmupCommand().schedule();
         // ultrasonic.enableTermination();
@@ -144,6 +148,8 @@ public class Robot extends LoggedRobot {
 
         low_memory_alert.set(MemTracker.highMemoryUsage());
         Logger.recordOutput("MemoryUsage", MemTracker.memoryUsage());
+
+        robot_container.logControlMode();
 
         // Log list of NT clients
         List<String> clientNames = new ArrayList<>();

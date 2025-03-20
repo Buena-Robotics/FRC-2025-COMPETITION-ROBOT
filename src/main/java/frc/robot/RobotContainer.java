@@ -107,7 +107,7 @@ public class RobotContainer {
                     new ModuleIOSpark(3));
 
                 this.vision = new Vision(
-                    drive::addVisionMeasurement, drive,
+                    drive::addVisionMeasurement, drive, () -> vision_force_single_tag_mode,
                     new VisionIOPhoton(Cameras.cameras[0]),
                     new VisionIOPhoton(Cameras.cameras[1]),
                     new VisionIOPhoton(Cameras.cameras[2]),
@@ -135,7 +135,7 @@ public class RobotContainer {
                     new ModuleIOSim(drive_simulation.getModules()[3]));
                 // new VisionIOPhotonSim(Cameras.cameras[0]), new
                 // VisionIOPhotonSim(Cameras.cameras[1])
-                this.vision = new Vision(drive::addVisionMeasurement, drive,
+                this.vision = new Vision(drive::addVisionMeasurement, drive, () -> vision_force_single_tag_mode,
                     new VisionIOPhotonSim(Cameras.cameras[0],
                         drive_simulation::getSimulatedDriveTrainPose),
                     new VisionIOPhotonSim(Cameras.cameras[1],
@@ -154,7 +154,7 @@ public class RobotContainer {
             default:
                 // Replayed robot, disable IO implementations
                 this.drive = new Drive(new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
-                this.vision = new Vision(drive::addVisionMeasurement, drive, new VisionIO() {}, new VisionIO() {}, new VisionIO() {});
+                this.vision = new Vision(drive::addVisionMeasurement, drive, () -> vision_force_single_tag_mode, new VisionIO() {}, new VisionIO() {}, new VisionIO() {});
                 this.elevator = new Elevator(new ElevatorIO() {}, drive::getPose);
                 this.hinge = new Hinge(new HingeIO() {});
                 this.climb = new Climb(new ClimbIO() {});
@@ -199,6 +199,7 @@ public class RobotContainer {
         configureBindings();
     }
 
+    private boolean vision_force_single_tag_mode = false;
     private boolean elevator_setpoint_mode = false;
     private boolean field_oriented_mode = Config.ROBOT_MODE == RobotMode.SIM ? false : true;
 
@@ -243,10 +244,20 @@ public class RobotContainer {
         // Default command, normal field-relative drive
         setTeleopDefaultCommands();
 
-        controller.modeTeleop().onTrue(Commands.runOnce(this::setTeleopDefaultCommands));
-        controller.modeSemiAuto().onTrue(Commands.runOnce(this::setSemiAutoDefaultCommands));
-        controller.modeAuto().onTrue(Commands.runOnce(this::setAutoDefaultCommands));
+        controller.modeAuto().whileTrue(DriveCommands.driveSuperAssistJoystickDrive(
+            drive,
+            mailbox,
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis()));
 
+        // controller.modeTeleop().onTrue(Commands.runOnce(this::setTeleopDefaultCommands));
+        // controller.modeSemiAuto().onTrue(Commands.runOnce(this::setSemiAutoDefaultCommands));
+        // controller.modeAuto().onTrue(Commands.runOnce(this::setAutoDefaultCommands));
+
+        // controller.modeSemiAuto().onTrue(Commands.runOnce(this::setSemiAutoDefaultCommands));
+        // controller.modeAuto().onTrue(Commands.runOnce(this::setAutoDefaultCommands));
+
+        controller.flyToCoralStationLeft().onTrue(Commands.runOnce(() -> { vision_force_single_tag_mode = !vision_force_single_tag_mode; }));
         controller.fieldOrientedBtn().onTrue(Commands.runOnce(() -> { field_oriented_mode = !field_oriented_mode; }));
         controller.elevatorSetpointModeBtn().onTrue(Commands.runOnce(() -> { elevator_setpoint_mode = !elevator_setpoint_mode; }));
 
@@ -258,7 +269,12 @@ public class RobotContainer {
         // controller.algaeLow().onTrue(ElevatorCommands.grabAlgae(elevator, () -> ElevatorSetpoint.ALGAE_LOW));
         // controller.algaeHigh().onTrue(ElevatorCommands.grabAlgae(elevator, () -> ElevatorSetpoint.TOP));
 
-        controller.flipRobotBtn().onTrue(DriveCommands.flipRobot(
+        // controller.flipRobotBtn().onTrue(DriveCommands.flipRobot(
+            // drive,
+            // Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
+            // Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis()));
+
+        controller.flipRobotBtn().onTrue(DriveCommands.driveAssistJoystickDrive(
             drive,
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis()));
@@ -270,6 +286,8 @@ public class RobotContainer {
 
         coral_waiting_trigger.debounce(0.1).onTrue(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -0.2).until(() -> coral_waiting_trigger.getAsBoolean() == false));
         coral_waiting_trigger.debounce(0.1).onFalse(MailboxCommands.feedCoral(mailbox));
+
+        controller.disableBologna().onTrue(Commands.runOnce(() -> {}, drive));
     }
 
     public void intializePathplannerAutoCommands() {
@@ -346,5 +364,15 @@ public class RobotContainer {
             Logger.recordOutput("FieldSimulation/CoralTotalScoredPoints", (corals_l2 * 3) + (corals_l3 * 4));
 
         }
+    }
+
+    public void logControlMode(){
+        Logger.recordOutput("Control/VisionForceSingleTag", vision_force_single_tag_mode);
+        Logger.recordOutput("Control/FieldOrientedMode", field_oriented_mode);
+        Logger.recordOutput("Control/ElevatorSetpointMode", elevator_setpoint_mode);
+        Logger.recordOutput("Control/Mode",
+            controller.modeTeleop().getAsBoolean() ? "Teleop" :
+                controller.modeSemiAuto().getAsBoolean() ? "SemiTeleop" :
+                    controller.modeAuto().getAsBoolean() ? "Auto" : "UNKNOWN_MODE");
     }
 }
