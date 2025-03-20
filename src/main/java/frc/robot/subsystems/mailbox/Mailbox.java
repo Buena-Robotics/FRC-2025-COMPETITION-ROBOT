@@ -89,7 +89,7 @@ public class Mailbox extends SubsystemBase {
 
     public Transform3d robotToCoral() {
         final double coral_length_inches = 11.875;
-        final double coral_travel_distance = 13 + coral_length_inches;
+        final double coral_travel_distance = 32 + coral_length_inches;
         final Transform3d robot_to_elevator = elevator.robotToElevator();
         final double coral_forward_inches = (coral_travel_distance * coralPositionPercent()) - 13;
         return new Transform3d(Units.inchesToMeters(coral_forward_inches), robot_to_elevator.getY(), robot_to_elevator.getZ(), robot_to_elevator.getRotation());
@@ -118,11 +118,10 @@ public class Mailbox extends SubsystemBase {
 
     public boolean goodShot() {
         final BranchCloseStats stats = getClosestReefBranchStats();
-        return stats.distance_inches_forward() < 9.0 &&
+        return stats.distance_inches_forward() < 6.0 &&
             Utils.inBetween(stats.distance_inches_up(), -2.0, 3.0) &&
-            (( Utils.inBetween(stats.distance_inches_left(), -1.0, 1.0) && Utils.inBetween(stats.rotation_yaw_degrees, -9.0, 9.0)) ||
-            ( Utils.inBetween(stats.distance_inches_left(), 1.0, 3.0) && Utils.inBetween(stats.rotation_yaw_degrees, 2.0, 9.0)) ||
-            (  Utils.inBetween(stats.distance_inches_left(), -3.0, -1.0) && Utils.inBetween(stats.rotation_yaw_degrees, -9.0, -2.0)) );
+            Utils.inBetween(stats.distance_inches_left(), -1.0, 1.0)
+            && Utils.inBetween(stats.rotation_yaw_degrees, -5.0, 5.0);
     }
 
     public double getPosition() {

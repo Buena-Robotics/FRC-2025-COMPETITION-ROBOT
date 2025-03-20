@@ -92,7 +92,7 @@ public class RobotContainer {
     private final CommandControllerIO controller = Config.ROBOT_MODE == RobotMode.SIM ? new XboxControllerIO(0) : new SaitekControllerIO(0);
 
     // Dashboard inputs
-    private final LoggedTunableNumber auto_delay = new LoggedTunableNumber("AutoDelay");
+    private final LoggedTunableNumber auto_delay = new LoggedTunableNumber("AutoDelay/", 0.0);
     private final LoggedDashboardChooser<Command> auto_chooser;
 
     public RobotContainer() {
@@ -218,22 +218,6 @@ public class RobotContainer {
         climb.setDefaultCommand(ClimbCommands.triggerClimbSpeed(climb, () -> controller.getClimbAxis()));
         mailbox.setDefaultCommand(MailboxCommands.triggerMailboxSpeed(mailbox, () -> controller.getMailboxAxis()));
     }
-    private void setSemiAutoDefaultCommands(){
-        drive.setDefaultCommand(DriveCommands.joystickDrive(
-            drive,
-            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
-            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis(),
-            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getTurnAxis() : () -> -controller.getTurnAxis(),
-            Config.ROBOT_MODE == RobotMode.SIM ? () ->  controller.fieldOrientedBtn().getAsBoolean() : () -> !controller.fieldOrientedBtn().getAsBoolean()));
-    }
-    private void setAutoDefaultCommands(){
-        drive.setDefaultCommand(DriveCommands.driveSuperAssistJoystickDrive(
-            drive,
-            mailbox,
-            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
-            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis()));
-    }
-
     private void configureBindings() {
         if (Config.ROBOT_TYPE == RobotType.SETUP_SWERVE_TUNING) {
             drive.setDefaultCommand(DriveCommands.viewWheelForwardDirection(drive, controller::getElevatorAxis));
@@ -261,7 +245,10 @@ public class RobotContainer {
         controller.fieldOrientedBtn().onTrue(Commands.runOnce(() -> { field_oriented_mode = !field_oriented_mode; }));
         controller.elevatorSetpointModeBtn().onTrue(Commands.runOnce(() -> { elevator_setpoint_mode = !elevator_setpoint_mode; }));
 
-        good_shot_trigger.and(likely_has_coral_trigger).and(controller.modeSemiAuto().or(controller.modeAuto())).whileTrue(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -1.0));
+        good_shot_trigger.and(likely_has_coral_trigger).and(controller.modeSemiAuto().or(controller.modeAuto()))
+            .whileTrue(
+                Commands.deadline(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -1.0), DriveCommands.lockWheels(drive).withTimeout(1.0))
+                );
         likely_doesnt_has_coral_trigger.and(controller.modeSemiAuto().or(controller.modeAuto())).whileTrue(ElevatorCommands.triggerElevatorSetpoint(elevator, ElevatorSetpoint.CORAL_STATION));
 
         controller.fullClimb().onTrue(ClimbCommands.fullClimb(climb));
@@ -279,10 +266,10 @@ public class RobotContainer {
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis()));
 
-        controller.flyToClosestReefLeftL2().and(controller.fireDrive()).onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Left, () -> ReefBranchHeight.L2));
-        controller.flyToClosestReefLeftL3().and(controller.fireDrive()).onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Left, () -> ReefBranchHeight.L3));
-        controller.flyToClosestReefRightL2().and(controller.fireDrive()).onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L2));
-        controller.flyToClosestReefRightL3().and(controller.fireDrive()).onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L3));
+        controller.flyToClosestReefLeftL2().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Left, () -> ReefBranchHeight.L2));
+        controller.flyToClosestReefLeftL3().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Left, () -> ReefBranchHeight.L3));
+        controller.flyToClosestReefRightL2().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L2));
+        controller.flyToClosestReefRightL3().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L3));
 
         coral_waiting_trigger.debounce(0.1).onTrue(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -0.2).until(() -> coral_waiting_trigger.getAsBoolean() == false));
         coral_waiting_trigger.debounce(0.1).onFalse(MailboxCommands.feedCoral(mailbox));

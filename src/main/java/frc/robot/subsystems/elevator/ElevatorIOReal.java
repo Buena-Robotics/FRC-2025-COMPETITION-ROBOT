@@ -17,17 +17,14 @@ public class ElevatorIOReal implements ElevatorIO {
     private static final int LIFT_MOTOR_CAN_ID = 9;
 
     // Constants when lift is empty
-    private static final double LIFT_EMPTY_P = 0.4;
-    private static final double LIFT_EMPTY_D = 0.025;
-    private static final double HINGE_P = 0.1;
-    private static final double HINGE_D = 0.005;
+    private static final double LIFT_EMPTY_P = 0.75;
+    private static final double LIFT_EMPTY_D = 0.024;
 
     private static final double LIFT_CLAMP_MIN_POSITION = 0.25;
 
     private static final int LIFT_MOTOR_CURRENT_LIMIT = 10;
     private static final double LIFT_ENCODER_POSITION_FACTOR = 1.0 / 2.7643; // Math.PI * 2 * (1.0/Elevator.LIFT_MOTOR_REDUCTION);
     private static final double LIFT_ENCODER_VELOCITY_FACTOR = LIFT_ENCODER_POSITION_FACTOR / 60.0;
-    private static final int HINGE_MOTOR_CURRENT_LIMIT = 18;
 
     // private static final double HINGE_ABSOLUTE_ENCODER_END_POSITION = 0.0;
 
@@ -49,23 +46,6 @@ public class ElevatorIOReal implements ElevatorIO {
 
         SparkUtil.configureSparkMax(this.lift_motor, DEFAULT_LIFT_SPARK_CONFIG);
         SparkUtil.setPosition(this.lift_motor, this.lift_encoder, 0.0);
-
-        // hinge_absolute_encoder.setInverted(true);
-
-        final SparkMaxConfig hinge_config = new SparkMaxConfig();
-        SparkUtil.setSparkBaseConfig(hinge_config, HINGE_MOTOR_CURRENT_LIMIT);
-        hinge_config.inverted(true);
-        hinge_config.absoluteEncoder.inverted(true);
-        hinge_config.absoluteEncoder.positionConversionFactor(Math.PI * 2);
-        hinge_config.absoluteEncoder.velocityConversionFactor((Math.PI * 2) / 60);
-        hinge_config.absoluteEncoder.zeroOffset(0.01753339357674122);
-        hinge_config.closedLoop
-            .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
-            .positionWrappingEnabled(true)
-            .positionWrappingInputRange(0.0, Math.PI * 2.0)
-            .pidf(HINGE_P, 0.005, HINGE_D, 0.0)
-            .iMaxAccum(0.008)
-            .iZone(0.22);
     }
 
     @Override public void updateInputs(final ElevatorIOInputs inputs) {

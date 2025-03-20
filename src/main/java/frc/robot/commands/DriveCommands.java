@@ -232,6 +232,12 @@ public class DriveCommands {
             }, drive);
     }
 
+    public static Command lockWheels(final Drive drive){
+        return Commands.run(() -> {
+            runSpeeds(drive, 0, 0, 0, false);
+        }, drive);
+    }
+
     public static Command flipRobot(final Drive drive, final DoubleSupplier x_supplier, final DoubleSupplier y_supplier) {
         return Commands.runOnce(() -> {
             resetControllers(drive);
