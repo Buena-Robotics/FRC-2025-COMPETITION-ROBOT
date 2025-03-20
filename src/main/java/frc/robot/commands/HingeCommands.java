@@ -5,43 +5,46 @@ import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.DoubleSupplier;
-
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.mailbox.Mailbox;
+import frc.robot.subsystems.hinge.Hinge;
 
-public class MailboxCommands {
-    private static final double FEED_CORAL_EPSILON = 0.5;
-    private static final double TIME_TO_LAUNCH_SECONDS = 0.4;
+public class HingeCommands {
     private static final double FF_START_DELAY = 2.0; // Secs
     private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
 
-    private MailboxCommands() {}
+    private HingeCommands() {}
 
-    public static Command triggerMailboxSpeed(final Mailbox mailbox, final DoubleSupplier speed_supplier) {
-        return Commands.run(() -> {
-            mailbox.runSpeedSetpoint(speed_supplier.getAsDouble());
-        }, mailbox);
+    public static Command triggerHingeAngle(final Hinge hinge, final DoubleSupplier hinge_angle_supplier) {
+        return Commands.run(
+            () -> {
+                hinge.runHingeSetpoint(hinge_angle_supplier.getAsDouble() * 2.3);
+            }, hinge);
     }
 
-    public static Command feedCoral(final Mailbox mailbox) {
-        return Commands.runOnce(() -> mailbox.resetPosition(), mailbox)
-                .andThen(Commands.run(() -> mailbox.runPositionSetpoint(Mailbox.FEED_CORAL_POSITION), mailbox)
-                .until(() -> {return Math.abs(Mailbox.FEED_CORAL_POSITION - mailbox.getPosition()) < FEED_CORAL_EPSILON;})
-                .withTimeout(1.4));
+    // public static Command grabAlgae(final Elevator elevator, final Supplier<ElevatorSetpoint> algae_height) {
+    //     return Commands.run(() -> {
+    //         elevator.runLiftSetpoint(ElevatorSetpoint.BOTTOM.getValue());
+    //         elevator.runHingeSetpoint(HingeSetpoint.ALGAE.getValue());
+    //     }, elevator)
+    //         .until(() -> elevator.isLiftAtSetpoint(ElevatorSetpoint.BOTTOM) && elevator.isHingeAtSetpoint(HingeSetpoint.ALGAE))
+    //         .andThen(new WaitCommand(1.0))
+    //         .andThen(Commands.run(() -> {
+    //             elevator.runLiftSetpoint(algae_height.get().getValue());
+    //         }, elevator)
+    //             .until(() -> elevator.isLiftAtSetpoint(algae_height.get()))).andThen(new WaitCommand(5.0))
+    //         .andThen(Commands.run(() -> {
+    //             elevator.runLiftSetpoint(ElevatorSetpoint.BOTTOM.getValue());
+    //         }, elevator)
+    //             .until(() -> elevator.isLiftAtSetpoint(ElevatorSetpoint.BOTTOM)));
+    // }
+
+    public static Command releaseAlgae(final Hinge hinge) {
+        return Commands.run(() -> {}, hinge);
     }
 
-    public static Command lockDriveAndLaunchCoral(final Mailbox mailbox, final Drive drive) {
-        return Commands.deadline(new WaitCommand(TIME_TO_LAUNCH_SECONDS), Commands.run(() -> {
-            mailbox.runSpeedSetpoint(-1.0);
-            drive.stop();
-        }, mailbox, drive));
-    }
-
-    public static Command feedforwardCharacterization(final Mailbox mailbox) {
+    public static Command feedforwardCharacterization(final Hinge hinge) {
         List<Double> velocity_samples = new LinkedList<>();
         List<Double> voltage_samples = new LinkedList<>();
         Timer timer = new Timer();
@@ -56,9 +59,9 @@ public class MailboxCommands {
             // Allow modules to orient
             Commands.run(
                 () -> {
-                    mailbox.runCharacterization(0.0);
+                    hinge.runHingeCharacterization(0.0);
                 },
-                mailbox)
+                hinge)
                 .withTimeout(FF_START_DELAY),
 
             // Start timer
@@ -68,11 +71,11 @@ public class MailboxCommands {
             Commands.run(
                 () -> {
                     double voltage = timer.get() * FF_RAMP_RATE;
-                    mailbox.runCharacterization(voltage);
-                    velocity_samples.add(mailbox.getFFCharacterizationVelocity());
+                    hinge.runHingeCharacterization(voltage);
+                    velocity_samples.add(hinge.getHingeFFCharacterizationVelocity());
                     voltage_samples.add(voltage);
                 },
-                mailbox)
+                hinge)
 
                 // When cancelled, calculate and print results
                 .finallyDo(() -> {

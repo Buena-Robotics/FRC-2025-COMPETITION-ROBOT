@@ -39,12 +39,8 @@ public class SaitekControllerIO implements CommandControllerIO {
 
     }
 
-    @Override public Trigger resetGyroBtn() {
-        return controller.getTrigger(Button.DOUBLE_TRIGGER_1);
-    }
-
-    @Override public Trigger stopXBtn() {
-        return controller.getTrigger(Button.DOUBLE_TRIGGER_2);
+    @Override public Trigger fullClimb() {
+        return controller.getTrigger(Button.FIRE);
     }
 
     @Override public Trigger elevatorSetpointModeBtn() {
@@ -52,11 +48,11 @@ public class SaitekControllerIO implements CommandControllerIO {
     }
 
     @Override public Trigger fieldOrientedBtn() {
-        return controller.getTrigger(Button.FIRE);
+        return controller.getTrigger(Button.B);
     }
 
     @Override public Trigger driveAssistBtn() {
-        return controller.getTrigger(Button.B);
+        return new Trigger(() -> false);
     }
 
     @Override public Trigger mailboxFeedBtn() {
@@ -77,6 +73,10 @@ public class SaitekControllerIO implements CommandControllerIO {
 
     @Override public Trigger algaeLow() {
         return controller.getTrigger(Button.START_STOP);
+    }
+
+    @Override public Trigger fireDrive() {
+        return controller.getTrigger(Button.DOUBLE_TRIGGER_1);
     }
 
     @Override public Trigger flyToCoralStationLeft() {
@@ -101,5 +101,17 @@ public class SaitekControllerIO implements CommandControllerIO {
 
     @Override public Trigger flyToClosestReefRightL3() {
         return controller.getTrigger(Button.T3);
+    }
+
+    @Override public Trigger modeTeleop() {
+        return controller.getTrigger(Button.MODE_UP);
+    }
+
+    @Override public Trigger modeSemiAuto() {
+        return controller.getTrigger(Button.MODE_MIDDLE);
+    }
+
+    @Override public Trigger modeAuto() {
+        return controller.getTrigger(Button.MODE_DOWN);
     }
 }

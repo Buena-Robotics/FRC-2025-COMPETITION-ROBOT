@@ -9,13 +9,6 @@ public interface ElevatorIO {
         public double lift_velocity_inches_per_second = 0.0;
         public double lift_applied_volts = 0.0;
         public double lift_current_amps = 0.0;
-
-        public boolean hinge_connected = true;
-        public double hinge_position_radians = 0.0;
-        public double hinge_absolute_position_radians = 0.0;
-        public double hinge_velocity_radians_per_second = 0.0;
-        public double hinge_applied_volts = 0.0;
-        public double hinge_current_amps = 0.0;
     }
 
     public default void updateInputs(final ElevatorIOInputs inputs) {}
@@ -27,8 +20,4 @@ public interface ElevatorIO {
     public default void setLiftPosition(double lift_setpoint_position_inches) {}
 
     public default void zeroLiftPosition() {}
-
-    public default void setHingeAngle(final double radians) {}
-
-    public default void setHingeOpenLoop(final double output) {}
 }

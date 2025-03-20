@@ -13,4 +13,9 @@ public class ClimbCommands {
             climb.runSetpoint(climb_speed_supplier.getAsDouble());
         }, climb);
     }
+    public static final Command fullClimb(final Climb climb){
+        return Commands.run(() -> {
+            climb.runSetpoint(0.6);
+        }, climb).withTimeout(15.0);
+    }
 }

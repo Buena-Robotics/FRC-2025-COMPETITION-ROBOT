@@ -20,8 +20,8 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -33,6 +33,7 @@ import frc.robot.commands.AutoCommands;
 import frc.robot.commands.ClimbCommands;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorCommands;
+import frc.robot.commands.HingeCommands;
 import frc.robot.commands.MailboxCommands;
 import frc.robot.controller.CommandControllerIO;
 import frc.robot.controller.SaitekControllerIO;
@@ -53,6 +54,10 @@ import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOReal;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.elevator.Elevator.ElevatorSetpoint;
+import frc.robot.subsystems.hinge.Hinge;
+import frc.robot.subsystems.hinge.HingeIO;
+import frc.robot.subsystems.hinge.HingeIOReal;
+import frc.robot.subsystems.hinge.HingeIOSim;
 import frc.robot.subsystems.mailbox.Mailbox;
 import frc.robot.subsystems.mailbox.MailboxIO;
 import frc.robot.subsystems.mailbox.MailboxIOReal;
@@ -63,6 +68,7 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhoton;
 import frc.robot.subsystems.vision.VisionIOPhotonSim;
 import frc.robot.util.ArenaSchool2025Reefscape;
+import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.Utils;
 
 public class RobotContainer {
@@ -74,14 +80,19 @@ public class RobotContainer {
         new SwerveDriveSimulation(Drive.MAPLE_SIM_CONFIG, Utils.initialRobotPose()) :
         null;
     private final Elevator elevator;
+    private final Hinge hinge;
     private final Climb climb;
     private final Mailbox mailbox;
     private final Trigger coral_waiting_trigger;
+    private final Trigger likely_has_coral_trigger;
+    private final Trigger likely_doesnt_has_coral_trigger;
+    private final Trigger good_shot_trigger;
 
     // Controller
     private final CommandControllerIO controller = Config.ROBOT_MODE == RobotMode.SIM ? new XboxControllerIO(0) : new SaitekControllerIO(0);
 
     // Dashboard inputs
+    private final LoggedTunableNumber auto_delay = new LoggedTunableNumber("AutoDelay");
     private final LoggedDashboardChooser<Command> auto_chooser;
 
     public RobotContainer() {
@@ -103,6 +114,7 @@ public class RobotContainer {
                     new VisionIOPhoton(Cameras.cameras[3]));
 
                 this.elevator = new Elevator(new ElevatorIOReal() {}, drive::getPose);
+                this.hinge = new Hinge(new HingeIOReal() {});
                 this.climb = new Climb(new ClimbIOReal() {});
                 this.mailbox = new Mailbox(new MailboxIOReal() {}, elevator, drive::getPose);
                 break;
@@ -134,6 +146,8 @@ public class RobotContainer {
                         drive_simulation::getSimulatedDriveTrainPose));
 
                 this.elevator = new Elevator(new ElevatorIOSim(), drive::getPose);
+                this.hinge = new Hinge(new HingeIOSim());
+
                 this.climb = new Climb(new ClimbIOSim());
                 this.mailbox = new Mailbox(new MailboxIOSim(drive_simulation, elevator), elevator, drive::getPose);
                 break;
@@ -142,18 +156,23 @@ public class RobotContainer {
                 this.drive = new Drive(new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
                 this.vision = new Vision(drive::addVisionMeasurement, drive, new VisionIO() {}, new VisionIO() {}, new VisionIO() {});
                 this.elevator = new Elevator(new ElevatorIO() {}, drive::getPose);
+                this.hinge = new Hinge(new HingeIO() {});
                 this.climb = new Climb(new ClimbIO() {});
                 this.mailbox = new Mailbox(new MailboxIO() {}, elevator, drive::getPose);
                 break;
         }
 
-        coral_waiting_trigger = new Trigger(mailbox::coralWaiting);
+        this.coral_waiting_trigger = new Trigger(mailbox::coralWaiting);
+        this.likely_has_coral_trigger = new Trigger(mailbox::likelyHasCoral);
+        this.likely_doesnt_has_coral_trigger = new Trigger(() -> !mailbox.likelyHasCoral());
+        this.good_shot_trigger = new Trigger(mailbox::goodShot);
 
         intializePathplannerAutoCommands();
 
         // Set up auto routines
         auto_chooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
         auto_chooser.addOption("Leave Community", AutoCommands.leaveCommunity(drive));
+        // auto_chooser.addOption("Single Coral", AutoCommands.singleCoral(drive, elevator));
 
         if (Config.TUNING_PID_LOOPS) {
             auto_chooser.addOption("Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
@@ -181,70 +200,74 @@ public class RobotContainer {
     }
 
     private boolean elevator_setpoint_mode = false;
+    private boolean field_oriented_mode = Config.ROBOT_MODE == RobotMode.SIM ? false : true;
 
-    private void configureBindings() {
-        if (Config.ROBOT_TYPE == RobotType.SETUP_SWERVE_TUNING) {
-            drive.setDefaultCommand(DriveCommands.viewWheelForwardDirection(drive, controller::getElevatorAxis));
-            controller.stopXBtn().onTrue(new InstantCommand(drive::logModuleOffsets));
-            return;
-        }
-
-        // Default command, normal field-relative drive
+    private void setTeleopDefaultCommands(){
         drive.setDefaultCommand(DriveCommands.joystickDrive(
             drive,
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getTurnAxis() : () -> -controller.getTurnAxis(),
-            () -> Config.ROBOT_MODE == RobotMode.SIM ?
-                controller.fieldOrientedBtn().getAsBoolean() :
-                controller.fieldOrientedBtn().getAsBoolean()));
-        controller.driveAssistBtn().whileTrue(DriveCommands.driveSuperAssistJoystickDrive(
+            () -> field_oriented_mode));
+        elevator.setDefaultCommand(ElevatorCommands.triggerElevatorHeightAndSetpoint(elevator,
+            () -> elevator_setpoint_mode,
+            () -> controller.getElevatorAxis(),
+            () -> controller.getElevatorAxis()));
+        hinge.setDefaultCommand(HingeCommands.triggerHingeAngle(hinge, () -> controller.getHingeAxis()));
+        climb.setDefaultCommand(ClimbCommands.triggerClimbSpeed(climb, () -> controller.getClimbAxis()));
+        mailbox.setDefaultCommand(MailboxCommands.triggerMailboxSpeed(mailbox, () -> controller.getMailboxAxis()));
+    }
+    private void setSemiAutoDefaultCommands(){
+        drive.setDefaultCommand(DriveCommands.joystickDrive(
+            drive,
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis(),
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getTurnAxis() : () -> -controller.getTurnAxis(),
+            Config.ROBOT_MODE == RobotMode.SIM ? () ->  controller.fieldOrientedBtn().getAsBoolean() : () -> !controller.fieldOrientedBtn().getAsBoolean()));
+    }
+    private void setAutoDefaultCommands(){
+        drive.setDefaultCommand(DriveCommands.driveSuperAssistJoystickDrive(
             drive,
             mailbox,
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis()));
+    }
 
-        // drive.setDefaultCommand(DriveCommands.driveSuperAssistJoystickDrive(
-        // drive,
-        // mailbox,
-        // Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : ()
-        // -> -controller.getDriveYAxis(),
-        // Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : ()
-        // -> -controller.getDriveXAxis()));
+    private void configureBindings() {
+        if (Config.ROBOT_TYPE == RobotType.SETUP_SWERVE_TUNING) {
+            drive.setDefaultCommand(DriveCommands.viewWheelForwardDirection(drive, controller::getElevatorAxis));
+            // controller.stopXBtn().onTrue(new InstantCommand(drive::logModuleOffsets));
+            return;
+        }
 
-        elevator.setDefaultCommand(ElevatorCommands.triggerElevatorHeightAndSetpoint(elevator,
-            () -> elevator_setpoint_mode,
-            () -> controller.getElevatorAxis(),
-            () -> controller.getElevatorAxis(),
-            () -> controller.getHingeAxis()));
-        climb.setDefaultCommand(ClimbCommands.triggerClimbSpeed(climb, () -> controller.getClimbAxis()));
-        mailbox.setDefaultCommand(MailboxCommands.triggerMailboxSpeed(mailbox, () -> controller.getMailboxAxis()));
+        // Default command, normal field-relative drive
+        setTeleopDefaultCommands();
 
-        controller.algaeLow().onTrue(ElevatorCommands.grabAlgae(elevator, () -> ElevatorSetpoint.ALGAE_LOW));
-        controller.algaeHigh().onTrue(ElevatorCommands.grabAlgae(elevator, () -> ElevatorSetpoint.TOP));
+        controller.modeTeleop().onTrue(Commands.runOnce(this::setTeleopDefaultCommands));
+        controller.modeSemiAuto().onTrue(Commands.runOnce(this::setSemiAutoDefaultCommands));
+        controller.modeAuto().onTrue(Commands.runOnce(this::setAutoDefaultCommands));
+
+        controller.fieldOrientedBtn().onTrue(Commands.runOnce(() -> { field_oriented_mode = !field_oriented_mode; }));
+        controller.elevatorSetpointModeBtn().onTrue(Commands.runOnce(() -> { elevator_setpoint_mode = !elevator_setpoint_mode; }));
+
+        good_shot_trigger.and(likely_has_coral_trigger).and(controller.modeSemiAuto().or(controller.modeAuto())).whileTrue(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -1.0));
+        likely_doesnt_has_coral_trigger.and(controller.modeSemiAuto().or(controller.modeAuto())).whileTrue(ElevatorCommands.triggerElevatorSetpoint(elevator, ElevatorSetpoint.CORAL_STATION));
+
+        controller.fullClimb().onTrue(ClimbCommands.fullClimb(climb));
+
+        // controller.algaeLow().onTrue(ElevatorCommands.grabAlgae(elevator, () -> ElevatorSetpoint.ALGAE_LOW));
+        // controller.algaeHigh().onTrue(ElevatorCommands.grabAlgae(elevator, () -> ElevatorSetpoint.TOP));
 
         controller.flipRobotBtn().onTrue(DriveCommands.flipRobot(
             drive,
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis()));
 
-        controller.flyToClosestReefLeftL2().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Left, () -> ReefBranchHeight.L2));
-        controller.flyToClosestReefLeftL3().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Left, () -> ReefBranchHeight.L3));
-        controller.flyToClosestReefRightL2().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L2));
-        controller.flyToClosestReefRightL3().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L3));
+        controller.flyToClosestReefLeftL2().and(controller.fireDrive()).onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Left, () -> ReefBranchHeight.L2));
+        controller.flyToClosestReefLeftL3().and(controller.fireDrive()).onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Left, () -> ReefBranchHeight.L3));
+        controller.flyToClosestReefRightL2().and(controller.fireDrive()).onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L2));
+        controller.flyToClosestReefRightL3().and(controller.fireDrive()).onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L3));
 
-        controller.stopXBtn().whileTrue(DriveCommands.pathfindToPose(drive, FieldConstants.RED_REEF_SIDE_2_POSE));
-
-        // Reset gyro / odometry
-        final Runnable resetGyro = Config.ROBOT_MODE == RobotMode.SIM ? () -> drive.setPose(
-            drive_simulation
-                .getSimulatedDriveTrainPose()) // reset odometry to actual robot pose during simulation
-            : () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
-        controller.resetGyroBtn().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
-
-        controller.elevatorSetpointModeBtn().onTrue(Commands.runOnce(() -> {
-            elevator_setpoint_mode = !elevator_setpoint_mode;
-        }));
         coral_waiting_trigger.debounce(0.1).onTrue(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -0.2).until(() -> coral_waiting_trigger.getAsBoolean() == false));
         coral_waiting_trigger.debounce(0.1).onFalse(MailboxCommands.feedCoral(mailbox));
     }
@@ -257,6 +280,8 @@ public class RobotContainer {
         // NamedCommands.registerCommand("algae_release",
         // ElevatorCommands.releaseAlgae(elevator));
 
+        // NamedCommands.registerCommand("elevator_L3", ElevatorCommands.triggerElevatorSetpoint(elevator, ElevatorSetpoint.L3));
+        NamedCommands.registerCommand("elevator_L3", DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L2));
         NamedCommands.registerCommand("algae_low", new WaitCommand(1));
         NamedCommands.registerCommand("algae_high", new WaitCommand(2));
         NamedCommands.registerCommand("algae_release", new WaitCommand(1));
@@ -268,13 +293,15 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return auto_chooser.get();
+        CommandScheduler.getInstance().clearComposedCommands();
+        return MailboxCommands.triggerMailboxSpeed(mailbox, () -> -0.2).until(() -> coral_waiting_trigger.getAsBoolean() == false).alongWith(
+            new WaitCommand(auto_delay.get()).andThen(auto_chooser.get()));
     }
 
     public void resetSimulationField() {
         if (Config.ROBOT_MODE != RobotMode.SIM)
             return;
-        drive_simulation.setSimulationWorldPose(new Pose2d(2, 2, new Rotation2d()));
+        drive_simulation.setSimulationWorldPose(Utils.initialRobotPose());
         // SimulatedArena.getInstance().resetFieldForAuto();
     }
 

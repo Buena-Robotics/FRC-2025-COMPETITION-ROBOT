@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.FieldConstants;
 import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.util.Utils;
 
 public class Mailbox extends SubsystemBase {
     public static final double CORAL_END_POSITION = -17.5;
@@ -115,14 +116,13 @@ public class Mailbox extends SubsystemBase {
             Units.radiansToDegrees(pose_list[closest_index].getRotation().minus(new Rotation3d(0, 0, Math.PI)).minus(elevator.virtualCameraPosition().getRotation()).getZ()));
     }
 
-    private boolean goodShot() {
+    public boolean goodShot() {
         final BranchCloseStats stats = getClosestReefBranchStats();
-        return Math.abs(stats.distance_inches_left()) < 2.4 &&
-            Math.abs(stats.distance_inches_forward()) < 10 &&
-            Math.abs(stats.distance_inches_up()) < 2.0 &&
-            Math.abs(stats.rotation_yaw_degrees()) < 9.0;
-        // (elevator.isLiftAtSetpoint(ElevatorSetpoint.L2) ||
-        // elevator.isLiftAtSetpoint(ElevatorSetpoint.L3));
+        return stats.distance_inches_forward() < 9.0 &&
+            Utils.inBetween(stats.distance_inches_up(), -2.0, 3.0) &&
+            (( Utils.inBetween(stats.distance_inches_left(), -1.0, 1.0) && Utils.inBetween(stats.rotation_yaw_degrees, -9.0, 9.0)) ||
+            ( Utils.inBetween(stats.distance_inches_left(), 1.0, 3.0) && Utils.inBetween(stats.rotation_yaw_degrees, 2.0, 9.0)) ||
+            (  Utils.inBetween(stats.distance_inches_left(), -3.0, -1.0) && Utils.inBetween(stats.rotation_yaw_degrees, -9.0, -2.0)) );
     }
 
     public double getPosition() {
@@ -138,11 +138,6 @@ public class Mailbox extends SubsystemBase {
     }
 
     public void runSpeedSetpoint(final double shooter_speed) {
-        if (goodShot()) {
-            Logger.recordOutput("Mailbox/Speedsetpoint", -1.0);
-            io.setShooterSpeed(-1.0);
-            return;
-        }
         Logger.recordOutput("Mailbox/Speedsetpoint", shooter_speed);
         io.setShooterSpeed(shooter_speed);
     }

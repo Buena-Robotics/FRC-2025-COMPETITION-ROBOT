@@ -21,4 +21,8 @@ public final class Utils {
     public static Pose2d initialRobotPose() {
         return Config.getRobotAlliance() == Alliance.Blue ? new Pose2d(8.22, 4.78, Rotation2d.fromDegrees(180)) : new Pose2d(9.43, 3.36, Rotation2d.fromDegrees(0));
     }
+
+    public static boolean inBetween(double value, double min, double max){
+        return value >= min && value <= max;
+    }
 }

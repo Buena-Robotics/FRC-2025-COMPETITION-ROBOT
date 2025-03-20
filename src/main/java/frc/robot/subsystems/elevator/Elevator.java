@@ -102,32 +102,16 @@ public class Elevator extends SubsystemBase {
         return inputs.lift_velocity_inches_per_second;
     }
 
-    public double getHingeFFCharacterizationVelocity() {
-        return inputs.hinge_velocity_radians_per_second;
-    }
-
     public double getLiftPositionInches() {
         return inputs.lift_position_inches;
-    }
-
-    public double getHingePositionRadians() {
-        return inputs.hinge_absolute_position_radians;
     }
 
     public void runLiftSetpoint(final double lift_position_inches) {
         io.setLiftPosition(lift_position_inches);
     }
 
-    public void runHingeSetpoint(final double hinge_position_radians) {
-        io.setHingeAngle(hinge_position_radians);
-    }
-
     public boolean isLiftAtSetpoint(final ElevatorSetpoint setpoint) {
         return Utils.epsilonOf(getLiftPositionInches(), setpoint.getValue(), 0.5);
-    }
-
-    public boolean isHingeAtSetpoint(final HingeSetpoint setpoint) {
-        return Utils.epsilonOf(getHingePositionRadians(), setpoint.getValue(), 0.08);
     }
 
     public static enum ElevatorSetpoint {
@@ -141,20 +125,6 @@ public class Elevator extends SubsystemBase {
 
         public double getValue() {
             return setpoint_inches;
-        }
-    }
-
-    public static enum HingeSetpoint {
-        TOP(0.0), ALGAE(1.45), RELEASE_ALGAE(2.63);
-
-        private double setpoint_radians = 0.0;
-
-        private HingeSetpoint(final double setpoint_radians) {
-            this.setpoint_radians = setpoint_radians;
-        }
-
-        public double getValue() {
-            return setpoint_radians;
         }
     }
 }

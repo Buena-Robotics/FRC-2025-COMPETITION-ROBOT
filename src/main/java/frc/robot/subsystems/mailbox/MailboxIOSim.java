@@ -121,11 +121,11 @@ public class MailboxIOSim implements MailboxIO {
     }
 
     @Override public void setShooterSpeed(final double shooter_speed) {
-        if (shooter_sim.getAngularPositionRad() >= -20) {
-            open_loop = true;
-            shooter_applied_volts = 0;
-            return;
-        }
+        // if (shooter_sim.getAngularPositionRad() >= -20) {
+            // open_loop = true;
+            // shooter_applied_volts = 0;
+            // return;
+        // }
         open_loop = true;
         shooter_applied_volts = shooter_speed * 12.0;
     }

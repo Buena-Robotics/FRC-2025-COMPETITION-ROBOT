@@ -38,14 +38,6 @@ public class XboxControllerIO implements CommandControllerIO {
         return 0;
     }
 
-    @Override public Trigger resetGyroBtn() {
-        return new Trigger(() -> false);
-    }
-
-    @Override public Trigger stopXBtn() {
-        return new Trigger(() -> false);
-    }
-
     @Override public Trigger elevatorSetpointModeBtn() {
         return controller.povLeft();
     }
@@ -78,6 +70,10 @@ public class XboxControllerIO implements CommandControllerIO {
         return new Trigger(() -> false);
     }
 
+    @Override public Trigger fireDrive() {
+        return new Trigger(() -> false);
+    }
+
     @Override public Trigger flyToCoralStationLeft() {
         return new Trigger(() -> false);
     }
@@ -99,6 +95,22 @@ public class XboxControllerIO implements CommandControllerIO {
     }
 
     @Override public Trigger flyToClosestReefRightL3() {
+        return new Trigger(() -> false);
+    }
+
+    @Override public Trigger modeTeleop() {
+        return new Trigger(() -> false);
+    }
+
+    @Override public Trigger modeSemiAuto() {
+        return new Trigger(() -> false);
+    }
+
+    @Override public Trigger modeAuto() {
+        return new Trigger(() -> false);
+    }
+
+    @Override public Trigger fullClimb() {
         return new Trigger(() -> false);
     }
 }

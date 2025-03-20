@@ -17,6 +17,8 @@ public interface CommandControllerIO {
 
     public double getHingeAxis();
 
+    public Trigger fullClimb();
+
     public Trigger algaeRelease();
 
     public Trigger algaeHigh();
@@ -29,20 +31,21 @@ public interface CommandControllerIO {
 
     public Trigger flipRobotBtn();
 
-    public Trigger resetGyroBtn();
-
-    public Trigger stopXBtn();
-
     public Trigger elevatorSetpointModeBtn();
 
     public Trigger mailboxFeedBtn();
 
-    public Trigger flyToCoralStationLeft();
+    public Trigger fireDrive();
 
+    public Trigger flyToCoralStationLeft();
     public Trigger flyToCoralStationRight();
 
     public Trigger flyToClosestReefLeftL2();
     public Trigger flyToClosestReefLeftL3();
     public Trigger flyToClosestReefRightL2();
     public Trigger flyToClosestReefRightL3();
+
+    public Trigger modeTeleop();
+    public Trigger modeSemiAuto();
+    public Trigger modeAuto();
 }
