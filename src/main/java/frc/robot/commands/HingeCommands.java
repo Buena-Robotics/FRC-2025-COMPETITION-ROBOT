@@ -8,7 +8,9 @@ import java.util.function.DoubleSupplier;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.hinge.Hinge;
+import frc.robot.subsystems.hinge.Hinge.HingeSetpoint;
 
 public class HingeCommands {
     private static final double FF_START_DELAY = 2.0; // Secs
@@ -41,7 +43,11 @@ public class HingeCommands {
     // }
 
     public static Command releaseAlgae(final Hinge hinge) {
-        return Commands.run(() -> {}, hinge);
+        return Commands.deadline(new WaitCommand(3.0), Commands.run(() -> {
+            hinge.runHingeSetpoint(HingeSetpoint.RELEASE_ALGAE.getValue());
+        }, hinge)).andThen(Commands.runOnce(() -> {
+            hinge.runHingeSetpoint(HingeSetpoint.TOP.getValue());
+        }, hinge));
     }
 
     public static Command feedforwardCharacterization(final Hinge hinge) {

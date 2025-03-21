@@ -34,7 +34,7 @@ public class Vision extends SubsystemBase {
     // Basic filtering thresholds
     public static double max_ambiguity = 0.2;
     public static double max_z_error = 0.25;
-    public static double max_pitch_roll_error_radians = 0.2;
+    public static double max_pitch_roll_error_radians = 0.15;
 
     // Standard deviation baselines, for 1 meter distance and 1 tag
     // (Adjusted automatically based on distance and # of tags)
@@ -42,7 +42,7 @@ public class Vision extends SubsystemBase {
     public static double angular_std_dev_baseline_radians = Math.PI / 6.0; // Radians
 
     // Multipliers to apply for MegaTag 2 observations
-    public static double linear_std_dev_megatag_2_factor = 0.5; // More stable than full 3D solve
+    public static double linear_std_dev_megatag_2_factor = 0.4; // More stable than full 3D solve
     public static double angular_std_dev_megatag_2_factor = Double.POSITIVE_INFINITY; // No rotation data available
 
     private final Distance SINGLE_TO_MULTI_TAG_POSE_DELTA = Meters.of(0.5);
@@ -118,7 +118,7 @@ public class Vision extends SubsystemBase {
         if (result.multitagResult.isPresent())
             return estimator.update(result, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
         if (!DriverStation.isEnabled() || Math.abs(drive.yawRate()) >= 0.04 || force_single_tag.getAsBoolean()) {
-            return singleTagEstimate(estimator, estimator.update(result, PoseStrategy.AVERAGE_BEST_TARGETS));
+            return singleTagEstimate(estimator, estimator.update(result, PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT));
         }
         return estimator.update(result, PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
     }
@@ -210,6 +210,10 @@ public class Vision extends SubsystemBase {
                 if (i < Cameras.cameras.length) {
                     linear_std_dev *= Cameras.cameras[i].std_dev_factor();
                     angular_std_dev *= Cameras.cameras[i].std_dev_factor();
+                }
+                if(DriverStation.isDisabled()){
+                    linear_std_dev *= 0.5;
+                    angular_std_dev *= 0.5;
                 }
 
                 // Send vision observation

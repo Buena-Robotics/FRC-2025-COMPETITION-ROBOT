@@ -57,6 +57,7 @@ import frc.robot.subsystems.hinge.Hinge;
 import frc.robot.subsystems.hinge.HingeIO;
 import frc.robot.subsystems.hinge.HingeIOReal;
 import frc.robot.subsystems.hinge.HingeIOSim;
+import frc.robot.subsystems.hinge.Hinge.HingeSetpoint;
 import frc.robot.subsystems.mailbox.Mailbox;
 import frc.robot.subsystems.mailbox.MailboxIO;
 import frc.robot.subsystems.mailbox.MailboxIOReal;
@@ -203,16 +204,15 @@ public class RobotContainer {
     private boolean field_oriented_mode = Config.ROBOT_MODE == RobotMode.SIM ? false : true;
 
     private void setTeleopDefaultCommands(){
-        drive.setDefaultCommand(DriveCommands.driveSuperAssistJoystickDrive(
+        drive.setDefaultCommand(DriveCommands.driveAssistJoystickDrive(
             drive,
-            mailbox,
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis()));
         elevator.setDefaultCommand(ElevatorCommands.triggerElevatorHeightAndSetpoint(elevator,
             () -> elevator_setpoint_mode,
             () -> controller.getElevatorAxis(),
             () -> controller.getElevatorAxis()));
-        hinge.setDefaultCommand(HingeCommands.triggerHingeAngle(hinge, () -> controller.getHingeAxis()));
+        // hinge.setDefaultCommand(HingeCommands.triggerHingeAngle(hinge, () -> controller.getHingeAxis()));
         climb.setDefaultCommand(ClimbCommands.triggerClimbSpeed(climb, () -> controller.getClimbAxis()));
         mailbox.setDefaultCommand(MailboxCommands.triggerMailboxSpeed(mailbox, () -> controller.getMailboxAxis()));
     }
@@ -225,6 +225,13 @@ public class RobotContainer {
 
         // Default command, normal field-relative drive
         setTeleopDefaultCommands();
+
+        controller.modeSemiAuto().whileTrue(DriveCommands.driveSuperAssistAlgaeJoystickDrive(
+            drive,
+            elevator,
+            hinge,
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis()));
 
         controller.modeTeleop().whileTrue(DriveCommands.joystickDrive(
             drive,
@@ -244,16 +251,19 @@ public class RobotContainer {
         controller.fieldOrientedBtn().onTrue(Commands.runOnce(() -> { field_oriented_mode = !field_oriented_mode; }));
         controller.elevatorSetpointModeBtn().onTrue(Commands.runOnce(() -> { elevator_setpoint_mode = !elevator_setpoint_mode; }));
 
-        good_shot_trigger.and(likely_has_coral_trigger).and(controller.modeAuto()).debounce(0.1)
-            .whileTrue(
-                Commands.deadline(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -1.0), DriveCommands.lockWheels(drive).withTimeout(1.0))
-                );
+        // good_shot_trigger.and(likely_has_coral_trigger).and(controller.modeAuto()).debounce(0.1)
+            // .whileTrue(
+                // Commands.deadline(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -1.0), DriveCommands.lockWheels(drive).withTimeout(1.0))
+                // );
         likely_doesnt_has_coral_trigger.and(controller.modeAuto()).whileTrue(ElevatorCommands.triggerElevatorSetpoint(elevator, ElevatorSetpoint.CORAL_STATION));
 
         controller.fullClimb().onTrue(ClimbCommands.fullClimb(climb));
 
         // controller.algaeLow().onTrue(ElevatorCommands.grabAlgae(elevator, () -> ElevatorSetpoint.ALGAE_LOW));
         // controller.algaeHigh().onTrue(ElevatorCommands.grabAlgae(elevator, () -> ElevatorSetpoint.TOP));
+        controller.algaeLow().onTrue(Commands.runOnce(() -> {hinge.runHingeSetpoint(HingeSetpoint.ALGAE.getValue());}, hinge));
+        controller.algaeHigh().onTrue(Commands.runOnce(() -> {hinge.runHingeSetpoint(HingeSetpoint.TOP.getValue());}, hinge));
+        controller.algaeRelease().onTrue(HingeCommands.releaseAlgae(hinge));
 
         // controller.flipRobotBtn().onTrue(DriveCommands.flipRobot(
             // drive,

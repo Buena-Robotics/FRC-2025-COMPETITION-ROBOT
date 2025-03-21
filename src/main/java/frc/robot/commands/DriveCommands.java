@@ -22,6 +22,8 @@ import frc.robot.FieldConstants.ReefBranchSide;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.Elevator.ElevatorSetpoint;
+import frc.robot.subsystems.hinge.Hinge;
+import frc.robot.subsystems.hinge.Hinge.HingeSetpoint;
 import frc.robot.subsystems.mailbox.Mailbox;
 import frc.robot.util.Printf;
 import frc.robot.util.TunablePIDController;
@@ -252,6 +254,20 @@ public class DriveCommands {
         }, drive).until(() -> angle_controller.atSetpoint()).withTimeout(2.0));
     }
 
+    public static Command flipRobotDegrees(final Drive drive, final DoubleSupplier x_supplier, final DoubleSupplier y_supplier, final Rotation2d amount) {
+        return Commands.runOnce(() -> {
+            resetControllers(drive);
+            Rotation2d setpoint = drive.getRotation().minus(amount);
+            angle_controller.setSetpoint(setpoint.getRadians() % Math.PI);
+            Logger.recordOutput("Automation/AssistRotation", new Pose2d(drive.getPose().getTranslation(), setpoint));
+        }, drive).andThen(Commands.run(() -> {
+            // Calculate angular speed
+            final double omega = calculatePID(angle_controller, drive.getRotation().getRadians());
+
+            runSpeeds(drive, x_supplier.getAsDouble(), y_supplier.getAsDouble(), omega, true);
+        }, drive).until(() -> angle_controller.atSetpoint()).withTimeout(2.0));
+    }
+
     public static Command driveAssistJoystickDrive(final Drive drive, final DoubleSupplier x_supplier, final DoubleSupplier y_supplier) {
         return Commands.run(() -> {
             // Calculate angular speed
@@ -289,6 +305,48 @@ public class DriveCommands {
 
             runSpeeds(drive, x_supplier.getAsDouble(), y_supplier.getAsDouble(), omega, true);
         }, drive)
+            .beforeStarting(() -> {
+                resetControllers(drive);
+            });
+    }
+
+    public static Command driveSuperAssistAlgaeJoystickDrive(final Drive drive, final Elevator elevator, final Hinge hinge, final DoubleSupplier x_supplier, final DoubleSupplier y_supplier) {
+        return Commands.run(() -> {
+            // Get linear velocity
+            final boolean blue_alliance = Config.getRobotAlliance().equals(Alliance.Blue);
+            final Pose2d robot_pose = drive.getPose();
+
+            final double relative_x = blue_alliance ? (robot_pose.getX() - Units.inchesToMeters(144 + 32.75)) : (Units.inchesToMeters(514.13) - robot_pose.getX());
+            final double relative_y = blue_alliance ? (robot_pose.getY() - Units.inchesToMeters(158.50)) : -(robot_pose.getY() - Units.inchesToMeters(158.50));
+
+            final double super_assist_robot_rotation =
+                new Rotation2d(closestReefRotationSnapPoint(
+                    new Rotation2d(
+                        Math.atan2(relative_y, relative_x)))).plus(Rotation2d.fromRadians(Math.PI / 2.0)).getRadians();
+
+            // Calculate angular speed
+            final double omega = calculatePID(angle_controller,
+                drive.getRotation().minus(new Rotation2d(blue_alliance ? Math.PI : 0)).getRadians(),
+                super_assist_robot_rotation);
+
+            runSpeeds(drive, x_supplier.getAsDouble(), y_supplier.getAsDouble(), omega, true);
+
+            final Pose2d hinge_pose_bumper_pose = drive.getPose().plus(new Transform2d(Units.inchesToMeters(4.5), Units.inchesToMeters(-13-2.8), new Rotation2d()));
+            final Pose2d closest_reef_pose = getClosestReefPose(drive).plus(FieldConstants.APRILTAG_TO_ROBOT.inverse());
+
+            final Pose2d relative_distance = hinge_pose_bumper_pose.relativeTo(closest_reef_pose);
+
+            if(Math.abs(relative_distance.getX()) < Units.inchesToMeters(3) && Math.abs(relative_distance.getY()) < Units.inchesToMeters(2.5)){
+                elevator.runLiftSetpoint(ElevatorSetpoint.ALGAE_LOW.getValue());
+            }
+            else {
+                elevator.runLiftSetpoint(ElevatorSetpoint.BOTTOM.getValue());
+            }
+
+            if(Math.abs(relative_distance.getX()) < Units.inchesToMeters(28) && Math.abs(relative_distance.getY()) < Units.inchesToMeters(18)){
+                hinge.runHingeSetpoint(HingeSetpoint.ALGAE.getValue());
+            }
+        }, drive, elevator, hinge)
             .beforeStarting(() -> {
                 resetControllers(drive);
             });

@@ -64,7 +64,7 @@ public class Hinge extends SubsystemBase {
     }
 
     public static enum HingeSetpoint {
-        TOP(0.0), ALGAE(1.45), RELEASE_ALGAE(2.63);
+        TOP(0.0), ALGAE(1.45), RELEASE_ALGAE(2.3);
 
         private double setpoint_radians = 0.0;
 

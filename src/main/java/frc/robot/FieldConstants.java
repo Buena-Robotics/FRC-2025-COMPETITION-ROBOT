@@ -17,7 +17,7 @@ import frc.robot.util.SchoolField;
 
 public class FieldConstants {
     public static AprilTagFieldLayout APRILTAG_LAYOUT = Config.ROBOT_TYPE == RobotType.ROBOT_2025_SCHOOL ? new SchoolField() : AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
-    private static final Transform2d APRILTAG_TO_ROBOT = new Transform2d(Units.inchesToMeters(13 + 3), 0, new Rotation2d(Math.PI));
+    public static final Transform2d APRILTAG_TO_ROBOT = new Transform2d(Units.inchesToMeters(13 + 3), 0, new Rotation2d(Math.PI));
 
     private static Pose2d apriltagIdToRobotPose(final int id) {
         return APRILTAG_LAYOUT.getTagPose(id).get().toPose2d().plus(APRILTAG_TO_ROBOT);
