@@ -4,44 +4,28 @@
     {
       "anchor": {
         "x": 7.3490625,
-        "y": 2.758607954545454
+        "y": 7.026448863636364
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.189972511574074,
-        "y": 1.9950109493371206
-      },
-      "isLocked": false,
-      "linkedName": "auto_start"
-    },
-    {
-      "anchor": {
-        "x": 6.605001062772334,
-        "y": 1.9427332999077236
-      },
-      "prevControl": {
-        "x": 7.020518894521505,
-        "y": 2.1750671275457605
-      },
-      "nextControl": {
-        "x": 6.386794870958605,
-        "y": 1.8207248663707327
+        "x": 6.15247159090909,
+        "y": 7.21590909090909
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.284943181818181,
-        "y": 2.4594602272727264
+        "x": 5.16528409090909,
+        "y": 5.271448863636363
       },
       "prevControl": {
-        "x": 5.727273910984847,
-        "y": 2.06249227299032
+        "x": 5.643920454545453,
+        "y": 6.059204545454545
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "reef5r"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -57,13 +41,13 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0.0,
-    "rotation": 119.99999999999999
+    "velocity": 0,
+    "rotation": -117.51632858414689
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
-    "velocity": 0.0,
+    "velocity": 0,
     "rotation": 180.0
   },
   "useDefaultConstraints": true

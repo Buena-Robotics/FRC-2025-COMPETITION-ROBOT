@@ -10,7 +10,7 @@ import frc.robot.subsystems.elevator.Elevator;
 
 public class AutoCommands {
     public static Command leaveCommunity(final Drive drive){
-        return DriveCommands.driveDirection(drive, new Rotation2d(Units.degreesToRadians(0))).withTimeout(3.5);
+        return DriveCommands.driveDirection(drive, new Rotation2d(Units.degreesToRadians(0))).withTimeout(1.5);
     }
     public static Command singleCoral(final Drive drive, final Elevator elevator){
         return DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L2).withTimeout(6.0);

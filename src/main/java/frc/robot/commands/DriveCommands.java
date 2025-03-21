@@ -42,9 +42,9 @@ import com.pathplanner.lib.path.PathConstraints;
 
 public class DriveCommands {
     private static final double DEADBAND = 0.10;
-    private static final double DRIVE_KP = 1.8;
+    private static final double DRIVE_KP = 0.8;
     private static final double DRIVE_KI = 0.02;
-    private static final double DRIVE_KD = 0.2;
+    private static final double DRIVE_KD = 0.1;
     private static final double ANGLE_KP = 0.40;
     private static final double ANGLE_KI = 0.02;
     private static final double ANGLE_KD = 0.04;
@@ -337,7 +337,7 @@ public class DriveCommands {
 
     public static Command driveDirection(final Drive drive, final Rotation2d direction) {
         return Commands.run(() -> {
-            runSpeeds(drive, direction.getCos() / 3.0, direction.getSin() / 3.0, 0.0, false);
+            runSpeeds(drive, direction.getCos() / 2, direction.getSin() / 2, 0.0, false);
         }, drive);
     }
 

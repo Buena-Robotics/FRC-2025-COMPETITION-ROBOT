@@ -1,13 +1,9 @@
 package frc.robot.subsystems.mailbox;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import org.ironmaple.simulation.IntakeSimulation;
-import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
-import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -85,29 +81,29 @@ public class MailboxIOSim implements MailboxIO {
         inputs.shooter_connected = true;
 
         inputs.coral_beambreak_connected = true;
-
-        inputs.coral_beam_broken = shooter_sim.getAngularPositionRad() >= -10 && (inBox(drive_simulation.getSimulatedDriveTrainPose().getTranslation(), coral_station_left_top, coral_station_left_bottom) || inBox(drive_simulation
-            .getSimulatedDriveTrainPose().getTranslation(), coral_station_right_top, coral_station_right_bottom));
-        if (inputs.shooter_position_radians <= Mailbox.CORAL_END_POSITION) {
-            resetPosition();
-            intake_simulation.removeObtainedGamePieces(SimulatedArena.getInstance());
-            SimulatedArena.getInstance()
-                .addGamePieceProjectile(new ReefscapeCoralOnFly(
-                    // Obtain robot position from drive simulation
-                    drive_simulation.getSimulatedDriveTrainPose().getTranslation(),
-                    // The scoring mechanism is installed at (0.46, 0) (meters) on the robot
-                    elevator.robotToElevator().getTranslation().toTranslation2d(),
-                    // Obtain robot speed from drive simulation
-                    drive_simulation.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
-                    // Obtain robot facing from drive simulation
-                    drive_simulation.getSimulatedDriveTrainPose().getRotation(),
-                    // The height at which the coral is ejected
-                    elevator.virtualCameraPosition().getTranslation().getMeasureZ(),
-                    // The initial speed of the coral
-                    MetersPerSecond.of(2),
-                    // The coral is ejected at a 35-degree slope
-                    Degrees.of(-10)));
-        }
+        inputs.coral_beam_broken = false;
+        // inputs.coral_beam_broken = shooter_sim.getAngularPositionRad() >= -10 && (inBox(drive_simulation.getSimulatedDriveTrainPose().getTranslation(), coral_station_left_top, coral_station_left_bottom) || inBox(drive_simulation
+        //     .getSimulatedDriveTrainPose().getTranslation(), coral_station_right_top, coral_station_right_bottom));
+        // if (inputs.shooter_position_radians <= Mailbox.CORAL_END_POSITION) {
+        //     resetPosition();
+        //     intake_simulation.removeObtainedGamePieces(SimulatedArena.getInstance());
+        //     SimulatedArena.getInstance()
+        //         .addGamePieceProjectile(new ReefscapeCoralOnFly(
+        //             // Obtain robot position from drive simulation
+        //             drive_simulation.getSimulatedDriveTrainPose().getTranslation(),
+        //             // The scoring mechanism is installed at (0.46, 0) (meters) on the robot
+        //             elevator.robotToElevator().getTranslation().toTranslation2d(),
+        //             // Obtain robot speed from drive simulation
+        //             drive_simulation.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
+        //             // Obtain robot facing from drive simulation
+        //             drive_simulation.getSimulatedDriveTrainPose().getRotation(),
+        //             // The height at which the coral is ejected
+        //             elevator.virtualCameraPosition().getTranslation().getMeasureZ(),
+        //             // The initial speed of the coral
+        //             MetersPerSecond.of(2),
+        //             // The coral is ejected at a 35-degree slope
+        //             Degrees.of(-10)));
+        // }
     }
 
     @Override public void resetPosition() {

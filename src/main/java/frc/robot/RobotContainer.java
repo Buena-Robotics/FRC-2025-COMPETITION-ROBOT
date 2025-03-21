@@ -20,7 +20,6 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -204,12 +203,11 @@ public class RobotContainer {
     private boolean field_oriented_mode = Config.ROBOT_MODE == RobotMode.SIM ? false : true;
 
     private void setTeleopDefaultCommands(){
-        drive.setDefaultCommand(DriveCommands.joystickDrive(
+        drive.setDefaultCommand(DriveCommands.driveSuperAssistJoystickDrive(
             drive,
+            mailbox,
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
-            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis(),
-            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getTurnAxis() : () -> -controller.getTurnAxis(),
-            () -> field_oriented_mode));
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis()));
         elevator.setDefaultCommand(ElevatorCommands.triggerElevatorHeightAndSetpoint(elevator,
             () -> elevator_setpoint_mode,
             () -> controller.getElevatorAxis(),
@@ -228,11 +226,12 @@ public class RobotContainer {
         // Default command, normal field-relative drive
         setTeleopDefaultCommands();
 
-        controller.modeAuto().whileTrue(DriveCommands.driveSuperAssistJoystickDrive(
+        controller.modeTeleop().whileTrue(DriveCommands.joystickDrive(
             drive,
-            mailbox,
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
-            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis()));
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis(),
+            Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getTurnAxis() : () -> -controller.getTurnAxis(),
+            () -> field_oriented_mode));
 
         // controller.modeTeleop().onTrue(Commands.runOnce(this::setTeleopDefaultCommands));
         // controller.modeSemiAuto().onTrue(Commands.runOnce(this::setSemiAutoDefaultCommands));
@@ -245,11 +244,11 @@ public class RobotContainer {
         controller.fieldOrientedBtn().onTrue(Commands.runOnce(() -> { field_oriented_mode = !field_oriented_mode; }));
         controller.elevatorSetpointModeBtn().onTrue(Commands.runOnce(() -> { elevator_setpoint_mode = !elevator_setpoint_mode; }));
 
-        good_shot_trigger.and(likely_has_coral_trigger).and(controller.modeSemiAuto().or(controller.modeAuto()))
+        good_shot_trigger.and(likely_has_coral_trigger).and(controller.modeAuto()).debounce(0.1)
             .whileTrue(
                 Commands.deadline(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -1.0), DriveCommands.lockWheels(drive).withTimeout(1.0))
                 );
-        likely_doesnt_has_coral_trigger.and(controller.modeSemiAuto().or(controller.modeAuto())).whileTrue(ElevatorCommands.triggerElevatorSetpoint(elevator, ElevatorSetpoint.CORAL_STATION));
+        likely_doesnt_has_coral_trigger.and(controller.modeAuto()).whileTrue(ElevatorCommands.triggerElevatorSetpoint(elevator, ElevatorSetpoint.CORAL_STATION));
 
         controller.fullClimb().onTrue(ClimbCommands.fullClimb(climb));
 
@@ -298,9 +297,8 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        CommandScheduler.getInstance().clearComposedCommands();
-        return MailboxCommands.triggerMailboxSpeed(mailbox, () -> -0.2).until(() -> coral_waiting_trigger.getAsBoolean() == false).alongWith(
-            new WaitCommand(auto_delay.get()).andThen(auto_chooser.get()));
+        // CommandScheduler.getInstance().clearComposedCommands();
+        return new WaitCommand(auto_delay.get()).andThen(auto_chooser.get()).andThen(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -0.2).until(() -> coral_waiting_trigger.getAsBoolean() == false));
     }
 
     public void resetSimulationField() {

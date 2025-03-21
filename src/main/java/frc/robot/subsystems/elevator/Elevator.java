@@ -115,7 +115,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public static enum ElevatorSetpoint {
-        BOTTOM(0.0), CORAL_STATION(2.36), ALGAE_LOW(9.7), L2(4.195), BARGE(5.505), L3(Elevator.ELEVATOR_MAX_HEIGHT_INCHES), TOP(Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
+        BOTTOM(0.0), CORAL_STATION(0), ALGAE_LOW(9.7), L2(3.9), BARGE(5.505), L3(Elevator.ELEVATOR_MAX_HEIGHT_INCHES), TOP(Elevator.ELEVATOR_MAX_HEIGHT_INCHES);
 
         private double setpoint_inches = 0.0;
 

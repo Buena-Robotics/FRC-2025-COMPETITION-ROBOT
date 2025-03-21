@@ -118,10 +118,10 @@ public class Mailbox extends SubsystemBase {
 
     public boolean goodShot() {
         final BranchCloseStats stats = getClosestReefBranchStats();
-        return stats.distance_inches_forward() < 6.0 &&
-            Utils.inBetween(stats.distance_inches_up(), -2.0, 3.0) &&
-            Utils.inBetween(stats.distance_inches_left(), -1.0, 1.0)
-            && Utils.inBetween(stats.rotation_yaw_degrees, -5.0, 5.0);
+        return stats.distance_inches_forward() < 4.0 &&
+            Utils.inBetween(stats.distance_inches_up(), -1.0, 2.0) &&
+            Utils.inBetween(stats.distance_inches_left(), -0.5, 0.5)
+            && Utils.inBetween(stats.rotation_yaw_degrees, -3.0, 3.0);
     }
 
     public double getPosition() {

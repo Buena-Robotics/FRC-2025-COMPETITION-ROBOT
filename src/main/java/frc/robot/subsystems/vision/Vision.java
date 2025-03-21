@@ -17,6 +17,7 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.SharedPhotonPoseEstimator.EstimatedRobotPose;
 import frc.robot.subsystems.vision.SharedPhotonPoseEstimator.PoseStrategy;
 import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
+import frc.robot.util.LoggedTunableNumber;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -54,6 +55,7 @@ public class Vision extends SubsystemBase {
     private final SharedPhotonPoseEstimator[] estimators;
     private final Alert[] disconnected_alerts;
     private final BooleanSupplier force_single_tag;
+    private final LoggedTunableNumber[] cameras_disabled;
 
     public Vision(VisionConsumer consumer, Drive drive, BooleanSupplier force_single_tag, VisionIO... io) {
         this.consumer = consumer;
@@ -65,6 +67,7 @@ public class Vision extends SubsystemBase {
         this.inputs = new VisionIOInputs[io.length];
         this.estimators = new SharedPhotonPoseEstimator[io.length];
         this.disconnected_alerts = new Alert[io.length];
+        this.cameras_disabled = new LoggedTunableNumber[io.length];
         for (int i = 0; i < inputs.length; i++) {
             this.inputs[i] = new VisionIOInputs();
             this.estimators[i] = new SharedPhotonPoseEstimator(
@@ -72,6 +75,7 @@ public class Vision extends SubsystemBase {
             this.estimators[i].setMultiTagFallbackStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
             this.disconnected_alerts[i] = new Alert(
                 "Vision camera " + Integer.toString(i) + " is disconnected.", AlertType.kWarning);
+            this.cameras_disabled[i] = new LoggedTunableNumber("CameraDisabled/ " + Integer.toString(i), 0.0);
         }
     }
 
@@ -125,6 +129,7 @@ public class Vision extends SubsystemBase {
         for (int i = 0; i < io.length; i++) {
             io[i].updateInputs(inputs[i]);
             Logger.processInputs(cameraToKey(i), inputs[i]);
+            if(cameras_disabled[i].get() > 2) continue;
             for (PhotonPipelineResult photon_result : inputs[i].photon_results) {
                 Optional<EstimatedRobotPose> potential_estimate = estimate(estimators[i], photon_result);
                 if (potential_estimate.isPresent())
