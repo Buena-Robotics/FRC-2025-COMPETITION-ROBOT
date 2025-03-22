@@ -42,7 +42,7 @@ public class Vision extends SubsystemBase {
     public static double angular_std_dev_baseline_radians = Math.PI / 6.0; // Radians
 
     // Multipliers to apply for MegaTag 2 observations
-    public static double linear_std_dev_megatag_2_factor = 0.4; // More stable than full 3D solve
+    public static double linear_std_dev_megatag_2_factor = 0.2; // More stable than full 3D solve
     public static double angular_std_dev_megatag_2_factor = Double.POSITIVE_INFINITY; // No rotation data available
 
     private final Distance SINGLE_TO_MULTI_TAG_POSE_DELTA = Meters.of(0.5);
@@ -117,9 +117,9 @@ public class Vision extends SubsystemBase {
             return Optional.empty();
         if (result.multitagResult.isPresent())
             return estimator.update(result, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
-        if (!DriverStation.isEnabled() || Math.abs(drive.yawRate()) >= 0.04 || force_single_tag.getAsBoolean()) {
-            return singleTagEstimate(estimator, estimator.update(result, PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT));
-        }
+        // if (!DriverStation.isEnabled() || Math.abs(drive.yawRate()) >= 0.04 || force_single_tag.getAsBoolean()) {
+        //     return singleTagEstimate(estimator, estimator.update(result, PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT));
+        // }
         return estimator.update(result, PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
     }
 
@@ -130,6 +130,7 @@ public class Vision extends SubsystemBase {
             io[i].updateInputs(inputs[i]);
             Logger.processInputs(cameraToKey(i), inputs[i]);
             if(cameras_disabled[i].get() > 2) continue;
+            // if(i == 0) continue;
             for (PhotonPipelineResult photon_result : inputs[i].photon_results) {
                 Optional<EstimatedRobotPose> potential_estimate = estimate(estimators[i], photon_result);
                 if (potential_estimate.isPresent())
@@ -169,8 +170,8 @@ public class Vision extends SubsystemBase {
             for (EstimatedRobotPose observation : estimated_robot_poses) {
                 // Check whether to reject pose
                 final int tag_count = observation.targetsUsed.size();
-                boolean reject_pose = tag_count == 0 // Must have at least one tag
-                    || (tag_count == 1 && observation.ambiguity > max_ambiguity) // Cannot be high ambiguity
+                boolean reject_pose = DriverStation.isDisabled() && tag_count == 0 // Must have at least one tag
+                    || (tag_count == 1 && observation.ambiguity > max_ambiguity && observation.strategy != PoseStrategy.PNP_DISTANCE_TRIG_SOLVE) // Cannot be high ambiguity
                     || Math.abs(observation.estimatedPose.getZ()) > max_z_error // Must have realistic Z coordinate
 
                     // Must be within the field boundaries

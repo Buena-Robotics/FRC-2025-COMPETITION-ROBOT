@@ -1,0 +1,356 @@
+{
+    "hubs": [
+        {
+            "x": 0,
+            "y": 38,
+            "width": 1470,
+            "height": 918,
+            "state": {
+                "sidebar": {
+                    "width": 347,
+                    "expanded": [
+                        "/ReplayOutputs/NTClients/Addresses",
+                        "/AdvantageKit",
+                        "/AdvantageKit/Vision/Camera2/Virtual_cam",
+                        "/AdvantageKit/RealOutputs",
+                        "/AdvantageKit/RealOutputs/Vision",
+                        "/AdvantageKit/RealOutputs/Odometry",
+                        "/AdvantageKit/Vision/Camera0/Latest_target_observation/tx",
+                        "/AdvantageKit/Vision/Camera0/Latest_target_observation/ty",
+                        "/AdvantageKit/Vision/Camera0/Pose_observations/0",
+                        "/Drive/Gyro",
+                        "/ReplayOutputs/Vision/Summary",
+                        "/ReplayOutputs",
+                        "/Vision/Camera0",
+                        "/ReplayOutputs/Elevator",
+                        "/RealOutputs/Vision/Summary",
+                        "/RealOutputs/Vision/Camera0/RobotPosesRejected/0",
+                        "/ReplayOutputs/Odometry",
+                        "/RealOutputs/Mailbox/ClosetReefBranchStats",
+                        "/ReplayOutputs/Mailbox",
+                        "/ReplayOutputs/Odometry/Robot",
+                        "/ReplayOutputs/Mailbox/ClosetReefBranchStats",
+                        "/RealOutputs",
+                        "/RealOutputs/Odometry"
+                    ]
+                },
+                "tabs": {
+                    "selected": 1,
+                    "tabs": [
+                        {
+                            "type": 0,
+                            "title": "",
+                            "controller": null,
+                            "controllerUUID": "0xmp3rakpk2nl2r1tto6xv83xmy1q0t9",
+                            "renderer": "#/",
+                            "controlsHeight": 0
+                        },
+                        {
+                            "type": 3,
+                            "title": "3D Field",
+                            "controller": {
+                                "sources": [
+                                    {
+                                        "type": "ghost",
+                                        "logKey": "/RealOutputs/Odometry/Robot",
+                                        "logType": "Pose2d",
+                                        "visible": true,
+                                        "options": {
+                                            "model": "Nerds2025",
+                                            "color": "#00ff00"
+                                        }
+                                    },
+                                    {
+                                        "type": "swerveStates",
+                                        "logKey": "/RealOutputs/SwerveStates/Measured",
+                                        "logType": "SwerveModuleState[]",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#ff00ff",
+                                            "arrangement": "0,1,2,3"
+                                        }
+                                    },
+                                    {
+                                        "type": "swerveStates",
+                                        "logKey": "/RealOutputs/SwerveStates/SetpointsOptimized",
+                                        "logType": "SwerveModuleState[]",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#00ff00",
+                                            "arrangement": "0,1,2,3"
+                                        }
+                                    },
+                                    {
+                                        "type": "vision",
+                                        "logKey": "/RealOutputs/Vision/Summary/TagPoses",
+                                        "logType": "Pose3d[]",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#00ff00",
+                                            "size": "normal"
+                                        }
+                                    },
+                                    {
+                                        "type": "ghost",
+                                        "logKey": "/RealOutputs/Vision/Summary/RobotPosesAccepted",
+                                        "logType": "Pose3d[]",
+                                        "visible": false,
+                                        "options": {
+                                            "model": "Crab Bot",
+                                            "color": "#00ff00"
+                                        }
+                                    },
+                                    {
+                                        "type": "ghost",
+                                        "logKey": "/RealOutputs/Vision/Summary/RobotPosesRejected",
+                                        "logType": "Pose3d[]",
+                                        "visible": false,
+                                        "options": {
+                                            "model": "Crab Bot",
+                                            "color": "#ff0000"
+                                        }
+                                    },
+                                    {
+                                        "type": "robot",
+                                        "logKey": "/ReplayOutputs/Odometry/Robot",
+                                        "logType": "Pose2d",
+                                        "visible": true,
+                                        "options": {
+                                            "model": "Nerds2025"
+                                        }
+                                    }
+                                ],
+                                "game": "2025 Field (Welded)",
+                                "origin": "blue"
+                            },
+                            "controllerUUID": "nu0l7sommeop6z6s548v27q2sxfosryx",
+                            "renderer": {
+                                "cameraIndex": -2,
+                                "orbitFov": 70,
+                                "cameraPosition": [
+                                    -0.2857259494726838,
+                                    1.6523322175248563,
+                                    2.3664676782500966
+                                ],
+                                "cameraTarget": [
+                                    -0.5534027693416611,
+                                    -0.02935415441422685,
+                                    -0.16098264085852737
+                                ]
+                            },
+                            "controlsHeight": 337
+                        },
+                        {
+                            "type": 1,
+                            "title": "Line Graph",
+                            "controller": {
+                                "leftSources": [
+                                    {
+                                        "type": "stepped",
+                                        "logKey": "/Elevator/Hinge_applied_volts",
+                                        "logType": "Number",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#2b66a2",
+                                            "size": "normal"
+                                        }
+                                    },
+                                    {
+                                        "type": "stepped",
+                                        "logKey": "/Elevator/Lift_applied_volts",
+                                        "logType": "Number",
+                                        "visible": false,
+                                        "options": {
+                                            "color": "#e5b31b",
+                                            "size": "normal"
+                                        }
+                                    },
+                                    {
+                                        "type": "stepped",
+                                        "logKey": "/Mailbox/Shooter_velocity_radians_per_second",
+                                        "logType": "Number",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#e48b32",
+                                            "size": "normal"
+                                        }
+                                    }
+                                ],
+                                "rightSources": [
+                                    {
+                                        "type": "stepped",
+                                        "logKey": "/Elevator/Hinge_absolute_position_radians",
+                                        "logType": "Number",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#80588e",
+                                            "size": "normal"
+                                        }
+                                    },
+                                    {
+                                        "type": "stepped",
+                                        "logKey": "/Elevator/Lift_position_inches",
+                                        "logType": "Number",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#858584",
+                                            "size": "normal"
+                                        }
+                                    }
+                                ],
+                                "discreteSources": [
+                                    {
+                                        "type": "stripes",
+                                        "logKey": "/RealOutputs/Mailbox/GoodShot",
+                                        "logType": "Boolean",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#af2437"
+                                        }
+                                    },
+                                    {
+                                        "type": "stripes",
+                                        "logKey": "/RealOutputs/Mailbox/LikelyHasCoral",
+                                        "logType": "Boolean",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#c0b487"
+                                        }
+                                    },
+                                    {
+                                        "type": "stripes",
+                                        "logKey": "/ReplayOutputs/Mailbox/GoodShot",
+                                        "logType": "Boolean",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#3b875a"
+                                        }
+                                    }
+                                ],
+                                "leftLockedRange": null,
+                                "rightLockedRange": null,
+                                "leftUnitConversion": {
+                                    "type": null,
+                                    "factor": 1
+                                },
+                                "rightUnitConversion": {
+                                    "type": null,
+                                    "factor": 1
+                                },
+                                "leftFilter": 0,
+                                "rightFilter": 1
+                            },
+                            "controllerUUID": "fnpga1dwzzr9rgo4pz0ai07tgp2vbp1q",
+                            "renderer": null,
+                            "controlsHeight": 200
+                        },
+                        {
+                            "type": 1,
+                            "title": "Line Graph",
+                            "controller": {
+                                "leftSources": [
+                                    {
+                                        "type": "stepped",
+                                        "logKey": "/Hinge/Hinge_absolute_position_radians",
+                                        "logType": "Number",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#2b66a2",
+                                            "size": "normal"
+                                        }
+                                    },
+                                    {
+                                        "type": "stepped",
+                                        "logKey": "/Hinge/Hinge_position_radians",
+                                        "logType": "Number",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#e5b31b",
+                                            "size": "normal"
+                                        }
+                                    },
+                                    {
+                                        "type": "stepped",
+                                        "logKey": "/Hinge/Hinge_applied_volts",
+                                        "logType": "Number",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#af2437",
+                                            "size": "normal"
+                                        }
+                                    }
+                                ],
+                                "rightSources": [],
+                                "discreteSources": [],
+                                "leftLockedRange": null,
+                                "rightLockedRange": null,
+                                "leftUnitConversion": {
+                                    "type": null,
+                                    "factor": 1
+                                },
+                                "rightUnitConversion": {
+                                    "type": null,
+                                    "factor": 1
+                                },
+                                "leftFilter": 0,
+                                "rightFilter": 0
+                            },
+                            "controllerUUID": "lsk89h8oweg9lttwhlu60h0sbzyvnnzd",
+                            "renderer": null,
+                            "controlsHeight": 200
+                        },
+                        {
+                            "type": 8,
+                            "title": "Joysticks",
+                            "controller": [
+                                "Generic Joystick",
+                                "None",
+                                "None",
+                                "None",
+                                "None",
+                                "None"
+                            ],
+                            "controllerUUID": "caakzz04r8yuplynjveqznbmmn8qv7wn",
+                            "renderer": null,
+                            "controlsHeight": 85
+                        },
+                        {
+                            "type": 2,
+                            "title": "Odometry",
+                            "controller": {
+                                "sources": [
+                                    {
+                                        "type": "robot",
+                                        "logKey": "/RealOutputs/Odometry/Robot",
+                                        "logType": "Pose2d",
+                                        "visible": true,
+                                        "options": {}
+                                    },
+                                    {
+                                        "type": "ghost",
+                                        "logKey": "/ReplayOutputs/Odometry/Robot",
+                                        "logType": "Pose2d",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#00ff00"
+                                        }
+                                    }
+                                ],
+                                "game": "2025 Field (Welded)",
+                                "bumpers": "auto",
+                                "origin": "blue",
+                                "orientation": 0,
+                                "size": 27
+                            },
+                            "controllerUUID": "fa2e2rkvvzkir3mfzmj0oitfzbw0ow3p",
+                            "renderer": null,
+                            "controlsHeight": 200
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "satellites": [],
+    "version": "4.1.0"
+}

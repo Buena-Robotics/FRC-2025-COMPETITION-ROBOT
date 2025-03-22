@@ -11,7 +11,7 @@ public class Cameras {
             new Camera(
                 "Microsoft_LifeCam_HD-3000", // ORANGE PI
                 new Transform3d(
-                    Units.inchesToMeters(-11.5), Units.inchesToMeters(0), Units.inchesToMeters(21.25),
+                    Units.inchesToMeters(-13 + 1.75), Units.inchesToMeters(1.0 / 8.0), Units.inchesToMeters(21.625),
                     new Rotation3d(0.0, 0.0, Units.degreesToRadians(180-.5))),
                 0.8,
                 SimCameraProperties.LL2_640_480()),
@@ -26,8 +26,8 @@ public class Cameras {
                 "USB_Camera",
                 new Transform3d(
                     Units.inchesToMeters(-5), Units.inchesToMeters(-(7.0/16.0)), Units.inchesToMeters(20),
-                    new Rotation3d(0.0, Units.degreesToRadians(-2), Units.degreesToRadians(-1))),
-                2.8,
+                    new Rotation3d(0.0, Units.degreesToRadians(0), Units.degreesToRadians(-1))),
+                    2.0,
                 SimCameraProperties.LL2_960_720()),
             new Camera(
                 "NEXIGO_HD_Webcam",

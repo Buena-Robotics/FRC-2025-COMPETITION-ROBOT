@@ -34,6 +34,10 @@ public class MailboxCommands {
                 .withTimeout(1.4));
     }
 
+    public static Command feedCoralv2(final Mailbox mailbox) {
+        return Commands.run(() -> mailbox.runSpeedSetpoint(-0.1),  mailbox);
+    }
+
     public static Command lockDriveAndLaunchCoral(final Mailbox mailbox, final Drive drive) {
         return Commands.deadline(new WaitCommand(TIME_TO_LAUNCH_SECONDS), Commands.run(() -> {
             mailbox.runSpeedSetpoint(-1.0);
@@ -91,7 +95,7 @@ public class MailboxCommands {
                     double kv = (n * sum_xy - sum_x * sum_y) / (n * sum_x2 - sum_x * sum_x);
 
                     NumberFormat formatter = new DecimalFormat("#0.00000");
-                    System.out.println("********** Elevator FF Characterization Results **********");
+                    System.out.println("********** Mailbox FF Characterization Results **********");
                     System.out.println("\tkS: " + formatter.format(ks));
                     System.out.println("\tkV: " + formatter.format(kv));
                 }));

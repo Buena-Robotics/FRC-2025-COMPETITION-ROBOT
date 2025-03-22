@@ -238,7 +238,7 @@ public class Robot extends LoggedRobot {
     private void initializeDriverstationSim() {
         DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
         DriverStationSim.setEventName("SimEvent");
-        DriverStationSim.setEnabled(true);
+        // DriverStationSim.setEnabled(true);
         DriverStationSim.setAutonomous(false);
         DriverStationSim.setTest(false);
         DriverStationSim.setEStop(false);

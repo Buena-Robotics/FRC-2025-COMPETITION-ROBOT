@@ -23,7 +23,6 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.Elevator.ElevatorSetpoint;
 import frc.robot.subsystems.hinge.Hinge;
-import frc.robot.subsystems.hinge.Hinge.HingeSetpoint;
 import frc.robot.subsystems.mailbox.Mailbox;
 import frc.robot.util.Printf;
 import frc.robot.util.TunablePIDController;
@@ -44,7 +43,7 @@ import com.pathplanner.lib.path.PathConstraints;
 
 public class DriveCommands {
     private static final double DEADBAND = 0.10;
-    private static final double DRIVE_KP = 0.8;
+    private static final double DRIVE_KP = 0.3;
     private static final double DRIVE_KI = 0.02;
     private static final double DRIVE_KD = 0.1;
     private static final double ANGLE_KP = 0.40;
@@ -336,16 +335,16 @@ public class DriveCommands {
 
             final Pose2d relative_distance = hinge_pose_bumper_pose.relativeTo(closest_reef_pose);
 
-            if(Math.abs(relative_distance.getX()) < Units.inchesToMeters(3) && Math.abs(relative_distance.getY()) < Units.inchesToMeters(2.5)){
-                elevator.runLiftSetpoint(ElevatorSetpoint.ALGAE_LOW.getValue());
-            }
-            else {
-                elevator.runLiftSetpoint(ElevatorSetpoint.BOTTOM.getValue());
-            }
+            // if(Math.abs(relative_distance.getX()) < Units.inchesToMeters(3) && Math.abs(relative_distance.getY()) < Units.inchesToMeters(2.5)){
+            //     elevator.runLiftSetpoint(ElevatorSetpoint.ALGAE_LOW.getValue());
+            // }
+            // else {
+            //     elevator.runLiftSetpoint(ElevatorSetpoint.BOTTOM.getValue());
+            // }
 
-            if(Math.abs(relative_distance.getX()) < Units.inchesToMeters(28) && Math.abs(relative_distance.getY()) < Units.inchesToMeters(18)){
-                hinge.runHingeSetpoint(HingeSetpoint.ALGAE.getValue());
-            }
+            // if(Math.abs(relative_distance.getX()) < Units.inchesToMeters(28) && Math.abs(relative_distance.getY()) < Units.inchesToMeters(18)){
+            //     hinge.runHingeSetpoint(HingeSetpoint.ALGAE.getValue());
+            // }
         }, drive, elevator, hinge)
             .beforeStarting(() -> {
                 resetControllers(drive);
@@ -395,6 +394,7 @@ public class DriveCommands {
 
     public static Command driveDirection(final Drive drive, final Rotation2d direction) {
         return Commands.run(() -> {
+            System.out.println(direction);
             runSpeeds(drive, direction.getCos() / 2, direction.getSin() / 2, 0.0, false);
         }, drive);
     }

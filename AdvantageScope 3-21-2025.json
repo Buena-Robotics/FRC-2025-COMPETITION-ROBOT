@@ -1,0 +1,387 @@
+{
+    "hubs": [
+        {
+            "x": 0,
+            "y": 38,
+            "width": 1470,
+            "height": 918,
+            "state": {
+                "sidebar": {
+                    "width": 249,
+                    "expanded": [
+                        "/Elevator",
+                        "/RealOutputs/Elevator",
+                        "/ReplayOutputs/Elevator",
+                        "/ReplayOutputs/NTClients/Addresses",
+                        "/AdvantageKit/Vision/Camera2/Virtual_cam",
+                        "/AdvantageKit/Vision/Camera0/Latest_target_observation/tx",
+                        "/AdvantageKit/Vision/Camera0/Latest_target_observation/ty",
+                        "/AdvantageKit/Vision/Camera0/Pose_observations/0",
+                        "/AdvantageKit/RealOutputs/Vision/Summary",
+                        "/Tuning/Elevator",
+                        "/AdvantageKit/RealOutputs/Ultrasonic",
+                        "/photonvision/.timesync/victini.local",
+                        "/AdvantageKit",
+                        "/AdvantageKit/RealOutputs",
+                        "/AdvantageKit/RealOutputs/TimeOfFlight",
+                        "/AdvantageKit/RealOutputs/TimeOfFlight1",
+                        "/AdvantageKit/RealOutputs/TimeOfFlight2",
+                        "/AdvantageKit/RealOutputs/Vision/Camera1",
+                        "/AdvantageKit/RealOutputs/Vision/Camera2",
+                        "/AdvantageKit/RealOutputs/Automation",
+                        "/AdvantageKit/RealOutputs/Vision/Camera0",
+                        "/AdvantageKit/Vision/Camera2",
+                        "/AdvantageKit/Vision/Camera1",
+                        "/AdvantageKit/Vision/Camera3",
+                        "/AdvantageKit/Vision/Camera0",
+                        "/AdvantageKit/RealOutputs/Vision",
+                        "/AdvantageKit/RealOutputs/Vision/Camera2/VirtualCameraPose",
+                        "/AdvantageKit/RealOutputs/Vision/Camera3",
+                        "/AdvantageKit/RealOutputs/Elevator"
+                    ]
+                },
+                "tabs": {
+                    "selected": 1,
+                    "tabs": [
+                        {
+                            "type": 0,
+                            "title": "",
+                            "controller": null,
+                            "controllerUUID": "0xmp3rakpk2nl2r1tto6xv83xmy1q0t9",
+                            "renderer": "#/",
+                            "controlsHeight": 0
+                        },
+                        {
+                            "type": 3,
+                            "title": "3D Field",
+                            "controller": {
+                                "sources": [
+                                    {
+                                        "type": "robot",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/Robot",
+                                        "logType": "Pose2d",
+                                        "visible": true,
+                                        "options": {
+                                            "model": "Nerds2025"
+                                        }
+                                    },
+                                    {
+                                        "type": "vision",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Vision/Summary/TagPoses",
+                                        "logType": "Pose3d[]",
+                                        "visible": false,
+                                        "options": {
+                                            "color": "#00ff00",
+                                            "size": "normal"
+                                        }
+                                    },
+                                    {
+                                        "type": "ghost",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/FieldSimulation/RobotPosition",
+                                        "logType": "Pose2d",
+                                        "visible": true,
+                                        "options": {
+                                            "model": "Crab Bot",
+                                            "color": "#ff8c00"
+                                        }
+                                    },
+                                    {
+                                        "type": "mechanism",
+                                        "logKey": "NT:/SmartDashboard/ElevatorMechData",
+                                        "logType": "Mechanism2d",
+                                        "visible": true,
+                                        "options": {}
+                                    },
+                                    {
+                                        "type": "vision",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Vision/Summary/TagPoses",
+                                        "logType": "Pose3d[]",
+                                        "visible": false,
+                                        "options": {
+                                            "color": "#00ff00",
+                                            "size": "normal"
+                                        }
+                                    },
+                                    {
+                                        "type": "gamePiece",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/FieldSimulation/Algae",
+                                        "logType": "Pose3d[]",
+                                        "visible": false,
+                                        "options": {
+                                            "variant": "Coral"
+                                        }
+                                    },
+                                    {
+                                        "type": "gamePiece",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/FieldSimulation/Coral",
+                                        "logType": "Pose3d[]",
+                                        "visible": false,
+                                        "options": {
+                                            "variant": "Coral"
+                                        }
+                                    },
+                                    {
+                                        "type": "aprilTag",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Vision/Summary/TagPoses",
+                                        "logType": "Pose3d[]",
+                                        "visible": false,
+                                        "options": {
+                                            "family": "36h11"
+                                        }
+                                    },
+                                    {
+                                        "type": "aprilTagIDs",
+                                        "logKey": "NT:/AdvantageKit/Vision/Camera0/Tag_ids",
+                                        "logType": "NumberArray",
+                                        "visible": false,
+                                        "options": {}
+                                    },
+                                    {
+                                        "type": "ghost",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Drive/ClosestSnapPoint",
+                                        "logType": "Pose2d",
+                                        "visible": false,
+                                        "options": {
+                                            "model": "2025 KitBot",
+                                            "color": "#0000ff"
+                                        }
+                                    },
+                                    {
+                                        "type": "ghost",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Vision/Summary/RobotPosesAccepted",
+                                        "logType": "Pose3d[]",
+                                        "visible": false,
+                                        "options": {
+                                            "model": "Crab Bot",
+                                            "color": "#00ff00"
+                                        }
+                                    },
+                                    {
+                                        "type": "ghost",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Vision/Summary/RobotPosesRejected",
+                                        "logType": "Pose3d[]",
+                                        "visible": false,
+                                        "options": {
+                                            "model": "2025 KitBot",
+                                            "color": "#ff0000"
+                                        }
+                                    },
+                                    {
+                                        "type": "cameraOverride",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Elevator/VirtualCam",
+                                        "logType": "Pose3d",
+                                        "visible": true,
+                                        "options": {}
+                                    },
+                                    {
+                                        "type": "axes",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Vision/Camera0/VirtualCameraPose",
+                                        "logType": "Pose3d",
+                                        "visible": false,
+                                        "options": {}
+                                    },
+                                    {
+                                        "type": "axes",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Vision/Camera1/VirtualCameraPose",
+                                        "logType": "Pose3d",
+                                        "visible": false,
+                                        "options": {}
+                                    },
+                                    {
+                                        "type": "axes",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Vision/Camera2/VirtualCameraPose",
+                                        "logType": "Pose3d",
+                                        "visible": false,
+                                        "options": {}
+                                    },
+                                    {
+                                        "type": "ghost",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Automation/ClosetReefPose",
+                                        "logType": "Pose2d",
+                                        "visible": true,
+                                        "options": {
+                                            "model": "Duck Bot",
+                                            "color": "#00ffff"
+                                        }
+                                    },
+                                    {
+                                        "type": "gamePiece",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Mailbox/Coral",
+                                        "logType": "Pose3d",
+                                        "visible": true,
+                                        "options": {
+                                            "variant": "Coral"
+                                        }
+                                    },
+                                    {
+                                        "type": "axes",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Mailbox/ClosetReefBranchStats/pose",
+                                        "logType": "Pose3d",
+                                        "visible": true,
+                                        "options": {}
+                                    },
+                                    {
+                                        "type": "axes",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Elevator/VirtualCam",
+                                        "logType": "Pose3d",
+                                        "visible": true,
+                                        "options": {}
+                                    }
+                                ],
+                                "game": "2025 Field (Welded)",
+                                "origin": "blue"
+                            },
+                            "controllerUUID": "nu0l7sommeop6z6s548v27q2sxfosryx",
+                            "renderer": {
+                                "cameraIndex": -1,
+                                "orbitFov": 70,
+                                "cameraPosition": [
+                                    6.81631814519235,
+                                    1.3321803801885168,
+                                    0.6650780502826406
+                                ],
+                                "cameraTarget": [
+                                    0,
+                                    0.5,
+                                    0
+                                ]
+                            },
+                            "controlsHeight": 317
+                        },
+                        {
+                            "type": 1,
+                            "title": "Line Graph",
+                            "controller": {
+                                "leftSources": [],
+                                "rightSources": [],
+                                "discreteSources": [
+                                    {
+                                        "type": "alerts",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Alerts",
+                                        "logType": "Alerts",
+                                        "visible": true,
+                                        "options": {}
+                                    },
+                                    {
+                                        "type": "stripes",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Mailbox/LikelyHasCoral",
+                                        "logType": "Boolean",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#2b66a2"
+                                        }
+                                    },
+                                    {
+                                        "type": "stripes",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Mailbox/GoodShot",
+                                        "logType": "Boolean",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#e5b31b"
+                                        }
+                                    }
+                                ],
+                                "leftLockedRange": null,
+                                "rightLockedRange": null,
+                                "leftUnitConversion": {
+                                    "type": null,
+                                    "factor": 1
+                                },
+                                "rightUnitConversion": {
+                                    "type": null,
+                                    "factor": 1
+                                },
+                                "leftFilter": 0,
+                                "rightFilter": 0
+                            },
+                            "controllerUUID": "qjt0z3lk2lloz6zfpdk2q55aog70wvrd",
+                            "renderer": null,
+                            "controlsHeight": 200
+                        },
+                        {
+                            "type": 5,
+                            "title": "Console",
+                            "controller": "NT:/AdvantageKit/RealOutputs/Console",
+                            "controllerUUID": "384u33jznn6dka3j4p3bsg5pkvqf2wwe",
+                            "renderer": {
+                                "highlight": false
+                            },
+                            "controlsHeight": 0
+                        },
+                        {
+                            "type": 2,
+                            "title": "Odometry",
+                            "controller": {
+                                "sources": [
+                                    {
+                                        "type": "arrow",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Vision/Summary/TagPoses",
+                                        "logType": "Pose3d[]",
+                                        "visible": true,
+                                        "options": {
+                                            "position": "back"
+                                        }
+                                    },
+                                    {
+                                        "type": "ghost",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/Robot",
+                                        "logType": "Pose2d",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#ff00ff"
+                                        }
+                                    },
+                                    {
+                                        "type": "ghost",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Vision/Summary/RobotPosesAccepted",
+                                        "logType": "Pose3d[]",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#ffff00"
+                                        }
+                                    },
+                                    {
+                                        "type": "ghost",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Vision/Summary/RobotPosesRejected",
+                                        "logType": "Pose3d[]",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#ff0000"
+                                        }
+                                    },
+                                    {
+                                        "type": "robot",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/Robot",
+                                        "logType": "Pose2d",
+                                        "visible": true,
+                                        "options": {}
+                                    },
+                                    {
+                                        "type": "vision",
+                                        "logKey": "NT:/AdvantageKit/RealOutputs/Vision/Summary/TagPoses",
+                                        "logType": "Pose3d[]",
+                                        "visible": true,
+                                        "options": {
+                                            "color": "#00ff00",
+                                            "size": "normal"
+                                        }
+                                    }
+                                ],
+                                "game": "2025 Field (Welded)",
+                                "bumpers": "auto",
+                                "origin": "blue",
+                                "orientation": 0,
+                                "size": 27
+                            },
+                            "controllerUUID": "fa2e2rkvvzkir3mfzmj0oitfzbw0ow3p",
+                            "renderer": null,
+                            "controlsHeight": 200
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "satellites": [],
+    "version": "4.1.0"
+}

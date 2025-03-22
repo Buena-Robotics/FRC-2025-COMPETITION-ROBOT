@@ -19,6 +19,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -36,7 +37,6 @@ import frc.robot.commands.HingeCommands;
 import frc.robot.commands.MailboxCommands;
 import frc.robot.controller.CommandControllerIO;
 import frc.robot.controller.SaitekControllerIO;
-import frc.robot.controller.XboxControllerIO;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOReal;
@@ -52,7 +52,6 @@ import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOReal;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
-import frc.robot.subsystems.elevator.Elevator.ElevatorSetpoint;
 import frc.robot.subsystems.hinge.Hinge;
 import frc.robot.subsystems.hinge.HingeIO;
 import frc.robot.subsystems.hinge.HingeIOReal;
@@ -89,7 +88,7 @@ public class RobotContainer {
     private final Trigger good_shot_trigger;
 
     // Controller
-    private final CommandControllerIO controller = Config.ROBOT_MODE == RobotMode.SIM ? new XboxControllerIO(0) : new SaitekControllerIO(0);
+    private final CommandControllerIO controller = Config.ROBOT_MODE == RobotMode.SIM ? new SaitekControllerIO(0) : new SaitekControllerIO(0);
 
     // Dashboard inputs
     private final LoggedTunableNumber auto_delay = new LoggedTunableNumber("AutoDelay/", 0.0);
@@ -107,7 +106,7 @@ public class RobotContainer {
                     new ModuleIOSpark(3));
 
                 this.vision = new Vision(
-                    drive::addVisionMeasurement, drive, () -> vision_force_single_tag_mode,
+                    drive::addVisionMeasurement, drive, () -> false,
                     new VisionIOPhoton(Cameras.cameras[0]),
                     new VisionIOPhoton(Cameras.cameras[1]),
                     new VisionIOPhoton(Cameras.cameras[2]),
@@ -204,8 +203,9 @@ public class RobotContainer {
     private boolean field_oriented_mode = Config.ROBOT_MODE == RobotMode.SIM ? false : true;
 
     private void setTeleopDefaultCommands(){
-        drive.setDefaultCommand(DriveCommands.driveAssistJoystickDrive(
+        drive.setDefaultCommand(DriveCommands.driveSuperAssistJoystickDrive(
             drive,
+            mailbox,
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveYAxis() : () -> -controller.getDriveYAxis(),
             Config.ROBOT_MODE == RobotMode.SIM ? () -> -controller.getDriveXAxis() : () -> -controller.getDriveXAxis()));
         elevator.setDefaultCommand(ElevatorCommands.triggerElevatorHeightAndSetpoint(elevator,
@@ -251,11 +251,11 @@ public class RobotContainer {
         controller.fieldOrientedBtn().onTrue(Commands.runOnce(() -> { field_oriented_mode = !field_oriented_mode; }));
         controller.elevatorSetpointModeBtn().onTrue(Commands.runOnce(() -> { elevator_setpoint_mode = !elevator_setpoint_mode; }));
 
-        // good_shot_trigger.and(likely_has_coral_trigger).and(controller.modeAuto()).debounce(0.1)
-            // .whileTrue(
-                // Commands.deadline(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -1.0), DriveCommands.lockWheels(drive).withTimeout(1.0))
-                // );
-        likely_doesnt_has_coral_trigger.and(controller.modeAuto()).whileTrue(ElevatorCommands.triggerElevatorSetpoint(elevator, ElevatorSetpoint.CORAL_STATION));
+        // good_shot_trigger.and(likely_has_coral_trigger).and(new Trigger(() -> vision_force_single_tag_mode)).debounce(0.1)
+        //     .whileTrue(
+        //         Commands.deadline(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -1.0))
+        //         );
+        // likely_doesnt_has_coral_trigger.and(controller.modeAuto()).whileTrue(ElevatorCommands.triggerElevatorSetpoint(elevator, ElevatorSetpoint.CORAL_STATION));
 
         controller.fullClimb().onTrue(ClimbCommands.fullClimb(climb));
 
@@ -280,8 +280,10 @@ public class RobotContainer {
         controller.flyToClosestReefRightL2().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L2));
         controller.flyToClosestReefRightL3().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L3));
 
-        coral_waiting_trigger.debounce(0.1).onTrue(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -0.2).until(() -> coral_waiting_trigger.getAsBoolean() == false));
-        coral_waiting_trigger.debounce(0.1).onFalse(MailboxCommands.feedCoral(mailbox));
+        Trigger not_auto_trigger = new Trigger(() -> !DriverStation.isAutonomous());
+
+        coral_waiting_trigger.and(not_auto_trigger).debounce(0.1).onTrue(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -0.2).until(() -> coral_waiting_trigger.getAsBoolean() == false));
+        coral_waiting_trigger.and(not_auto_trigger).debounce(0.1).onFalse(MailboxCommands.feedCoral(mailbox));
 
         controller.disableBologna().onTrue(Commands.runOnce(() -> {}, drive));
     }
@@ -295,12 +297,12 @@ public class RobotContainer {
         // ElevatorCommands.releaseAlgae(elevator));
 
         // NamedCommands.registerCommand("elevator_L3", ElevatorCommands.triggerElevatorSetpoint(elevator, ElevatorSetpoint.L3));
-        NamedCommands.registerCommand("elevator_L3", DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L2));
-        NamedCommands.registerCommand("algae_low", new WaitCommand(1));
-        NamedCommands.registerCommand("algae_high", new WaitCommand(2));
-        NamedCommands.registerCommand("algae_release", new WaitCommand(1));
-        NamedCommands.registerCommand("coral_3r", DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L3));
-        NamedCommands.registerCommand("waitfor_coral", Commands.waitUntil(mailbox::coralWaiting));
+        NamedCommands.registerCommand("elevator_L3", DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L2).andThen(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -0.6).withTimeout(2.0) ));
+        // NamedCommands.registerCommand("algae_low", new WaitCommand(1));
+        // NamedCommands.registerCommand("algae_high", new WaitCommand(2));
+        // NamedCommands.registerCommand("algae_release", new WaitCommand(1));
+        // NamedCommands.registerCommand("coral_3r", DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L3));
+        // NamedCommands.registerCommand("waitfor_coral", Commands.waitUntil(mailbox::coralWaiting));
 
         // ElevatorCommands.grabAlgae(elevator, () -> ElevatorSetpoint.ALGAE_LOW)
         // NamedCommands.registerCommand("", null);
@@ -308,7 +310,15 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         // CommandScheduler.getInstance().clearComposedCommands();
-        return new WaitCommand(auto_delay.get()).andThen(auto_chooser.get()).andThen(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -0.2).until(() -> coral_waiting_trigger.getAsBoolean() == false));
+        return new WaitCommand(auto_delay.get()).andThen(
+            Commands.parallel(
+                auto_chooser.get(),
+                Commands.sequence(
+                    MailboxCommands.triggerMailboxSpeed(mailbox, () -> -0.1).until(() -> coral_waiting_trigger.getAsBoolean() == false),
+                    MailboxCommands.feedCoral(mailbox)
+                )
+            )
+            );
     }
 
     public void resetSimulationField() {
