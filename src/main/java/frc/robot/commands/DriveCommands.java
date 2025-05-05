@@ -43,9 +43,9 @@ import com.pathplanner.lib.path.PathConstraints;
 
 public class DriveCommands {
     private static final double DEADBAND = 0.10;
-    private static final double DRIVE_KP = 0.3;
+    private static final double DRIVE_KP = 0.6;
     private static final double DRIVE_KI = 0.02;
-    private static final double DRIVE_KD = 0.1;
+    private static final double DRIVE_KD = 0.04;
     private static final double ANGLE_KP = 0.40;
     private static final double ANGLE_KI = 0.02;
     private static final double ANGLE_KD = 0.04;
@@ -373,6 +373,30 @@ public class DriveCommands {
                 elevator.runLiftSetpoint(branch_height.get() == ReefBranchHeight.L2 ? ElevatorSetpoint.L2.getValue() : ElevatorSetpoint.L3.getValue());
             },
             drive, elevator)
+            .until(() -> x_controller.atSetpoint() && y_controller.atSetpoint() && angle_controller.atSetpoint()).withTimeout(4.0));
+    }
+
+    public static Command gotoPose(final Drive drive, Pose2d pose) {
+        return Commands.runOnce(() -> {
+            Pose2d closest_reef_pose = getClosestReefPose(drive);
+            closest_reef_pose = pose;
+            Logger.recordOutput("Automation/Pose", closest_reef_pose);
+            resetControllers(drive);
+            x_controller.setSetpoint(closest_reef_pose.getX());
+            y_controller.setSetpoint(closest_reef_pose.getY());
+            angle_controller.setSetpoint(closest_reef_pose.getRotation().getRadians());
+        }, drive).andThen(Commands.run(
+            () -> {
+                final double blue_alliance = Config.getRobotAlliance().equals(Alliance.Blue) ? 1 : -1;
+                final Pose2d robot_pose = drive.getPose();
+                runSpeedsRaw(
+                    drive,
+                    blue_alliance * calculatePID(x_controller, robot_pose.getX()),
+                    blue_alliance * calculatePID(y_controller, robot_pose.getY()),
+                    calculatePID(angle_controller, robot_pose.getRotation().getRadians()),
+                    true);
+            },
+            drive)
             .until(() -> x_controller.atSetpoint() && y_controller.atSetpoint() && angle_controller.atSetpoint()).withTimeout(4.0));
     }
 

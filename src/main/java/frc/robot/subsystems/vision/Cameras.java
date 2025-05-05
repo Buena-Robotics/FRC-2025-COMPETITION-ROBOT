@@ -26,7 +26,7 @@ public class Cameras {
                 "USB_Camera",
                 new Transform3d(
                     Units.inchesToMeters(-5), Units.inchesToMeters(-(7.0/16.0)), Units.inchesToMeters(20),
-                    new Rotation3d(0.0, Units.degreesToRadians(0), Units.degreesToRadians(-1))),
+                    new Rotation3d(0.0, Units.degreesToRadians(-2), Units.degreesToRadians(-1))),
                     2.0,
                 SimCameraProperties.LL2_960_720()),
             new Camera(

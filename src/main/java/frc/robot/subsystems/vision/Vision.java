@@ -117,9 +117,10 @@ public class Vision extends SubsystemBase {
             return Optional.empty();
         if (result.multitagResult.isPresent())
             return estimator.update(result, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
-        // if (!DriverStation.isEnabled() || Math.abs(drive.yawRate()) >= 0.04 || force_single_tag.getAsBoolean()) {
-        //     return singleTagEstimate(estimator, estimator.update(result, PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT));
-        // }
+        if (!DriverStation.isEnabled() || Math.abs(drive.yawRate()) >= 0.04 || force_single_tag.getAsBoolean()) {
+            return estimator.update(result, PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT);
+            // return singleTagEstimate(estimator, estimator.update(result, PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT));
+        }
         return estimator.update(result, PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
     }
 
@@ -180,6 +181,7 @@ public class Vision extends SubsystemBase {
                             .getFieldWidth()
 
                     || Math.abs(observation.estimatedPose.getRotation().getX()) > max_pitch_roll_error_radians || Math.abs(observation.estimatedPose.getRotation().getY()) > max_pitch_roll_error_radians;
+                    // || DriverStation.isEnabled() && tag_count == 1 && observation.targetsUsed.get(0).bestCameraToTarget.getTranslation().getNorm() > 1.0;
 
                 // Add pose to log
                 robot_poses.add(observation.estimatedPose);

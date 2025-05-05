@@ -21,6 +21,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -171,6 +172,10 @@ public class RobotContainer {
         // Set up auto routines
         auto_chooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
         auto_chooser.addOption("Leave Community", AutoCommands.leaveCommunity(drive));
+        auto_chooser.addOption("BLUE - LEFT - SINGLE", AutoCommands.singleCoralLeftBlue(drive, elevator, mailbox));
+        auto_chooser.addOption("BLUE - RIGHT - SINGLE", AutoCommands.singleCoralRightBlue(drive, elevator, mailbox));
+        auto_chooser.addOption("RED - LEFT - SINGLE", AutoCommands.singleCoralLeftRed(drive, elevator, mailbox));
+        auto_chooser.addOption("RED - RIGHT - SINGLE", AutoCommands.singleCoralRightRed(drive, elevator, mailbox));
         // auto_chooser.addOption("Single Coral", AutoCommands.singleCoral(drive, elevator));
 
         if (Config.TUNING_PID_LOOPS) {
@@ -280,10 +285,10 @@ public class RobotContainer {
         controller.flyToClosestReefRightL2().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L2));
         controller.flyToClosestReefRightL3().onTrue(DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L3));
 
-        Trigger not_auto_trigger = new Trigger(() -> !DriverStation.isAutonomous());
+        Trigger can_run_coral_feed = new Trigger(() -> DriverStation.isTeleopEnabled());
 
-        coral_waiting_trigger.and(not_auto_trigger).debounce(0.1).onTrue(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -0.2).until(() -> coral_waiting_trigger.getAsBoolean() == false));
-        coral_waiting_trigger.and(not_auto_trigger).debounce(0.1).onFalse(MailboxCommands.feedCoral(mailbox));
+        coral_waiting_trigger.and(can_run_coral_feed).debounce(0.1).onTrue(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -0.2).until(() -> coral_waiting_trigger.getAsBoolean() == false));
+        coral_waiting_trigger.and(can_run_coral_feed).debounce(0.1).onFalse(MailboxCommands.feedCoral(mailbox));
 
         controller.disableBologna().onTrue(Commands.runOnce(() -> {}, drive));
     }
@@ -297,7 +302,7 @@ public class RobotContainer {
         // ElevatorCommands.releaseAlgae(elevator));
 
         // NamedCommands.registerCommand("elevator_L3", ElevatorCommands.triggerElevatorSetpoint(elevator, ElevatorSetpoint.L3));
-        NamedCommands.registerCommand("elevator_L3", DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L2).andThen(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -0.6).withTimeout(2.0) ));
+        NamedCommands.registerCommand("elevator_L3", DriveCommands.alignToClosestBranch(drive, elevator, ReefBranchSide.Right, () -> ReefBranchHeight.L2).andThen(MailboxCommands.triggerMailboxSpeed(mailbox, () -> -1).withTimeout(2.0) ));
         // NamedCommands.registerCommand("algae_low", new WaitCommand(1));
         // NamedCommands.registerCommand("algae_high", new WaitCommand(2));
         // NamedCommands.registerCommand("algae_release", new WaitCommand(1));
@@ -309,15 +314,13 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        // CommandScheduler.getInstance().clearComposedCommands();
+        CommandScheduler.getInstance().clearComposedCommands();
         return new WaitCommand(auto_delay.get()).andThen(
-            Commands.parallel(
-                auto_chooser.get(),
-                Commands.sequence(
+                auto_chooser.get().andThen(
+                    Commands.sequence(
                     MailboxCommands.triggerMailboxSpeed(mailbox, () -> -0.1).until(() -> coral_waiting_trigger.getAsBoolean() == false),
                     MailboxCommands.feedCoral(mailbox)
-                )
-            )
+                ))
             );
     }
 

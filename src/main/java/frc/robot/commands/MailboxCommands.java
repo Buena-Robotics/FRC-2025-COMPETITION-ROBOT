@@ -41,8 +41,7 @@ public class MailboxCommands {
     public static Command lockDriveAndLaunchCoral(final Mailbox mailbox, final Drive drive) {
         return Commands.deadline(new WaitCommand(TIME_TO_LAUNCH_SECONDS), Commands.run(() -> {
             mailbox.runSpeedSetpoint(-1.0);
-            drive.stop();
-        }, mailbox, drive));
+        }, mailbox));
     }
 
     public static Command feedforwardCharacterization(final Mailbox mailbox) {

@@ -392,9 +392,6 @@ public class SharedPhotonPoseEstimator {
      *         targets used to
      *         create the estimate.
      */
-    public Optional<EstimatedRobotPose> update(PhotonPipelineResult cameraResult) {
-        return update(cameraResult, Optional.empty(), Optional.empty());
-    }
 
     /**
      * Updates the estimated position of the robot. Returns empty if:
@@ -424,8 +421,9 @@ public class SharedPhotonPoseEstimator {
     public Optional<EstimatedRobotPose> update(
         PhotonPipelineResult cameraResult,
         Optional<Matrix<N3, N3>> cameraMatrix,
-        Optional<Matrix<N8, N1>> distCoeffs) {
-        return update(cameraResult, cameraMatrix, distCoeffs, Optional.empty());
+        Optional<Matrix<N8, N1>> distCoeffs,
+        PoseStrategy poseStrategy) {
+        return update(cameraResult, cameraMatrix, distCoeffs, Optional.empty(), poseStrategy);
     }
 
     /**
