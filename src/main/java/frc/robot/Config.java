@@ -10,7 +10,7 @@ public final class Config {
     public static final RobotMode SIM_MODE = RobotMode.REPLAY;
     public static final RobotMode ROBOT_MODE = RobotBase.isReal() ? RobotMode.REAL : SIM_MODE;
 
-    public static final RobotType ROBOT_TYPE = RobotType.ROBOT_2025_COMPETION;
+    public static final RobotType ROBOT_TYPE = RobotType.ROBOT_2025_SCHOOL;
     public static final boolean TUNING_PID_LOOPS = false;
 
     public static final String DEFAULT_LOG_FOLDER = "/media/sda1/";
